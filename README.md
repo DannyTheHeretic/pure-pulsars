@@ -181,4 +181,4 @@ I will then add `click~=8.1`, without the last number, to my requirements file o
 > [!IMPORTANT]
 > Don't forget to replace this README with an actual description of your project! Images are also welcome!
 
-We hope this template will be helpful. Good luck in the jam!
+We hope this template will be helpful. Good luck in the jam.
