@@ -42,7 +42,8 @@ def rand_date() -> datetime.date:
 
 
 def rand_wiki() -> wikipediaapi.WikipediaPage:
-    """Return a random popular wikipedia article."""
+    """Return a random popular wikipedia article, 
+    returns None if operation failed."""
     try:
         rd = rand_date()
         date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
