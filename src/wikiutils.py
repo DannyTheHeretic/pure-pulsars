@@ -31,9 +31,6 @@ def is_article_title(link: str) -> bool:
     return all(not link.startswith(prefix) for prefix in NON_LINK_PREFIXS)
 
 
-t = wikipediaapi.Wikipedia(user_agent=ua.random)
-
-
 def rand_date() -> datetime.date:
     """Take the current time returning the timetuple."""
     now = int(datetime.datetime.now(tz=datetime.UTC).timestamp() // 1)
@@ -41,27 +38,8 @@ def rand_date() -> datetime.date:
     return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
 
 
-def rand_wiki() -> wikipediaapi.WikipediaPage:
-    """Return a random popular wikipedia article, returns None if operation failed."""
-    rd = rand_date()
-    date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
-    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
-    try:
-        req_json = requests.get(url, headers={"UserAgent": ua.random}, timeout=100).json()
-        mr = req_json["mostread"]
-        random.shuffle(mr["articles"])
-        select = mr["articles"][0]
-        page = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
-        if is_article_title(page.title):
-            return page
-        return rand_wiki()
-    except KeyError:
-        return rand_wiki()
-
-
-def rand_embed() -> Embed:
+def make_embed(article: wikipediaapi.WikipediaPage) -> Embed:
     """Return a Discord Embed."""
-    article = rand_wiki()
     embed = Embed(title=article.title)
     pid = article._attributes  # noqa: SLF001
     try:
@@ -82,8 +60,27 @@ def rand_embed() -> Embed:
         url = _[t]["thumbnail"]["source"]
         url = url.replace("/thumb/", "/")
         url = url.split("px")[0][0:-3]
-        print(url)
         embed.set_image(url=url)
-    except Exception:  # noqa: BLE001
+    except KeyError:
+        print("oops")
+    except StopIteration:
         print("oops")
     return embed
+
+
+def rand_wiki() -> wikipediaapi.WikipediaPage:
+    """Return a random popular wikipedia article, returns None if operation failed."""
+    rd = rand_date()
+    date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
+    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
+    try:
+        req_json = requests.get(url, headers={"UserAgent": ua.random}, timeout=100).json()
+        mr = req_json["mostread"]
+        random.shuffle(mr["articles"])
+        select = mr["articles"][0]
+        page = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
+        if is_article_title(page.title):
+            return page
+        return rand_wiki()
+    except KeyError:
+        return rand_wiki()
