@@ -4,7 +4,7 @@ from random import randint
 import discord
 from discord import app_commands
 
-from wikiutils import is_article_title, rand_wiki
+from wikiutils import is_article_title, make_embed, rand_wiki
 
 ACCURACY_THRESHOLD = 0.8
 
@@ -52,12 +52,16 @@ class GuessInput(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
+        msg = (
+            "Congratulations! You figured it out, the article title "
+            f"was {self.correct}, [read more](https://en.wikipedia.or"
+            f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing."
+        )
         if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
-            await interaction.response.send_message(
-                "Congratulations! You figured it out, the article title ",
-                f"was {self.correct}, [read more](https://en.wikipedia.or",
-                f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
-            )
+            article = "t"
+            embed = make_embed(article)
+            embed.description = msg
+            await interaction.response.send_message(embed=embed)
             await interaction.message.edit(view=None)
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
