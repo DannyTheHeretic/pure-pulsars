@@ -1,62 +1,68 @@
-from random import randint
 from difflib import SequenceMatcher
-from typing import Any
+from random import randint
 
 import discord
 from discord import app_commands
 
 from wikiutils import is_article_title, rand_wiki
 
+ACCURACY_THRESHOLD = 0.8
+
+
 class TimeoutView(discord.ui.View):
-    """View that disables children on timeout"""
+    """View that disables children on timeout."""
 
     async def on_timeout(self) -> None:
-        """Disables children"""
-
+        """Disables children."""
         for child in self.children:
             child.disabled = True
-        
+
         await self.message.edit(view=self)
 
+
 class ExcerptButton(discord.ui.Button):
-    """Button for revealing more of the summary"""
+    """Button for revealing more of the summary."""
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        """Reveal more of the summary"""
-        if not hasattr(self,"ind"):
+        """Reveal more of the summary."""
+        if not hasattr(self, "ind"):
             self.ind = 1
         self.ind += 1
 
         await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.")
         await interaction.response.defer()
 
+
 class GuessButton(discord.ui.Button):
-    """Button to open guess modal"""
+    """Button to open guess modal."""
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        """Open guess modal."""
         guess_modal = GuessInput(title="Guess!")
-        guess_modal.add_item(discord.ui.TextInput(label="Your guess",placeholder="Enter your guess here..."))
+        guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         guess_modal.correct = self.correct
         await interaction.response.send_modal(guess_modal)
-        
+
 
 class GuessInput(discord.ui.Modal):
-    """Input feild for guessing"""
+    """Input feild for guessing."""
 
-    async def on_submit(self,interaction:discord.Interaction) -> None:
-        """Guess the article"""
-
-        if SequenceMatcher(None,self.children[0].value.lower(),self.correct.lower()).ratio() >= 0.8:
-            await interaction.response.send_message(f"Congratulations! You figured it out, the article title was {self.correct}! Thanks for playing.")
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """Guess the article."""
+        if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
+            await interaction.response.send_message(
+                f"Congratulations! You figured it out, the article title was {self.correct}! Thanks for playing."
+            )
             await interaction.message.edit(view=None)
             return
-        await interaction.response.send_message("That's incorect, please try again.",ephemeral=True)
+        await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
+
 
 class LinkListButton(discord.ui.Button):
-    """Button for showing more links from the list"""
+    """Button for showing more links from the list."""
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        """Shows 10 diffrent links"""
+        """Show 10 diffrent links."""
         if interaction.message.content:
             await interaction.message.edit(view=None)
         else:
@@ -106,13 +112,15 @@ def main(tree: app_commands.CommandTree) -> None:
         sentances = excerpt.split(". ")
 
         excerpt_view = TimeoutView()
-        guess_button = GuessButton(label="Guess!",style=discord.ButtonStyle.success)
-        excerpt_button = ExcerptButton(label="Show more",style=discord.ButtonStyle.primary)
+        guess_button = GuessButton(label="Guess!", style=discord.ButtonStyle.success)
+        excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary)
         excerpt_view.add_item(excerpt_button)
         excerpt_view.add_item(guess_button)
 
-        excerpt_view.message = await interaction.followup.send(content=f"Excerpt: {sentances[0]}.",view=excerpt_view,wait=True)
-        
+        excerpt_view.message = await interaction.followup.send(
+            content=f"Excerpt: {sentances[0]}.", view=excerpt_view, wait=True
+        )
+
         excerpt_button.summary = sentances
         guess_button.correct = article.title
 
@@ -128,5 +136,5 @@ def main(tree: app_commands.CommandTree) -> None:
         backlink_button.links = backlinks
         backlink_button.message = "Articles that link to this one:"
 
-        view.message = await interaction.followup.send(view=view,wait=True)
+        view.message = await interaction.followup.send(view=view, wait=True)
         await interaction.delete_original_response()

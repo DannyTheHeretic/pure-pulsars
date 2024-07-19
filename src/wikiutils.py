@@ -42,8 +42,7 @@ def rand_date() -> datetime.date:
 
 
 def rand_wiki() -> wikipediaapi.WikipediaPage:
-    """Return a random popular wikipedia article, 
-    returns None if operation failed."""
+    """Return a random popular wikipedia article, returns None if operation failed."""
     rd = rand_date()
     date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
     url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
@@ -55,8 +54,7 @@ def rand_wiki() -> wikipediaapi.WikipediaPage:
         page = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
         if is_article_title(page.title):
             return page
-        else:
-            return rand_wiki()
+        return rand_wiki()
     except KeyError:
         return rand_wiki()
 

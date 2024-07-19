@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 
-from wikiutils import rand_embed, rand_wiki
+from wikiutils import rand_embed
 
 
 def main(tree: app_commands.CommandTree) -> None:
