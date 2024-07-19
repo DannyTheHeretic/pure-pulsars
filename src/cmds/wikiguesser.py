@@ -22,7 +22,7 @@ class LinkListButton(discord.ui.Button):
 def main(tree:app_commands.CommandTree)->None:
     """Create Wiki Guesser command."""
 
-    @tree.command(name="wiki-guesser", description="its the command thingy",
+    @tree.command(name="wiki-guesser", description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
                   guild=discord.Object(id=1262497899925995563))
     async def wiki(interaction: discord.Interaction) -> None:
         await interaction.response.send_message(content="Hello, we are processing your request...")
