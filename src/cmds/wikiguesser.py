@@ -54,9 +54,9 @@ class GuessInput(discord.ui.Modal):
         """Guess the article."""
         if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
             await interaction.response.send_message(
-                f"Congratulations! You figured it out, the article title was \
-                {self.correct} [read more] \
-                (https://en.wikipedia.org/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
+                "Congratulations! You figured it out, the article title " +
+                f"was {self.correct}, [read more](https://en.wikipedia.or" +
+                f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
             )
             await interaction.message.edit(view=None)
             return
@@ -77,7 +77,8 @@ class LinkListButton(discord.ui.Button):
 
         for _ in range(10):
             selected_links.append(self.links.pop(randint(0, len(self.links) - 1)))  # noqa: S311
-            if len(self.links) == 0:
+            if len(self.links) == 1:
+                selected_links.append(self.links.pop(0))
                 break
 
         await interaction.response.send_message(
