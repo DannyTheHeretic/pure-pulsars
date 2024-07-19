@@ -35,7 +35,7 @@ t = wikipediaapi.Wikipedia(user_agent=ua.random)
 
 
 def rand_date() -> datetime.date:
-    """Takes the current time returning the timetuple."""  # noqa: D401
+    """Take the current time returning the timetuple."""
     now = int(datetime.datetime.now(tz=datetime.UTC).timestamp() // 1)
     y = int((now - 252482400) - now % 31557600 // 1)
     return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
