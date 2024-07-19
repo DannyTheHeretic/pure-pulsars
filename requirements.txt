@@ -3,3 +3,4 @@ requests
 wikipedia-API
 firebase_admin
 python-dotenv
+fake_useragent
