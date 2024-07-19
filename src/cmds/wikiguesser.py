@@ -29,10 +29,10 @@ class ExcerptButton(discord.ui.Button):
             self.ind = 1
         self.ind += 1
 
-        if self.summary[:self.ind] == self.summary or len(".".join(self.summary[:self.ind+1]))>1990:
+        if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
 
-        await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.",view=self.view)
+        await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
         await interaction.response.defer()
 
 
@@ -54,7 +54,9 @@ class GuessInput(discord.ui.Modal):
         """Guess the article."""
         if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
             await interaction.response.send_message(
-                f"Congratulations! You figured it out, the article title was {self.correct} [read more](https://en.wikipedia.org/wiki/{self.correct.replace(" ","_")})! Thanks for playing."
+                f"Congratulations! You figured it out, the article title was \
+                {self.correct} [read more] \
+                (https://en.wikipedia.org/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
             )
             await interaction.message.edit(view=None)
             return
@@ -121,7 +123,9 @@ def main(tree: app_commands.CommandTree) -> None:
         excerpt_view.add_item(guess_button)
 
         excerpt_view.message = await interaction.followup.send(
-            content=f"Excerpt: {sentances[0]}.", view=excerpt_view, wait=True
+            content=f"Excerpt: {sentances[0]}.",
+            view=excerpt_view,
+            wait=True,
         )
 
         excerpt_button.summary = sentances
