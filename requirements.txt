@@ -1,3 +1,5 @@
 discord.py
 requests
 wikipedia-API
+firebase_admin
+python-dotenv
