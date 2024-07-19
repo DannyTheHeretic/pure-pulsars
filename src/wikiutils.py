@@ -44,10 +44,10 @@ def rand_date() -> datetime.date:
 def rand_wiki() -> wikipediaapi.WikipediaPage:
     """Return a random popular wikipedia article, 
     returns None if operation failed."""
+    rd = rand_date()
+    date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
+    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
     try:
-        rd = rand_date()
-        date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
-        url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
         req_json = requests.get(url, headers={"UserAgent": ua.random}, timeout=100).json()
         mr = req_json["mostread"]
         random.shuffle(mr["articles"])
@@ -58,7 +58,7 @@ def rand_wiki() -> wikipediaapi.WikipediaPage:
         else:
             return rand_wiki()
     except KeyError:
-        return None
+        return rand_wiki()
 
 
 def rand_embed() -> Embed:
