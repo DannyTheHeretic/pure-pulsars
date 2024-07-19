@@ -5,9 +5,30 @@ from discord import app_commands
 
 from wikiutils import is_text_link, rand_wiki
 
+class ExcerptButton(discord.ui.Button):
+    """Button for revealing more of the summary"""
 
-class LinkListButton(discord.ui.Button):  # noqa: D101
-    async def callback(self, interaction: discord.Interaction) -> None:  # noqa: D102
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Reveal more of the summary"""
+
+        if not hasattr(self,"ind"):
+            self.ind = 1
+        self.ind += 1
+
+        await interaction.response.send_message(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.",view=self.view)
+        await interaction.message.delete()
+
+
+class LinkListButton(discord.ui.Button):
+    """Button for showing more links from the list"""
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Shows 10 diffrent links"""
+        if interaction.message.content:
+            await interaction.message.edit(view=None)
+        else:
+            await interaction.message.delete()
+
         selected_links = []
 
         for _ in range(10):
@@ -16,7 +37,7 @@ class LinkListButton(discord.ui.Button):  # noqa: D101
                 break
 
         await interaction.response.send_message(
-            content="Links in articles: " + "\n".join(selected_links),
+            content=f"{self.message}\n```{"\n".join(selected_links)}```",
             view=self.view,
         )
         if len(self.links) == 0:
@@ -44,21 +65,31 @@ def main(tree: app_commands.CommandTree) -> None:
         links = [link for link in article.links if is_text_link(link)]
         backlinks = [link for link in article.backlinks if is_text_link(link)]
 
-        excerpt = article.summary.split(". ")[0]
+        excerpt = article.summary
 
         for i in article.title.split():
             excerpt = excerpt.replace(i, "CENSORED")
 
-        await interaction.followup.send(content=f"Excerpt: {excerpt}")
+        sentances = excerpt.split(". ")
+
+        excerpt_view = discord.ui.View()
+        excerpt_button = ExcerptButton(label="Show more",style=discord.ButtonStyle.primary)
+        excerpt_view.add_item(excerpt_button)
+
+        await interaction.followup.send(content=f"Excerpt: {sentances[0]}.",view=excerpt_view)
+        excerpt_button.summary = sentances
 
         view = discord.ui.View()
         link_button = LinkListButton(label="Show more links in article")
         backlink_button = LinkListButton(label="Show more articles that link to this one")
+
         view.add_item(link_button)
         view.add_item(backlink_button)
 
         link_button.links = links
+        link_button.message = "Links in article:"
         backlink_button.links = backlinks
+        backlink_button.message = "Articles that link to this one:"
 
         await interaction.followup.send(view=view)
         await interaction.delete_original_response()
