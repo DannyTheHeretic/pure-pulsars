@@ -26,7 +26,7 @@ ua = UserAgent()
 t = wikipediaapi.Wikipedia(user_agent=ua.random)
 
 
-def is_text_link(link: str) -> bool:
+def is_article_title(link: str) -> bool:
     """Check if the provided link is a standard text link."""
     return all(not link.startswith(prefix) for prefix in NON_LINK_PREFIXS)
 
@@ -52,8 +52,11 @@ def rand_wiki() -> wikipediaapi.WikipediaPage:
         mr = req_json["mostread"]
         random.shuffle(mr["articles"])
         select = mr["articles"][0]
-
-        return wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
+        page = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
+        if is_article_title(page.title):
+            return page
+        else:
+            return rand_wiki()
     except KeyError:
         return None
 
