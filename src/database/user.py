@@ -27,3 +27,4 @@ class User:
             "wins": self.wins,
             "failure": self.failure,
         }
+
