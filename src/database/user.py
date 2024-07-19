@@ -1,6 +1,14 @@
-class User: #noqa: D101
-    def __init__( #noqa: PLR0913
-        self, name: str, leaderboard_position: int, score: int, times_played: int, wins: int, failure: int,
+class User:
+    """The Basic User Class."""
+
+    def __init__(  # noqa: PLR0913
+        self,
+        name: str,
+        leaderboard_position: int,
+        score: int,
+        times_played: int,
+        wins: int,
+        failure: int,
     ) -> None:
         self.name = name
         self.leaderboard_position = leaderboard_position
@@ -10,7 +18,7 @@ class User: #noqa: D101
         self.failure = failure
 
     def to_dictionary(self) -> dict:
-        """Convert it to a dictionary."""
+        """Return user as a Dictionary."""
         return {
             "name": self.name,
             "leaderboard_position": self.leaderboard_position,

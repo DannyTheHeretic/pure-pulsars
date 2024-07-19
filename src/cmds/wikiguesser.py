@@ -1,22 +1,88 @@
+from difflib import SequenceMatcher
 from random import randint
 
 import discord
 from discord import app_commands
 
-from wikiutils import is_text_link, rand_wiki
+from wikiutils import is_article_title, rand_wiki
+
+ACCURACY_THRESHOLD = 0.8
 
 
-class LinkListButton(discord.ui.Button):  # noqa: D101
-    async def callback(self, interaction: discord.Interaction) -> None:  # noqa: D102
+class TimeoutView(discord.ui.View):
+    """View that disables children on timeout."""
+
+    async def on_timeout(self) -> None:
+        """Disables children."""
+        for child in self.children:
+            child.disabled = True
+
+        await self.message.edit(view=self)
+
+
+class ExcerptButton(discord.ui.Button):
+    """Button for revealing more of the summary."""
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Reveal more of the summary."""
+        if not hasattr(self, "ind"):
+            self.ind = 1
+        self.ind += 1
+
+        if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
+            self.view.remove_item(self)
+
+        await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
+        await interaction.response.defer()
+
+
+class GuessButton(discord.ui.Button):
+    """Button to open guess modal."""
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Open guess modal."""
+        guess_modal = GuessInput(title="Guess!")
+        guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
+        guess_modal.correct = self.correct
+        await interaction.response.send_modal(guess_modal)
+
+
+class GuessInput(discord.ui.Modal):
+    """Input feild for guessing."""
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """Guess the article."""
+        if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
+            await interaction.response.send_message(
+                "Congratulations! You figured it out, the article title " +
+                f"was {self.correct}, [read more](https://en.wikipedia.or" +
+                f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
+            )
+            await interaction.message.edit(view=None)
+            return
+        await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
+
+
+class LinkListButton(discord.ui.Button):
+    """Button for showing more links from the list."""
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Show 10 diffrent links."""
+        if interaction.message.content:
+            await interaction.message.edit(view=None)
+        else:
+            await interaction.message.delete()
+
         selected_links = []
 
         for _ in range(10):
             selected_links.append(self.links.pop(randint(0, len(self.links) - 1)))  # noqa: S311
-            if len(self.links) == 0:
+            if len(self.links) == 1:
+                selected_links.append(self.links.pop(0))
                 break
 
         await interaction.response.send_message(
-            content="Links in articles: " + "\n".join(selected_links),
+            content=f"{self.message}\n```{"\n".join(selected_links)}```",
             view=self.view,
         )
         if len(self.links) == 0:
@@ -41,24 +107,42 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.delete_original_response()
             return
 
-        links = [link for link in article.links if is_text_link(link)]
-        backlinks = [link for link in article.backlinks if is_text_link(link)]
+        links = [link for link in article.links if is_article_title(link)]
+        backlinks = [link for link in article.backlinks if is_article_title(link)]
 
-        excerpt = article.summary.split(". ")[0]
+        excerpt = article.summary
 
         for i in article.title.split():
-            excerpt = excerpt.replace(i, "CENSORED")
+            excerpt = excerpt.replace(i, "~~CENSORED~~")
 
-        await interaction.followup.send(content=f"Excerpt: {excerpt}")
+        sentances = excerpt.split(". ")
 
-        view = discord.ui.View()
+        excerpt_view = TimeoutView()
+        guess_button = GuessButton(label="Guess!", style=discord.ButtonStyle.success)
+        excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary)
+        excerpt_view.add_item(excerpt_button)
+        excerpt_view.add_item(guess_button)
+
+        excerpt_view.message = await interaction.followup.send(
+            content=f"Excerpt: {sentances[0]}.",
+            view=excerpt_view,
+            wait=True,
+        )
+
+        excerpt_button.summary = sentances
+        guess_button.correct = article.title
+
+        view = TimeoutView()
         link_button = LinkListButton(label="Show more links in article")
         backlink_button = LinkListButton(label="Show more articles that link to this one")
+
         view.add_item(link_button)
         view.add_item(backlink_button)
 
         link_button.links = links
+        link_button.message = "Links in article:"
         backlink_button.links = backlinks
+        backlink_button.message = "Articles that link to this one:"
 
-        await interaction.followup.send(view=view)
+        view.message = await interaction.followup.send(view=view, wait=True)
         await interaction.delete_original_response()

@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 
-from wikiutils import rand_embed, rand_wiki
+from wikiutils import rand_embed
 
 
 def main(tree: app_commands.CommandTree) -> None:
@@ -14,10 +14,6 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     async def wiki(interaction: discord.Interaction) -> None:
         await interaction.response.send_message(content="hello, we are processing ur request")
-        article = rand_wiki()
-        await interaction.delete_original_response()
-        if not article:
-            await interaction.followup.send(content="An error occured")
-            return
         embed = rand_embed()
         await interaction.followup.send(embed=embed)
+        await interaction.delete_original_response()

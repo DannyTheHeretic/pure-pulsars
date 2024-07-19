@@ -26,7 +26,7 @@ ua = UserAgent()
 t = wikipediaapi.Wikipedia(user_agent=ua.random)
 
 
-def is_text_link(link: str) -> bool:
+def is_article_title(link: str) -> bool:
     """Check if the provided link is a standard text link."""
     return all(not link.startswith(prefix) for prefix in NON_LINK_PREFIXS)
 
@@ -35,26 +35,28 @@ t = wikipediaapi.Wikipedia(user_agent=ua.random)
 
 
 def rand_date() -> datetime.date:
-    """Takes the current time returning the timetuple."""  # noqa: D401
+    """Take the current time returning the timetuple."""
     now = int(datetime.datetime.now(tz=datetime.UTC).timestamp() // 1)
     y = int((now - 252482400) - now % 31557600 // 1)
     return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
 
 
 def rand_wiki() -> wikipediaapi.WikipediaPage:
-    """Return a random popular wikipedia article."""
+    """Return a random popular wikipedia article, returns None if operation failed."""
+    rd = rand_date()
+    date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
+    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
     try:
-        rd = rand_date()
-        date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
-        url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
         req_json = requests.get(url, headers={"UserAgent": ua.random}, timeout=100).json()
         mr = req_json["mostread"]
         random.shuffle(mr["articles"])
         select = mr["articles"][0]
-
-        return wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
+        page = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
+        if is_article_title(page.title):
+            return page
+        return rand_wiki()
     except KeyError:
-        return None
+        return rand_wiki()
 
 
 def rand_embed() -> Embed:
@@ -72,11 +74,16 @@ def rand_embed() -> Embed:
     )
     req_json = req.json()
     embed = Embed(title=article.title)
-    embed.description = f"{article.summary[0:400]}...(read more)[{article}]"
+    embed.description = f"{article.summary[0:400]}...([read more](https://en.wikipedia.org/wiki/\
+{article.title.replace(" ","_")}))"
     try:
         _ = req_json["query"]["pages"]
         t = next(iter(_.keys()))
-        embed.set_image(url=_[t]["thumbnail"]["source"])
+        url = _[t]["thumbnail"]["source"]
+        url = url.replace("/thumb/", "/")
+        url = url.split("px")[0][0:-3]
+        print(url)
+        embed.set_image(url=url)
     except Exception:  # noqa: BLE001
         print("oops")
     return embed
