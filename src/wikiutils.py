@@ -74,11 +74,16 @@ def rand_embed() -> Embed:
     )
     req_json = req.json()
     embed = Embed(title=article.title)
-    embed.description = f"{article.summary[0:400]}...(read more)[{article}]"
+    embed.description = f"{article.summary[0:400]}...([read more](https://en.wikipedia.org/wiki/\
+{article.title.replace(" ","_")}))"
     try:
         _ = req_json["query"]["pages"]
         t = next(iter(_.keys()))
-        embed.set_image(url=_[t]["thumbnail"]["source"])
+        url = _[t]["thumbnail"]["source"]
+        url = url.replace("/thumb/", "/")
+        url = url.split("px")[0][0:-3]
+        print(url)
+        embed.set_image(url=url)
     except Exception:  # noqa: BLE001
         print("oops")
     return embed
