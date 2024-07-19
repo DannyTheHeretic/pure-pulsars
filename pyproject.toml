@@ -41,4 +41,21 @@ ignore = [
     # Annotations.
     "ANN101",
     "ANN102",
+    # Additional codes.
+    "COM812",  # missing-trailing-comma
+    "COM819",  # prohibited-trailing-comma
+    "D206",    # indent-with-spaces
+    "D300",    # triple-single-quotes
+    "E111",    # indentation-with-invalid-multiple
+    "E114",    # indentation-with-invalid-multiple-comment
+    "E117",    # over-indented
+    "E501",    # line-too-long
+    "INP001",  # implicit-namespace-package
+    "ISC001",  # single-line-implicit-string-concatenation
+    "ISC002",  # multi-line-implicit-string-concatenation
+    "Q000",    # bad-quotes-inline-string
+    "Q001",    # bad-quotes-multiline-string
+    "Q002",    # bad-quotes-docstring
+    "Q003",    # avoidable-escaped-quote
+    "W191",    # tab-indentation
 ]
