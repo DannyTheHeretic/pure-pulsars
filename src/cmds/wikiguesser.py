@@ -1,23 +1,56 @@
 from random import randint
+from difflib import SequenceMatcher
+from typing import Any
 
 import discord
 from discord import app_commands
 
-from wikiutils import is_text_link, rand_wiki
+from wikiutils import is_article_title, rand_wiki
+
+class TimeoutView(discord.ui.View):
+    """View that disables children on timeout"""
+
+    async def on_timeout(self) -> None:
+        """Disables children"""
+
+        for child in self.children:
+            child.disabled = True
+        
+        await self.message.edit(view=self)
 
 class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary"""
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary"""
-
         if not hasattr(self,"ind"):
             self.ind = 1
         self.ind += 1
 
-        await interaction.response.send_message(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.",view=self.view)
-        await interaction.message.delete()
+        await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.")
+        await interaction.response.defer()
 
+class GuessButton(discord.ui.Button):
+    """Button to open guess modal"""
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        guess_modal = GuessInput(title="Guess!")
+        guess_modal.add_item(discord.ui.TextInput(label="Your guess",placeholder="Enter your guess here..."))
+        guess_modal.correct = self.correct
+        await interaction.response.send_modal(guess_modal)
+        
+
+class GuessInput(discord.ui.Modal):
+    """Input feild for guessing"""
+
+    async def on_submit(self,interaction:discord.Interaction) -> None:
+        """Guess the article"""
+
+        if SequenceMatcher(None,self.children[0].value.lower(),self.correct.lower()).ratio() >= 0.8:
+            await interaction.response.send_message(f"Congratulations! You figured it out, the article title was {self.correct}! Thanks for playing.")
+            await interaction.message.edit(view=None)
+            return
+        await interaction.response.send_message("That's incorect, please try again.",ephemeral=True)
 
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list"""
@@ -62,24 +95,28 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.delete_original_response()
             return
 
-        links = [link for link in article.links if is_text_link(link)]
-        backlinks = [link for link in article.backlinks if is_text_link(link)]
+        links = [link for link in article.links if is_article_title(link)]
+        backlinks = [link for link in article.backlinks if is_article_title(link)]
 
         excerpt = article.summary
 
         for i in article.title.split():
-            excerpt = excerpt.replace(i, "CENSORED")
+            excerpt = excerpt.replace(i, "~~CENSORED~~")
 
         sentances = excerpt.split(". ")
 
-        excerpt_view = discord.ui.View()
+        excerpt_view = TimeoutView()
+        guess_button = GuessButton(label="Guess!",style=discord.ButtonStyle.success)
         excerpt_button = ExcerptButton(label="Show more",style=discord.ButtonStyle.primary)
         excerpt_view.add_item(excerpt_button)
+        excerpt_view.add_item(guess_button)
 
-        await interaction.followup.send(content=f"Excerpt: {sentances[0]}.",view=excerpt_view)
+        excerpt_view.message = await interaction.followup.send(content=f"Excerpt: {sentances[0]}.",view=excerpt_view,wait=True)
+        
         excerpt_button.summary = sentances
+        guess_button.correct = article.title
 
-        view = discord.ui.View()
+        view = TimeoutView()
         link_button = LinkListButton(label="Show more links in article")
         backlink_button = LinkListButton(label="Show more articles that link to this one")
 
@@ -91,5 +128,5 @@ def main(tree: app_commands.CommandTree) -> None:
         backlink_button.links = backlinks
         backlink_button.message = "Articles that link to this one:"
 
-        await interaction.followup.send(view=view)
+        view.message = await interaction.followup.send(view=view,wait=True)
         await interaction.delete_original_response()
