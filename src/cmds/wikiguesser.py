@@ -54,8 +54,8 @@ class GuessInput(discord.ui.Modal):
         """Guess the article."""
         if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
             await interaction.response.send_message(
-                "Congratulations! You figured it out, the article title " +
-                f"was {self.correct}, [read more](https://en.wikipedia.or" +
+                "Congratulations! You figured it out, the article title ",
+                f"was {self.correct}, [read more](https://en.wikipedia.or",
                 f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
             )
             await interaction.message.edit(view=None)
