@@ -150,6 +150,7 @@ class GuessInput(discord.ui.Modal):
                         wins=1,
                         score=self.score,
                         last_played=datetime.now(UTC).timestamp(),
+                        failure=0,
                     )
                     DATA.add_user(user.id, new_user, interaction.guild_id)
             return
