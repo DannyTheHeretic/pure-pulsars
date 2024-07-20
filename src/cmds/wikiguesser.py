@@ -43,7 +43,7 @@ class GuessButton(discord.ui.Button):
         """Open guess modal."""
         guess_modal = GuessInput(title="Guess!")
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
-        guess_modal.correct = self.correct
+        guess_modal.article = self.article
         await interaction.response.send_modal(guess_modal)
 
 
@@ -54,12 +54,11 @@ class GuessInput(discord.ui.Modal):
         """Guess the article."""
         msg = (
             "Congratulations! You figured it out, the article title "
-            f"was {self.correct}, [read more](https://en.wikipedia.or"
-            f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing."
+            f"was {self.article.title}, [read more](https://en.wikipedia.or"
+            f"g/wiki/{self.article.title.replace(" ","_")})! Thanks for playing."
         )
-        if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
-            article = "t"
-            embed = make_embed(article)
+        if SequenceMatcher(None, self.children[0].value.lower(), self.article.title.lower()).ratio() >= ACCURACY_THRESHOLD:
+            embed = make_embed(self.article)
             embed.description = msg
             await interaction.response.send_message(embed=embed)
             await interaction.message.edit(view=None)
@@ -134,7 +133,7 @@ def main(tree: app_commands.CommandTree) -> None:
         )
 
         excerpt_button.summary = sentances
-        guess_button.correct = article.title
+        guess_button.article = article
 
         view = TimeoutView()
         link_button = LinkListButton(label="Show more links in article")
