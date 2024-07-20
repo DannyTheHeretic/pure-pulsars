@@ -76,13 +76,16 @@ class Database:
             return database_user.get()
         raise NullUserError
 
+    def get_server(self) -> dict:
+        """Get the specified server."""
+        return self._ref.get()
+
     def get_all_servers(self) -> list:
         """Return all servers."""
         return db.reference("/server/").get()
 
 
 """
-data = Database(ref=1262497899925995563)
 data.add_user("lotus.css", "713130676387315772")
 print(data.get_user("713130676387315772"))
 print(data.get_all_server_ids())

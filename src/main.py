@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 
-from cmds import setup_guild, wikiguesser, wikirandom
+from cmds import leaderboard, wikiguesser, wikirandom
 
 load_dotenv(".env")
 intents = discord.Intents.all()
@@ -24,5 +24,5 @@ async def on_ready() -> None:  # noqa: D103
 
 wikiguesser.main(tree)
 wikirandom.main(tree)
-setup_guild.main(tree)
+leaderboard.main(tree)
 client.run(os.environ["DISAPI"])
