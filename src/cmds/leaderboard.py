@@ -1,7 +1,7 @@
 import discord
 from discord import Enum, app_commands
 
-from database.database_core import Database
+from database.database_core import DATA
 
 
 class _GloSer(Enum):
@@ -23,8 +23,7 @@ def main(tree: app_commands.CommandTree) -> None:
         ser_id = interaction.guild_id if bool(glob.value) else 0
         await interaction.response.defer(thinking=True)
 
-        database = Database(ser_id)
-        lead = list(database.get_server().values())
+        lead = list(await DATA.get_server(ser_id).values())
         lead.sort(key=_sort_leaders, reverse=True)
         lead = lead[0:10]
         embed = discord.Embed(

@@ -1,8 +1,7 @@
 import discord
 from discord import app_commands
 
-from database.database_core import NullUserError
-from main import DATA
+from database.database_core import DATA, NullUserError
 
 
 def main(tree: app_commands.CommandTree) -> None:
@@ -17,7 +16,7 @@ def main(tree: app_commands.CommandTree) -> None:
         await interaction.response.defer(thinking=True)
         embed = discord.embeds.Embed()
         try:
-            user_data = DATA.get_user(interaction.guild_id, user.id)
+            user_data = await DATA.get_user(interaction.guild_id, user.id)
             for key, value in user_data.items():
                 if key.lower() == "userid":
                     continue
@@ -28,5 +27,6 @@ def main(tree: app_commands.CommandTree) -> None:
                 )
         except NullUserError:
             await interaction.followup.send(content=f"User: {user.mention} has **not** been added")
+            return
 
         await interaction.followup.send(embed=embed)

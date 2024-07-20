@@ -22,7 +22,7 @@ class Database:
 
     SERVER_LIST: ClassVar = []
 
-    async def __init__(
+    def __init__(
         self,
     ) -> None:
         self._cred_obj = cred_obj = firebase_admin.credentials.Certificate(os.environ["CERT_PATH"])
@@ -32,7 +32,6 @@ class Database:
                 "databaseURL": "https://pure-pulsars-default-rtdb.firebaseio.com/",
             },
         )
-
         self.SERVER_LIST = self.get_all_servers()
 
     async def add_user(
@@ -42,7 +41,7 @@ class Database:
         guild_id: int,
     ) -> None:
         """Add a user to the database using ref.set."""
-        database_user = self.conn(guild_id, user_id)
+        database_user = await self.conn(guild_id, user_id)
         _new_user = user.to_dictionary()
         database_user.set(_new_user)
 
@@ -55,7 +54,7 @@ class Database:
     ) -> None:
         """Update the specified value for the specified user."""
         """self._ref = db.reference("/users")"""
-        database_user = self.conn(guild_id, user_id)
+        database_user = await self.conn(guild_id, user_id)
         if database_user.get():
             database_user.update({key: value})
             return
@@ -63,7 +62,7 @@ class Database:
 
     async def get_user(self, guild_id: int, user_id: int) -> dict[str, int | str]:
         """Return a user a dict."""
-        database_user = self.conn(guild_id, user_id)
+        database_user = await self.conn(guild_id, user_id)
         if database_user.get():
             return database_user.get()
         raise NullUserError
@@ -81,3 +80,6 @@ class Database:
         """Return a connection to the db."""
         _ref = db.reference(f"/server/{guild_id}/")
         return _ref.child(str(user_id))
+
+
+DATA = Database()
