@@ -31,6 +31,7 @@ class UserDatabase:
         self._new_user = User(username, 0, 0, 0, 0, 0).to_dictionary()
         self._ref.set(self._new_user)
 
+
     def update_value_for_user(
         self,
         value: int,
@@ -58,6 +59,4 @@ class UserDatabase:
 
 
 u = UserDatabase()
-u.add_user("men")
-u.update_value_for_user(9, "men", "score")
-print(u.get_user("men"))
+

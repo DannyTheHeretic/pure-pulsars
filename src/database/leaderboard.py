@@ -19,15 +19,17 @@ class LeaderboardDatabase:
             },
         )
         self._ref = db.reference("/leaderboard")
+        self._leaderboard_dict = self._ref.child('leaderboard').get()
     def add_user_to_leaderboard(self, user: User) -> dict:
         '''Add a user to the leaderbaord.'''
         amount_of_users = self._ref.child('amount_of_users').get()
         self._leaderboard_dict = self._ref.child('leaderboard').get()
-        self._leaderboard_dict['user'] = (amount_of_users+1, user.score)
+        self._leaderboard_dict = dict(self._leaderboard_dict)
+        self._leaderboard_dict[user] = {"score" : 0, "place" : 0 }
         self._leaderboard = self._ref.child('leaderboard')
-        self._leaderboard.set(self.leaderboard_dict)
+        self._leaderboard.set(self._leaderboard_dict)
         self._ref.child('amount_of_users').set(amount_of_users+1)
-        return self.leaderboard_dict
+        return self._leaderboard_dict
     def get_leaderboard(self) -> dict:
         '''Return the leaderboard as a dictionary.'''
         return self._leaderboard_dict
@@ -37,3 +39,4 @@ class LeaderboardDatabase:
             return self.get_leaderboard()[user]
         except KeyError as e:
             raise NullUserError from e
+
