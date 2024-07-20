@@ -1,5 +1,5 @@
 discord.py
-requests
+aiohttp
 pywikibot
 firebase_admin
 python-dotenv

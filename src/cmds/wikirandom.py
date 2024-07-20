@@ -13,7 +13,7 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     async def wiki(interaction: discord.Interaction) -> None:
         await interaction.response.send_message(content="Finding a really cool article...")
-        article = rand_wiki()
+        article = await rand_wiki()
         embed = make_embed(article=article)
         await interaction.followup.send(embed=embed)
         await interaction.delete_original_response()
