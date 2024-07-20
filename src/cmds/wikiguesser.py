@@ -148,7 +148,7 @@ class GuessInput(discord.ui.Modal):
                         name=user.global_name,
                         times_played=1,
                         wins=1,
-                        score=self.score,
+                        score=self.score[0],
                         last_played=datetime.now(UTC).timestamp(),
                         failure=0,
                     )
