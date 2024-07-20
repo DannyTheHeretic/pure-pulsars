@@ -26,8 +26,6 @@ class UserDatabase:
     def add_user(self, username: str) -> None:
         """Add a user to the database using ref.set."""
         self._ref = db.reference(f"/users/{username}")
-        # TODO: FIGURE OUT WHETHER IT WOULD BE BETTER TO STORE LEADERBOARD
-        # LENGTH IN THE DATABSE OR SORT LEADERBOARD AT RUNTIME
         self._new_user = User(username, 0, 0, 0, 0, 0).to_dictionary()
         self._ref.set(self._new_user)
 
@@ -56,7 +54,4 @@ class UserDatabase:
             return database_user.get()
         raise NullUserError
 
-
-
-u = UserDatabase()
 

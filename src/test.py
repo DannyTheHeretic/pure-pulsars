@@ -54,7 +54,7 @@ async def on_ready() -> None:  # noqa: D103
 async def wiki(interaction: discord.Interaction) -> None:  # noqa: D103
     await interaction.response.send_message(content="hello, we are processing ur request")
     y = rand_wiki()
-    await interaction.followup.send(content=f"\`\`\`{y}\`\`\`")
+    await interaction.followup.send(content=rf"\`\`\`{y}\`\`\`")
 
 x = os.getenv("DISAPI")
 client.run(x)

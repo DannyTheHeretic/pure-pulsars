@@ -11,7 +11,7 @@ def main(tree: app_commands.CommandTree) -> None:
         name="setup-wikiguesser-server-board",
         description="required for your server to have it's own leaderboard",
         guild=discord.Object(id=1262497899925995563),
-        
+
     )
     async def setup_guild(interaction: discord.Interaction) -> None:
         leaderboard = LeaderboardDatabase()
