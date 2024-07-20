@@ -8,9 +8,8 @@ from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
 from pywikibot import Page
 
-from database.database_core import NullUserError
+from database.database_core import DATA, NullUserError
 from database.user import User
-from main import DATA
 from wikiutils import is_article_title, make_embed, rand_wiki
 
 ACCURACY_THRESHOLD = 0.8
@@ -120,28 +119,29 @@ class GuessInput(discord.ui.Modal):
             await interaction.response.send_message(content=msg, embed=embed, ephemeral=self.ranked)
             print(self.ranked)
             if self.ranked:
+                print(self.score[0])
                 user = interaction.user
                 try:
-                    db_ref_user = DATA.get_user(interaction.guild_id, user.id)
-                    DATA.update_value_for_user(
+                    db_ref_user = await DATA.get_user(interaction.guild_id, user.id)
+                    await DATA.update_value_for_user(
                         guild_id=interaction.guild_id,
                         user_id=user.id,
                         key="times_played",
                         value=db_ref_user["times_played"] + 1,
                     )
-                    DATA.update_value_for_user(
+                    await DATA.update_value_for_user(
                         guild_id=interaction.guild_id,
                         user_id=user.id,
                         key="score",
                         value=db_ref_user["score"] + self.score[0],
                     )
-                    DATA.update_value_for_user(
+                    await DATA.update_value_for_user(
                         guild_id=interaction.guild_id,
                         user_id=user.id,
                         key="last_played",
                         value=datetime.now(UTC).timestamp(),
                     )
-                    DATA.update_value_for_user(
+                    await DATA.update_value_for_user(
                         guild_id=interaction.guild_id, user_id=user.id, key="wins", value=db_ref_user["wins"] + 1
                     )
                 except NullUserError:
