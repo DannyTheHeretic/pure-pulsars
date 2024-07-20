@@ -64,7 +64,7 @@ class Database:
             return
         raise NullUserError
 
-    def get_user(self, user_id: str) -> dict:
+    def get_user(self, user_id: str) -> dict[str, int | str]:
         """Return a user a dict."""
         database_user = self._ref.child(str(user_id))
         if database_user.get():
