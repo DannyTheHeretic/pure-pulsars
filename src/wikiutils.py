@@ -46,8 +46,9 @@ def make_embed(article: wikipediaapi.WikipediaPage) -> Embed:
         val = f"pageids={pid["pageid"]}"
     except KeyError:
         val = f"titles={pid["title"]}"
+    url = f"https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&{val}&format=json"
     req = requests.get(
-        url=f"https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&{val}&format=json",
+        url=url,
         timeout=10,
     )
     req_json = req.json()
@@ -61,10 +62,10 @@ def make_embed(article: wikipediaapi.WikipediaPage) -> Embed:
         url = url.replace("/thumb/", "/")
         url = url.split("px")[0][0:-3]
         embed.set_image(url=url)
-    except KeyError:
-        print("oops")
-    except StopIteration:
-        print("oops")
+    except KeyError as e:
+        print(e)
+    except StopIteration as e:
+        print(e)
     return embed
 
 
