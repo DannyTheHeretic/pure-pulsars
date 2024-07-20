@@ -188,6 +188,8 @@ class LinkListButton(discord.ui.Button):
         """Show 10 diffrent links."""
         if interaction.message.content:
             await interaction.message.edit(view=None)
+        else:
+            await interaction.message.delete()
 
         selected_links = []
         self.score[0] -= 10
