@@ -22,8 +22,8 @@ def main(tree: app_commands.CommandTree) -> None:
     async def leaderboard(interaction: discord.Interaction, glob: _GloSer = _GloSer.SERVER) -> None:
         ser_id = interaction.guild_id if bool(glob.value) else 0
         await interaction.response.defer(thinking=True)
-
-        lead = list(await DATA.get_server(ser_id).values())
+        board = await DATA.get_server(ser_id).values()
+        lead = list(board)
         lead.sort(key=_sort_leaders, reverse=True)
         lead = lead[0:10]
         embed = discord.Embed(
