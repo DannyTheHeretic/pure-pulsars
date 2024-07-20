@@ -8,8 +8,7 @@ from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
 from pywikibot import Page
 
-from database.database_core import Database
-from database.database_errors import NullUserError
+from database.database_core import Database, NullUserError
 from database.user import User
 from wikiutils import is_article_title, make_embed, rand_wiki
 
