@@ -22,7 +22,7 @@ class Database:
 
     SERVER_LIST: ClassVar = []
 
-    def __init__(
+    async def __init__(
         self,
     ) -> None:
         self._cred_obj = cred_obj = firebase_admin.credentials.Certificate(os.environ["CERT_PATH"])
@@ -35,7 +35,7 @@ class Database:
 
         self.SERVER_LIST = self.get_all_servers()
 
-    def add_user(
+    async def add_user(
         self,
         user_id: int,
         user: User,
@@ -46,7 +46,7 @@ class Database:
         _new_user = user.to_dictionary()
         database_user.set(_new_user)
 
-    def update_value_for_user(
+    async def update_value_for_user(
         self,
         guild_id: int,
         user_id: str,
@@ -61,23 +61,23 @@ class Database:
             return
         raise NullUserError
 
-    def get_user(self, guild_id: int, user_id: int) -> dict[str, int | str]:
+    async def get_user(self, guild_id: int, user_id: int) -> dict[str, int | str]:
         """Return a user a dict."""
         database_user = self.conn(guild_id, user_id)
         if database_user.get():
             return database_user.get()
         raise NullUserError
 
-    def get_server(self, guild_id: int) -> dict:
+    async def get_server(self, guild_id: int) -> dict:
         """Get the specified server."""
         _ref = db.reference(f"/server/{guild_id}/")
         return _ref.get()
 
-    def get_all_servers(self) -> list:
+    async def get_all_servers(self) -> list:
         """Return all servers."""
         return db.reference("/server/").get()
 
-    def conn(self, guild_id: int, user_id: int) -> db.Reference:
+    async def conn(self, guild_id: int, user_id: int) -> db.Reference:
         """Return a connection to the db."""
         _ref = db.reference(f"/server/{guild_id}/")
         return _ref.child(str(user_id))
