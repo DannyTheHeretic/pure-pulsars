@@ -207,7 +207,7 @@ def main(tree: app_commands.CommandTree) -> None:
         score = [1000]
 
         await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=ranked)
-        article = rand_wiki()
+        article = await rand_wiki()
         print(article.title)
 
         if not article:
