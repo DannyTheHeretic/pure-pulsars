@@ -8,8 +8,7 @@ from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
 from pywikibot import Page
 
-from database.database_core import Database
-from database.database_errors import NullUserError
+from database.database_core import Database, NullUserError
 from database.user import User
 from wikiutils import is_article_title, make_embed, rand_wiki
 
@@ -128,12 +127,18 @@ class GuessInput(discord.ui.Modal):
                         user_id=user.id, key="times_played", value=db_ref_user["times_played"] + 1
                     )
                     db.update_value_for_user(user_id=user.id, key="score", value=db_ref_user["score"] + self.score)
-                    db.update_value_for_user(user_id=user.id, key="last_played_ranked", value=datetime.now(UTC))
+                    db.update_value_for_user(user_id=user.id, key="last_played", value=datetime.now(UTC))
                     db.update_value_for_user(user_id=user.id, key="wins", value=db_ref_user["wins"] + 1)
-                except NullUserError as e:
-                    print(e)
-                    db.add_user(user.global_name, user.id, times_played=1, wins=1, score=self.score)
-                    print("We Shouldn't Be Here")
+                except NullUserError:
+                    new_user = User(
+                        user.global_name,
+                        user.id,
+                        times_played=1,
+                        wins=1,
+                        score=self.score,
+                        last_played=datetime.now(UTC),
+                    )
+                    db.add_user(user.id, new_user)
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
         self.score[0] -= 5

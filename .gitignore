@@ -31,3 +31,4 @@ build/
 .DS_Store
 test_wiki_rand.py
 *firebase-adminsdk*.json
+code-jam-11.code-workspace

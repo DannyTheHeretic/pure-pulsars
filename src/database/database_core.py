@@ -5,10 +5,16 @@ import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import db
 
-from .database_errors import NullUserError
 from .user import User
 
 load_dotenv(".env")
+
+
+class NullUserError(TypeError):
+    """User Doesn't exist in firebase database."""
+
+    def __init__(self) -> None:
+        super().__init__("User doesn't exist")
 
 
 class Database:
@@ -48,14 +54,11 @@ class Database:
         self,
         user_id: str,
         value: int,
-        key: Literal["leaderboard_position", "score", "times_played", "wins", "failure"],
+        key: Literal["last_played", "score", "times_played", "wins", "failure"],
     ) -> None:
         """Update the specified value for the specified user."""
         """self._ref = db.reference("/users")"""
         database_user = self._ref.child(str(user_id))
-        if type(value) is not int:
-            message = "Value should be a int"
-            raise TypeError(message)
         if database_user.get():
             database_user.update({key: value})
             return
@@ -75,11 +78,3 @@ class Database:
     def get_all_servers(self) -> list:
         """Return all servers."""
         return db.reference("/server/").get()
-
-
-# data = Database()
-# data.add_user("lotus.css", "713130676387315772")
-# print(data.get_user("713130676387315772"))
-# print(data.get_all_server_ids())
-# print(data.get_all_user_ids())
-
