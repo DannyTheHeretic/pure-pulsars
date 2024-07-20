@@ -145,8 +145,7 @@ class GuessInput(discord.ui.Modal):
                     )
                 except NullUserError:
                     new_user = User(
-                        user.global_name,
-                        user.id,
+                        name=user.global_name,
                         times_played=1,
                         wins=1,
                         score=self.score,
