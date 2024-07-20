@@ -34,20 +34,15 @@ class Database:
 
         self.SERVER_LIST = self.get_all_servers()
 
-    def add_user(  # noqa: PLR0913
+    def add_user(
         self,
-        username: str,
         user_id: int,
-        leaderboard_position: int = 0,
-        score: int = 0,
-        times_played: int = 0,
-        wins: int = 0,
-        failure: int = 0,
+        user: User,
     ) -> None:
         """Add a user to the database using ref.set."""
-        self._ref_user = self._ref.child(f"{user_id}")
-        self._new_user = User(username, leaderboard_position, score, times_played, wins, failure).to_dictionary()
-        self._ref_user.set(self._new_user)
+        _ref_user = self._ref.child(f"{user_id}")
+        _new_user = user.to_dictionary()
+        _ref_user.set(_new_user)
 
     def update_value_for_user(
         self,
@@ -57,9 +52,7 @@ class Database:
     ) -> None:
         """Update the specified value for the specified user."""
         """self._ref = db.reference("/users")"""
-        print(user_id)
         database_user = self._ref.child(str(user_id))
-        print(database_user)
         if type(value) is not int:
             message = "Value should be a int"
             raise TypeError(message)
@@ -70,7 +63,6 @@ class Database:
 
     def get_user(self, user_id: str) -> dict:
         """Return a user a dict."""
-        """self._ref = db.reference("/users")"""
         database_user = self._ref.child(str(user_id))
         if database_user.get():
             return database_user.get()
