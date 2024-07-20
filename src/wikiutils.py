@@ -3,10 +3,10 @@ import random
 
 import aiohttp
 import pywikibot
+import pywikibot.page
 from discord import Embed
 from fake_useragent import UserAgent
-from pywikibot import Page, pagegenerators
-import pywikibot.page
+from pywikibot import Page
 
 NON_LINK_PREFIXS = [
     "Category:",
@@ -58,17 +58,15 @@ def make_embed(article: Page) -> Embed:
 
 async def rand_wiki() -> Page:
     """Return a random popular wikipedia article."""
-
     date = rand_date()
     date = f"{date.year}/{date.month:02}/{date.day:02}"
     url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
     json = None
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            json = await response.json()
-    articles = json['items'][0]['articles']
+    async with aiohttp.ClientSession() as session, session.get(url) as response:
+        json = await response.json()
+    articles = json["items"][0]["articles"]
     random.shuffle(articles)
-    title = articles[0]['article']
-    if(not is_article_title(title)):
+    title = articles[0]["article"]
+    if not is_article_title(title):
         return rand_wiki()
-    return Page(site,title)
+    return Page(site, title)
