@@ -4,20 +4,9 @@ from random import randint
 import discord
 from discord import app_commands
 
-from wikiutils import is_article_title, rand_wiki
+from wikiutils import is_article_title, make_embed, rand_wiki
 
 ACCURACY_THRESHOLD = 0.8
-
-
-class TimeoutView(discord.ui.View):
-    """View that disables children on timeout."""
-
-    async def on_timeout(self) -> None:
-        """Disables children."""
-        for child in self.children:
-            child.disabled = True
-
-        await self.message.edit(view=self)
 
 
 class ExcerptButton(discord.ui.Button):
@@ -43,7 +32,7 @@ class GuessButton(discord.ui.Button):
         """Open guess modal."""
         guess_modal = GuessInput(title="Guess!")
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
-        guess_modal.correct = self.correct
+        guess_modal.article = self.article
         await interaction.response.send_modal(guess_modal)
 
 
@@ -52,12 +41,12 @@ class GuessInput(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
-        if SequenceMatcher(None, self.children[0].value.lower(), self.correct.lower()).ratio() >= ACCURACY_THRESHOLD:
-            await interaction.response.send_message(
-                "Congratulations! You figured it out, the article title ",
-                f"was {self.correct}, [read more](https://en.wikipedia.or",
-                f"g/wiki/{self.correct.replace(" ","_")})! Thanks for playing.",
-            )
+        if (
+            SequenceMatcher(None, self.children[0].value.lower(), self.article.title.lower()).ratio()
+            >= ACCURACY_THRESHOLD
+        ):
+            embed = make_embed(self.article)
+            await interaction.response.send_message(embed=embed)
             await interaction.message.edit(view=None)
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
@@ -117,7 +106,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
         sentances = excerpt.split(". ")
 
-        excerpt_view = TimeoutView()
+        excerpt_view = discord.ui.View()
         guess_button = GuessButton(label="Guess!", style=discord.ButtonStyle.success)
         excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary)
         excerpt_view.add_item(excerpt_button)
@@ -130,9 +119,9 @@ def main(tree: app_commands.CommandTree) -> None:
         )
 
         excerpt_button.summary = sentances
-        guess_button.correct = article.title
+        guess_button.article = article
 
-        view = TimeoutView()
+        view = discord.ui.View()
         link_button = LinkListButton(label="Show more links in article")
         backlink_button = LinkListButton(label="Show more articles that link to this one")
 

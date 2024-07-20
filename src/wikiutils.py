@@ -31,14 +31,42 @@ def is_article_title(link: str) -> bool:
     return all(not link.startswith(prefix) for prefix in NON_LINK_PREFIXS)
 
 
-t = wikipediaapi.Wikipedia(user_agent=ua.random)
-
-
 def rand_date() -> datetime.date:
     """Take the current time returning the timetuple."""
     now = int(datetime.datetime.now(tz=datetime.UTC).timestamp() // 1)
     y = int((now - 252482400) - now % 31557600 // 1)
     return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
+
+
+def make_embed(article: wikipediaapi.WikipediaPage) -> Embed:
+    """Return a Discord Embed."""
+    embed = Embed(title=article.title)
+    pid = article._attributes  # noqa: SLF001
+    try:
+        val = f"pageids={pid["pageid"]}"
+    except KeyError:
+        val = f"titles={pid["title"]}"
+    url = f"https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&{val}&format=json"
+    req = requests.get(
+        url=url,
+        timeout=10,
+    )
+    req_json = req.json()
+    embed = Embed(title=article.title)
+    embed.description = f"{article.summary[0:400]}...([read more](https://en.wikipedia.org/wiki/\
+{article.title.replace(" ","_")}))"
+    try:
+        _ = req_json["query"]["pages"]
+        t = next(iter(_.keys()))
+        url = _[t]["thumbnail"]["source"]
+        url = url.replace("/thumb/", "/")
+        url = url.split("px")[0][0:-3]
+        embed.set_image(url=url)
+    except KeyError as e:
+        print(e)
+    except StopIteration as e:
+        print(e)
+    return embed
 
 
 def rand_wiki() -> wikipediaapi.WikipediaPage:
@@ -57,33 +85,3 @@ def rand_wiki() -> wikipediaapi.WikipediaPage:
         return rand_wiki()
     except KeyError:
         return rand_wiki()
-
-
-def rand_embed() -> Embed:
-    """Return a Discord Embed."""
-    article = rand_wiki()
-    embed = Embed(title=article.title)
-    pid = article._attributes  # noqa: SLF001
-    try:
-        val = f"pageids={pid["pageid"]}"
-    except KeyError:
-        val = f"titles={pid["title"]}"
-    req = requests.get(
-        url=f"https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&{val}&format=json",
-        timeout=10,
-    )
-    req_json = req.json()
-    embed = Embed(title=article.title)
-    embed.description = f"{article.summary[0:400]}...([read more](https://en.wikipedia.org/wiki/\
-{article.title.replace(" ","_")}))"
-    try:
-        _ = req_json["query"]["pages"]
-        t = next(iter(_.keys()))
-        url = _[t]["thumbnail"]["source"]
-        url = url.replace("/thumb/", "/")
-        url = url.split("px")[0][0:-3]
-        print(url)
-        embed.set_image(url=url)
-    except Exception:  # noqa: BLE001
-        print("oops")
-    return embed
