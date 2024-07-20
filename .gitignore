@@ -17,6 +17,9 @@ env
 # PyEnv version selector
 .python-version
 
+#api chache
+apicache
+
 # Built objects
 *.so
 dist/
