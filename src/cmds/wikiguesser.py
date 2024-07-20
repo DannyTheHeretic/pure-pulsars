@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 from random import randint
-from typing import ClassVar, NamedTuple
+from typing import NamedTuple
 
 import discord
 from discord import ButtonStyle, Enum, app_commands
@@ -26,7 +26,7 @@ class _Button(NamedTuple):
 
 
 class _Comp(NamedTuple):
-    score: ClassVar[list[int]] = []
+    score: list[int]
     ranked: bool = False
     article: WikipediaPage = None
 
