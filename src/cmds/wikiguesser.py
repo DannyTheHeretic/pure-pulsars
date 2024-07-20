@@ -223,7 +223,7 @@ def main(tree: app_commands.CommandTree) -> None:
         print(article.title())
 
         links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
-        backlinks = [link.title() for link in article.backlinks() if is_article_title(link.title())]
+        backlinks = [link.title() for link in article.backlinks(total=50) if is_article_title(link.title())]
 
         excerpt = article.extract(chars=1200)
 
