@@ -9,6 +9,7 @@ from wikipediaapi import WikipediaPage
 
 from database.database_core import Database
 from database.database_errors import NullUserError
+from database.user import User
 from wikiutils import is_article_title, make_embed, rand_wiki
 
 ACCURACY_THRESHOLD = 0.8
@@ -126,6 +127,9 @@ class GuessInput(discord.ui.Modal):
                     db_ref_user = db.get_user(str(user.id))
                     db.update_value_for_user(
                         user_id=user.id, key="times_played", value=db_ref_user["times_played"] + 1
+                    )
+                    db.update_value_for_user(
+                        user_id=user.id, key="wins", value=db_ref_user["wins"] + 1
                     )
                     print("Here We Are")
                 except NullUserError as e:

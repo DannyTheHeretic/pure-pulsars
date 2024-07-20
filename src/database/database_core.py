@@ -77,9 +77,9 @@ class Database:
         return db.reference("/server/").get()
 
 
-"""
-data.add_user("lotus.css", "713130676387315772")
-print(data.get_user("713130676387315772"))
-print(data.get_all_server_ids())
-print(data.get_all_user_ids())
-"""
+# data = Database()
+# data.add_user("lotus.css", "713130676387315772")
+# print(data.get_user("713130676387315772"))
+# print(data.get_all_server_ids())
+# print(data.get_all_user_ids())
+
