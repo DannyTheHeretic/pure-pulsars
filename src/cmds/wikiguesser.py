@@ -179,7 +179,6 @@ class LinkListButton(discord.ui.Button):
             row=info.row,
             sku_id=info.sku_id,
         )
-        self.ranked = comp.ranked
         self.score = comp.score
         self.message = message
         self.links = links
@@ -221,7 +220,7 @@ def main(tree: app_commands.CommandTree) -> None:
         ranked: bool = bool(ranked.value)
         score = [1000]
 
-        await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=ranked)
+        await interaction.response.send_message(content="Hello, we are processing your request...")
         article = await rand_wiki()
         print(article.title())
 
@@ -251,7 +250,6 @@ def main(tree: app_commands.CommandTree) -> None:
             content=f"Excerpt: {sentances[0]}.",
             view=excerpt_view,
             wait=True,
-            ephemeral=ranked,
         )
 
         view = discord.ui.View()
@@ -259,7 +257,7 @@ def main(tree: app_commands.CommandTree) -> None:
             info=_Button(
                 label="Show more links in article",
             ),
-            comp=_Comp(score=score, ranked=ranked),
+            comp=_Comp(score=score),
             links=links,
             message="Links in article:",
         )
@@ -267,7 +265,7 @@ def main(tree: app_commands.CommandTree) -> None:
             info=_Button(
                 label="Show more articles that link to this one",
             ),
-            comp=_Comp(score=score, ranked=ranked),
+            comp=_Comp(score=score),
             links=backlinks,
             message="Articles that link to this one:",
         )
@@ -275,5 +273,5 @@ def main(tree: app_commands.CommandTree) -> None:
         view.add_item(link_button)
         view.add_item(backlink_button)
 
-        await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
+        await interaction.followup.send(view=view, wait=True)
         await interaction.delete_original_response()
