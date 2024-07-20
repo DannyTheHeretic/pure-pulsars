@@ -152,7 +152,7 @@ class GuessInput(discord.ui.Modal):
                         last_played=datetime.now(UTC).timestamp(),
                         failure=0,
                     )
-                    DATA.add_user(user.id, new_user, interaction.guild_id)
+                    await DATA.add_user(user.id, new_user, interaction.guild_id)
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
         self.score[0] -= 5
