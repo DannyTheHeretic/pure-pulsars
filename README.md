@@ -2,11 +2,12 @@
 
 # Features
 
-+ Guess based on a short censored exerpt the topic of a wikipedia article.
++ (✔️) Guess based on a short censored exerpt the topic of a wikipedia article.
    + Can show related articles, show more links within the article?
-+ Get random featured page from the last 8 years.
-+ Rabbit hole stuff
++ (✔️) Get random featured page from the last 8 years.
++ (⌨️)Rabbit hole stuff
 + (⌨️) Database w/ global & server-wide leaderboards
++ Pop quizzes(?)
 
 # Meeting 7/19
 
@@ -39,7 +40,6 @@
    + Commit messages
       + [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
       + There is a [VSCode extension for conventional commits](https://marketplace.visualstudio.com/items?itemName=vivaxy.vscode-conventional-commits)
-+ 
 
 # TODO
 
