@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 from random import randint
-from typing import NamedTuple
+from typing import ClassVar, NamedTuple
 
 import discord
 from discord import ButtonStyle, Enum, app_commands
@@ -23,12 +23,11 @@ class _Button(NamedTuple):
     emoji: str | discord.Emoji | discord.PartialEmoji | None = None
     row: int | None = None
     sku_id: int | None = None
-    ranked: bool
 
 
 class _Comp(NamedTuple):
+    score: ClassVar[list[int]] = []
     ranked: bool = False
-    score: list[int]
     article: WikipediaPage = None
 
 
