@@ -1,10 +1,10 @@
 import datetime
 import random
 
-import requests
-import wikipediaapi
+import pywikibot
 from discord import Embed
 from fake_useragent import UserAgent
+from pywikibot import Page, pagegenerators
 
 NON_LINK_PREFIXS = [
     "Category:",
@@ -23,7 +23,7 @@ NON_LINK_PREFIXS = [
 ]
 
 ua = UserAgent()
-t = wikipediaapi.Wikipedia(user_agent=ua.random)
+t = pywikibot.Site("en", "wikipedia")
 
 
 def is_article_title(link: str) -> bool:
@@ -38,50 +38,26 @@ def rand_date() -> datetime.date:
     return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
 
 
-def make_embed(article: wikipediaapi.WikipediaPage) -> Embed:
+def make_embed(article: Page) -> Embed:
     """Return a Discord Embed."""
-    embed = Embed(title=article.title)
-    pid = article._attributes  # noqa: SLF001
+    embed = Embed(title=article.title())
+    embed.description = f"{article.extract(chars=400)}...([read more]({article.full_url()}))"
+    url = article.page_image()
     try:
-        val = f"pageids={pid["pageid"]}"
-    except KeyError:
-        val = f"titles={pid["title"]}"
-    url = f"https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&{val}&format=json"
-    req = requests.get(
-        url=url,
-        timeout=10,
-    )
-    req_json = req.json()
-    embed = Embed(title=article.title)
-    embed.description = f"{article.summary[0:400]}...([read more](https://en.wikipedia.org/wiki/\
-{article.title.replace(" ","_")}))"
-    try:
-        _ = req_json["query"]["pages"]
-        t = next(iter(_.keys()))
-        url = _[t]["thumbnail"]["source"]
-        url = url.replace("/thumb/", "/")
-        url = url.split("px")[0][0:-3]
-        embed.set_image(url=url)
-    except KeyError as e:
-        print(e)
-    except StopIteration as e:
-        print(e)
+        url = url.latest_file_info.url
+    except AttributeError:
+        try:
+            url = url.oldest_file_info.url
+        except AttributeError:
+            url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
+    embed.set_image(url=url)
     return embed
 
 
-def rand_wiki() -> wikipediaapi.WikipediaPage:
+def rand_wiki() -> Page:
     """Return a random popular wikipedia article, returns None if operation failed."""
-    rd = rand_date()
-    date = f"{rd.year}/{rd.month:02}/{rd.day:02}"
-    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/featured/{date}"
-    try:
-        req_json = requests.get(url, headers={"UserAgent": ua.random}, timeout=100).json()
-        mr = req_json["mostread"]
-        random.shuffle(mr["articles"])
-        select = mr["articles"][0]
-        page = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
-        if is_article_title(page.title):
-            return page
-        return rand_wiki()
-    except KeyError:
-        return rand_wiki()
+    pages = pagegenerators.RandomPageGenerator(total=3, site=t, namespaces=0)
+    main_page = next(pages)
+    if is_article_title(main_page.title()):
+        return main_page
+    return rand_wiki()

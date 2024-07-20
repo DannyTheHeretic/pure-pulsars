@@ -110,7 +110,7 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         if (
-            SequenceMatcher(None, self.children[0].value.lower(), self.article.title.lower()).ratio()
+            SequenceMatcher(None, self.children[0].value.lower(), self.article.title().lower()).ratio()
             >= ACCURACY_THRESHOLD
         ):
             embed = make_embed(self.article)
@@ -193,7 +193,6 @@ def main(tree: app_commands.CommandTree) -> None:
     @tree.command(
         name="wiki-guesser",
         description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
-        guild=discord.Object(id=1262497899925995563),
     )
     async def wiki(interaction: discord.Interaction, ranked: Ranked = Ranked.NO) -> None:
         ranked: bool = bool(ranked.value)
@@ -201,18 +200,18 @@ def main(tree: app_commands.CommandTree) -> None:
 
         await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=ranked)
         article = rand_wiki()
-        print(article.title)
+        print(article.title())
 
         if not article:
             await interaction.followup.send(content="An error occured", ephemeral=True)
             await interaction.delete_original_response()
 
-        links = [link for link in article.links if is_article_title(link)]
-        backlinks = [link for link in article.backlinks if is_article_title(link)]
+        links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
+        backlinks = [link.title() for link in article.backlinks() if is_article_title(link.title())]
 
-        excerpt = article.summary
+        excerpt = article.extract(chars=1200)
 
-        for i in article.title.split():
+        for i in article.title().split():
             excerpt = excerpt.replace(i, "~~CENSORED~~")
 
         sentances = excerpt.split(". ")

@@ -10,7 +10,6 @@ def main(tree: app_commands.CommandTree) -> None:
     @tree.command(
         name="wiki-random",
         description="get a random wikipedia article",
-        guild=discord.Object(id=1262497899925995563),
     )
     async def wiki(interaction: discord.Interaction) -> None:
         await interaction.response.send_message(content="Finding a really cool article...")
