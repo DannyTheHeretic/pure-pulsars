@@ -4,6 +4,7 @@ from random import randint
 import discord
 from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
+from wikipediaapi import WikipediaPage
 
 from database.database_core import Database
 from database.database_errors import NullUserError
@@ -22,11 +23,30 @@ class Ranked(Enum):
 class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
+    def __init__( # noqa: PLR0913
+                self, *,
+                style: ButtonStyle = ButtonStyle.secondary,
+                label: str | None = None,
+                disabled: bool = False,
+                custom_id: str | None = None,
+                url: str | None = None,
+                emoji: str | discord.Emoji | discord.PartialEmoji | None = None,
+                row: int | None = None,
+                sku_id: int | None = None,
+                summary: str,
+                score: list[int]
+                ) -> None:
+        super().__init__(style=style, label=label, disabled=disabled, custom_id=custom_id, url=url, emoji=emoji, row=row, sku_id=sku_id)
+        self.summary = summary
+        self.score = score
+        self.ind = 1
+
+
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
-        if not hasattr(self, "ind"):
-            self.ind = 1
         self.ind += 1
+        self.score[0] -= len(self.summary[self.ind])//2
+        print(self.score)
 
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
@@ -50,7 +70,10 @@ class GuessButton(discord.ui.Button):
         row: int | None = None,
         sku_id: int | None = None,
         ranked: bool,
+        article: WikipediaPage,
+        score: list[int]
     ) -> None:
+
         super().__init__(
             style=style,
             label=label,
@@ -62,23 +85,32 @@ class GuessButton(discord.ui.Button):
             sku_id=sku_id,
         )
         self.ranked = ranked
+        self.article = article
+        self.score=score
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
-        guess_modal = GuessInput(title="Guess!", ranked=self.ranked)
+        guess_modal = GuessInput(title="Guess!", ranked=self.ranked,article=self.article, score=self.score)
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
-        guess_modal.article = self.article
         await interaction.response.send_modal(guess_modal)
 
 
 class GuessInput(discord.ui.Modal):
     """Input feild for guessing."""
 
-    def __init__(
-        self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, ranked: bool = False
+    def __init__( # noqa: PLR0913
+        self, *,
+        title: str = MISSING,
+        timeout: float | None = None,
+        custom_id: str = MISSING,
+        ranked: bool = False,
+        score: list[int],
+        article:WikipediaPage
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = ranked
+        self.score = score
+        self.article = article
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
@@ -89,7 +121,10 @@ class GuessInput(discord.ui.Modal):
             embed = make_embed(self.article)
             # TODO: For Some Reason this doesnt work, it got mad
             """await interaction.message.edit(view=None)"""
-            await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
+            msg = (
+                f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
+            )
+            await interaction.response.send_message(content=msg,embed=embed, ephemeral=self.ranked)
             print(self.ranked)
             if self.ranked:
                 db = Database(interaction.guild_id)
@@ -106,7 +141,7 @@ class GuessInput(discord.ui.Modal):
                     print("We Shouldn't Be Here")
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
-
+        self.score[0] -= 5
 
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
@@ -123,6 +158,9 @@ class LinkListButton(discord.ui.Button):
         row: int | None = None,
         sku_id: int | None = None,
         ranked: bool,
+        score: list[int],
+        message: str,
+        links: list[str]
     ) -> None:
         super().__init__(
             style=style,
@@ -135,6 +173,9 @@ class LinkListButton(discord.ui.Button):
             sku_id=sku_id,
         )
         self.ranked = ranked
+        self.score = score
+        self.message = message
+        self.links = links
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
@@ -143,6 +184,7 @@ class LinkListButton(discord.ui.Button):
         # when I commented it out no other errors appeared so :shrug:
 
         selected_links = []
+        self.score[0] -= 10
 
         for _ in range(10):
             selected_links.append(self.links.pop(randint(0, len(self.links) - 1)))  # noqa: S311
@@ -150,7 +192,8 @@ class LinkListButton(discord.ui.Button):
                 selected_links.append(self.links.pop(0))
                 break
         await interaction.response.send_message(
-            content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view, ephemeral=self.ranked
+            content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view,
+            ephemeral=self.ranked, delete_after=180
         )
         if len(self.links) == 0:
             self.view.remove_item(self)
@@ -166,13 +209,14 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     async def wiki(interaction: discord.Interaction, ranked: Ranked = Ranked.NO) -> None:
         ranked: bool = bool(ranked.value)
+        score = [1000]
 
         await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=ranked)
         article = rand_wiki()
         print(article.title)
 
         if not article:
-            await interaction.followup.send(content="An error occured", ephemeral=ranked)
+            await interaction.followup.send(content="An error occured", ephemeral=True)
             await interaction.delete_original_response()
 
         links = [link for link in article.links if is_article_title(link)]
@@ -186,30 +230,27 @@ def main(tree: app_commands.CommandTree) -> None:
         sentances = excerpt.split(". ")
 
         excerpt_view = discord.ui.View()
-        guess_button = GuessButton(label="Guess!", style=discord.ButtonStyle.success, ranked=ranked)
-        excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary)
+        guess_button = GuessButton(label="Guess!", style=discord.ButtonStyle.success, ranked=ranked,article=article,score=score)
+        excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary,summary=sentances,score=score)
+
         excerpt_view.add_item(excerpt_button)
         excerpt_view.add_item(guess_button)
-        excerpt_view.message = await interaction.followup.send(
+
+        await interaction.followup.send(
             content=f"Excerpt: {sentances[0]}.",
             view=excerpt_view,
             wait=True,
             ephemeral=ranked,
         )
 
-        excerpt_button.summary = sentances
-        guess_button.article = article
-
         view = discord.ui.View()
-        link_button = LinkListButton(label="Show more links in article", ranked=ranked)
-        backlink_button = LinkListButton(label="Show more articles that link to this one", ranked=ranked)
+        link_button = LinkListButton(label="Show more links in article",score=score,
+                                ranked=ranked,links=links,message="Links in article:")
+        backlink_button = LinkListButton(label="Show more articles that link to this one",score=score,
+                                ranked=ranked,links=backlinks, message="Articles that link to this one:")
 
         view.add_item(link_button)
         view.add_item(backlink_button)
 
-        link_button.links = links
-        link_button.message = "Links in article:"
-        backlink_button.links = backlinks
-        backlink_button.message = "Articles that link to this one:"
-        view.message = await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
+        await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
         await interaction.delete_original_response()
