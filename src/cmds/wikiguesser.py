@@ -186,9 +186,8 @@ class LinkListButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
-        # if interaction.message.content:
-        #     await interaction.message.edit(view=None) Don't know what this does but it was raising an error and
-        # when I commented it out no other errors appeared so :shrug:
+        if interaction.message.content:
+            await interaction.message.edit(view=None)
 
         selected_links = []
         self.score[0] -= 10
