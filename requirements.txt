@@ -1,6 +1,6 @@
 discord.py
 requests
-wikipedia-API
+pywikibot
 firebase_admin
 python-dotenv
 fake_useragent
