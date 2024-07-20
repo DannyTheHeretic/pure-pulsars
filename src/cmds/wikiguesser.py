@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from difflib import SequenceMatcher
 from random import randint
 from typing import NamedTuple
@@ -5,7 +6,7 @@ from typing import NamedTuple
 import discord
 from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
-from wikipediaapi import WikipediaPage
+from pywikibot import Page
 
 from database.database_core import Database
 from database.database_errors import NullUserError
@@ -28,7 +29,7 @@ class _Button(NamedTuple):
 class _Comp(NamedTuple):
     score: list[int]
     ranked: bool = False
-    article: WikipediaPage = None
+    article: Page = None
 
 
 class _Ranked(Enum):
@@ -125,10 +126,12 @@ class GuessInput(discord.ui.Modal):
                     db.update_value_for_user(
                         user_id=user.id, key="times_played", value=db_ref_user["times_played"] + 1
                     )
-                    print("Here We Are")
+                    db.update_value_for_user(user_id=user.id, key="score", value=db_ref_user["score"] + self.score)
+                    db.update_value_for_user(user_id=user.id, key="last_played_ranked", value=datetime.now(UTC))
+                    db.update_value_for_user(user_id=user.id, key="wins", value=db_ref_user["wins"] + 1)
                 except NullUserError as e:
                     print(e)
-                    db.add_user(user.global_name, user.id, times_played=1, wins=1)
+                    db.add_user(user.global_name, user.id, times_played=1, wins=1, score=self.score)
                     print("We Shouldn't Be Here")
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
