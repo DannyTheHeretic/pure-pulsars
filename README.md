@@ -11,11 +11,13 @@
 
 # TODO
 
-- [ ] Broad project details
-   - [ ] Name?
+- [X] Broad project details
+   - [X] Name?
+      - [X] `WikiWabbit`
       - [ ] `rabbit hole 🐇`
       - [ ] Wikiguesser
-   - [ ] Logo/icon?
+   - [X] Logo/icon?
+      - [X] The One Pinned In General
 - [ ] Plan for project
    - [ ] What are the core backend components/interactions we want a user to have?
       - [ ] What of these are handled entirely by `discord.py`?
@@ -40,6 +42,6 @@
    - [ ] Are we good with the linting rules in the template? Do we want
          anything else?
 - [ ] Database
-   - [ ] What interactions should admins have with server stats
+   - [ ] What interactions should admins have with server stats (Should we make commands?)
      - [ ] Remove user score
      - [ ] Reset scores
