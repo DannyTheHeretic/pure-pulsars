@@ -127,7 +127,7 @@ class GuessInput(discord.ui.Modal):
                         user_id=user.id, key="times_played", value=db_ref_user["times_played"] + 1
                     )
                     db.update_value_for_user(user_id=user.id, key="score", value=db_ref_user["score"] + self.score)
-                    db.update_value_for_user(user_id=user.id, key="last_played", value=datetime.now(UTC))
+                    db.update_value_for_user(user_id=user.id, key="last_played", value=datetime.now(UTC).timestamp())
                     db.update_value_for_user(user_id=user.id, key="wins", value=db_ref_user["wins"] + 1)
                 except NullUserError:
                     new_user = User(
@@ -136,7 +136,7 @@ class GuessInput(discord.ui.Modal):
                         times_played=1,
                         wins=1,
                         score=self.score,
-                        last_played=datetime.now(UTC),
+                        last_played=datetime.now(UTC).timestamp(),
                     )
                     db.add_user(user.id, new_user)
             return
