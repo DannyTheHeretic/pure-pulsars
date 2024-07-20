@@ -58,7 +58,7 @@ class ExcerptButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
         self.ind += 1
-        self.score[0] -= (len(''.join(self.summary[: self.ind]))-len(''.join(self.summary[: self.ind-1]))) // 2
+        self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
@@ -201,7 +201,6 @@ class LinkListButton(discord.ui.Button):
         await interaction.response.send_message(
             content=f"{self.message}\n```{"\n".join(selected_links)}```",
             view=self.view,
-            ephemeral=self.ranked,
             delete_after=180,
         )
         if len(self.links) == 0:
