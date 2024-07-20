@@ -2,14 +2,21 @@ from difflib import SequenceMatcher
 from random import randint
 
 import discord
-from discord import ButtonStyle, app_commands
+from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
 
+from database.database_core import Database
+from database.database_errors import NullUserError
 from wikiutils import is_article_title, make_embed, rand_wiki
 
-from database.leaderboard import LeaderboardDatabase
-
 ACCURACY_THRESHOLD = 0.8
+
+
+class Ranked(Enum):
+    """Ranked."""
+
+    YES = 1
+    NO = 0
 
 
 class ExcerptButton(discord.ui.Button):
@@ -31,7 +38,7 @@ class ExcerptButton(discord.ui.Button):
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         style: ButtonStyle = ButtonStyle.secondary,
@@ -42,8 +49,8 @@ class GuessButton(discord.ui.Button):
         emoji: str | discord.Emoji | discord.PartialEmoji | None = None,
         row: int | None = None,
         sku_id: int | None = None,
-        ranked : bool
-    ):
+        ranked: bool,
+    ) -> None:
         super().__init__(
             style=style,
             label=label,
@@ -55,6 +62,7 @@ class GuessButton(discord.ui.Button):
             sku_id=sku_id,
         )
         self.ranked = ranked
+
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
         guess_modal = GuessInput(title="Guess!", ranked=self.ranked)
@@ -67,27 +75,35 @@ class GuessInput(discord.ui.Modal):
     """Input feild for guessing."""
 
     def __init__(
-        self, *, title: str = ..., timeout: float | None = None, custom_id: str = ..., ranked: bool = False
+        self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, ranked: bool = False
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = ranked
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
-        leaderboard = LeaderboardDatabase()
         if (
             SequenceMatcher(None, self.children[0].value.lower(), self.article.title.lower()).ratio()
             >= ACCURACY_THRESHOLD
         ):
+            embed = make_embed(self.article)
+            # TODO: For Some Reason this doesnt work, it got mad
+            """await interaction.message.edit(view=None)"""
+            await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
+            print(self.ranked)
             if self.ranked:
-                embed = make_embed(self.article)
-                await interaction.response.send_message(embed=embed, ephemeral=True)
-                await interaction.message.edit(view=None)
-                leaderboard.update_placement()
-            else:
-                embed = make_embed(self.article)
-                await interaction.response.send_message(embed=embed, ephemeral=False)
-                await interaction.message.edit(view=None)
+                db = Database(interaction.guild_id)
+                user = interaction.user
+                try:
+                    db_ref_user = db.get_user(str(user.id))
+                    db.update_value_for_user(
+                        user_id=user.id, key="times_played", value=db_ref_user["times_played"] + 1
+                    )
+                    print("Here We Are")
+                except NullUserError as e:
+                    print(e)
+                    db.add_user(user.global_name, user.id, times_played=1, wins=1)
+                    print("We Shouldn't Be Here")
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
 
@@ -95,7 +111,7 @@ class GuessInput(discord.ui.Modal):
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         style: discord.ButtonStyle = ButtonStyle.secondary,
@@ -107,7 +123,7 @@ class LinkListButton(discord.ui.Button):
         row: int | None = None,
         sku_id: int | None = None,
         ranked: bool,
-    ):
+    ) -> None:
         super().__init__(
             style=style,
             label=label,
@@ -133,14 +149,9 @@ class LinkListButton(discord.ui.Button):
             if len(self.links) == 1:
                 selected_links.append(self.links.pop(0))
                 break
-        if self.ranked:
-            await interaction.response.send_message(
-                content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view, ephemeral=True
-            )
-        else:
-            await interaction.response.send_message(
-                content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view, ephemeral=False
-            )
+        await interaction.response.send_message(
+            content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view, ephemeral=self.ranked
+        )
         if len(self.links) == 0:
             self.view.remove_item(self)
 
@@ -153,23 +164,16 @@ def main(tree: app_commands.CommandTree) -> None:
         description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
         guild=discord.Object(id=1262497899925995563),
     )
-    async def wiki(interaction: discord.Interaction, ranked: bool) -> None:
-        if ranked:
-            await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=True)
-        else:
-            await interaction.response.send_message(
-                content="Hello, we are processing your request...", ephemeral=False
-            )
+    async def wiki(interaction: discord.Interaction, ranked: Ranked = Ranked.NO) -> None:
+        ranked: bool = bool(ranked.value)
+
+        await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=ranked)
         article = rand_wiki()
+        print(article.title)
 
         if not article:
-            if ranked:
-                await interaction.followup.send(content="An error occured")
-                await interaction.delete_original_response()
-            else:
-                await interaction.followup.send(content="An error occured")
-                await interaction.delete_original_response()
-            return
+            await interaction.followup.send(content="An error occured", ephemeral=ranked)
+            await interaction.delete_original_response()
 
         links = [link for link in article.links if is_article_title(link)]
         backlinks = [link for link in article.backlinks if is_article_title(link)]
@@ -186,20 +190,12 @@ def main(tree: app_commands.CommandTree) -> None:
         excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary)
         excerpt_view.add_item(excerpt_button)
         excerpt_view.add_item(guess_button)
-        if ranked:
-            excerpt_view.message = await interaction.followup.send(
-                content=f"Excerpt: {sentances[0]}.",
-                view=excerpt_view,
-                wait=True,
-                ephemeral=True,
-            )
-        else:
-            excerpt_view.message = await interaction.followup.send(
-                content=f"Excerpt: {sentances[0]}.",
-                view=excerpt_view,
-                wait=True,
-                ephemeral=False,
-            )
+        excerpt_view.message = await interaction.followup.send(
+            content=f"Excerpt: {sentances[0]}.",
+            view=excerpt_view,
+            wait=True,
+            ephemeral=ranked,
+        )
 
         excerpt_button.summary = sentances
         guess_button.article = article
@@ -215,8 +211,5 @@ def main(tree: app_commands.CommandTree) -> None:
         link_button.message = "Links in article:"
         backlink_button.links = backlinks
         backlink_button.message = "Articles that link to this one:"
-        if ranked:
-            view.message = await interaction.followup.send(view=view, wait=True, ephemeral=True)
-        else:
-            view.message = await interaction.followup.send(view=view, wait=True, ephemeral=False)
+        view.message = await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
         await interaction.delete_original_response()

@@ -17,10 +17,12 @@ async def on_ready() -> None:  # noqa: D103
     print("ready for ACTION!!!")
     await tree.sync(guild=discord.Object(id=1262497899925995563))
 
-    await client.change_presence(status=discord.Status.idle, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚"))
+    await client.change_presence(
+        status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
+    )
 
 
 wikiguesser.main(tree)
 wikirandom.main(tree)
 setup_guild.main(tree)
-client.run(os.getenv("DISAPI"))
+client.run(os.environ["DISAPI"])
