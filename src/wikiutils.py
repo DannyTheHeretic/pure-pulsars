@@ -71,5 +71,4 @@ async def rand_wiki() -> Page:
     title = articles[0]['article']
     if(not is_article_title(title)):
         return rand_wiki()
-    
-    return pywikibot.page.BasePage(site,title=title)
+    return Page(site,title)
