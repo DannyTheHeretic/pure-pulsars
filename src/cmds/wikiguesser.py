@@ -4,6 +4,7 @@ from random import randint
 import discord
 from discord import ButtonStyle, Enum, app_commands
 from discord.utils import MISSING
+from wikipediaapi import WikipediaPage
 
 from database.database_core import Database
 from database.database_errors import NullUserError
@@ -22,18 +23,19 @@ class Ranked(Enum):
 class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
-    def __init__(self, *,
+    def __init__( # noqa: PLR0913
+                self, *,
                 style: ButtonStyle = ButtonStyle.secondary,
-                label: str | None = None, 
-                disabled: bool = False, 
-                custom_id: str | None = None, 
-                url: str | None = None, 
-                emoji: str | discord.Emoji | discord.PartialEmoji | None = None, 
-                row: int | None = None, 
+                label: str | None = None,
+                disabled: bool = False,
+                custom_id: str | None = None,
+                url: str | None = None,
+                emoji: str | discord.Emoji | discord.PartialEmoji | None = None,
+                row: int | None = None,
                 sku_id: int | None = None,
                 summary: str,
                 score: list[int]
-                ):
+                ) -> None:
         super().__init__(style=style, label=label, disabled=disabled, custom_id=custom_id, url=url, emoji=emoji, row=row, sku_id=sku_id)
         self.summary = summary
         self.score = score
@@ -68,10 +70,10 @@ class GuessButton(discord.ui.Button):
         row: int | None = None,
         sku_id: int | None = None,
         ranked: bool,
-        article,
+        article: WikipediaPage,
         score: list[int]
     ) -> None:
-        
+
         super().__init__(
             style=style,
             label=label,
@@ -96,14 +98,14 @@ class GuessButton(discord.ui.Button):
 class GuessInput(discord.ui.Modal):
     """Input feild for guessing."""
 
-    def __init__(
-        self, *, 
-        title: str = MISSING, 
-        timeout: float | None = None, 
-        custom_id: str = MISSING, 
+    def __init__( # noqa: PLR0913
+        self, *,
+        title: str = MISSING,
+        timeout: float | None = None,
+        custom_id: str = MISSING,
         ranked: bool = False,
         score: list[int],
-        article
+        article:WikipediaPage
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = ranked
@@ -190,7 +192,7 @@ class LinkListButton(discord.ui.Button):
                 selected_links.append(self.links.pop(0))
                 break
         await interaction.response.send_message(
-            content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view, 
+            content=f"{self.message}\n```{"\n".join(selected_links)}```", view=self.view,
             ephemeral=self.ranked, delete_after=180
         )
         if len(self.links) == 0:
@@ -230,7 +232,7 @@ def main(tree: app_commands.CommandTree) -> None:
         excerpt_view = discord.ui.View()
         guess_button = GuessButton(label="Guess!", style=discord.ButtonStyle.success, ranked=ranked,article=article,score=score)
         excerpt_button = ExcerptButton(label="Show more", style=discord.ButtonStyle.primary,summary=sentances,score=score)
-        
+
         excerpt_view.add_item(excerpt_button)
         excerpt_view.add_item(guess_button)
 
