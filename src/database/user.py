@@ -3,15 +3,15 @@ class User:
 
     def __init__(  # noqa: PLR0913
         self,
-        userID: str,
-        leaderboard_position: int,
+        name: str,
+        last_played: int,
         score: int,
         times_played: int,
         wins: int,
         failure: int,
     ) -> None:
-        self.userID = userID
-        self.leaderboard_position = leaderboard_position
+        self.name = name
+        self.last_played = last_played
         self.score = score
         self.times_played = times_played
         self.wins = wins
@@ -20,14 +20,10 @@ class User:
     def to_dictionary(self) -> dict:
         """Return user as a Dictionary."""
         return {
-            "userID": self.userID,
-            "leaderboard_position": self.leaderboard_position,
+            "name": self.name,
+            "last_played": self.last_played,
             "score": self.score,
             "times_played": self.times_played,
             "wins": self.wins,
             "failure": self.failure,
         }
-    @staticmethod
-    def create_empty_user(userID):
-        return User(userID, 0, 0, 0,  0, 0)
-
