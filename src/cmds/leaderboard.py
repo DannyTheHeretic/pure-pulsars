@@ -17,7 +17,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
     @tree.command(
         name="leaderboard",
-        description="Returns your guilds ",
+        description="Returns your guilds leaderboard",
     )
     async def leaderboard(interaction: discord.Interaction, glob: _GloSer = _GloSer.SERVER) -> None:
         ser_id = interaction.guild_id if bool(glob.value) else 0
