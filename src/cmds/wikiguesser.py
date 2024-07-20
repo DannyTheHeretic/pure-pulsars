@@ -115,7 +115,7 @@ class GuessInput(discord.ui.Modal):
             # TODO: For Some Reason this doesnt work, it got mad
             """await interaction.message.edit(view=None)"""
             msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
-            await interaction.response.send_message(content=msg, embed=embed, ephemeral=self.ranked)
+            await interaction.response.send_message(content=msg, embed=embed)
             print(self.ranked)
             if self.ranked:
                 print(self.score[0])
