@@ -219,11 +219,11 @@ def main(tree: app_commands.CommandTree) -> None:
 
         excerpt_view = discord.ui.View()
         guess_button = GuessButton(
-            _Button(label="Guess!", style=discord.ButtonStyle.success),
-            _Comp(ranked=ranked, article=article, score=score),
+            info=_Button(label="Guess!", style=discord.ButtonStyle.success),
+            comp=_Comp(ranked=ranked, article=article, score=score),
         )
         excerpt_button = ExcerptButton(
-            _Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
+            info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
         )
 
         excerpt_view.add_item(excerpt_button)
@@ -238,18 +238,18 @@ def main(tree: app_commands.CommandTree) -> None:
 
         view = discord.ui.View()
         link_button = LinkListButton(
-            _Button(
+            info=_Button(
                 label="Show more links in article",
             ),
-            _Comp(score=score, ranked=ranked),
+            comp=_Comp(score=score, ranked=ranked),
             links=links,
             message="Links in article:",
         )
         backlink_button = LinkListButton(
-            _Button(
+            info=_Button(
                 label="Show more articles that link to this one",
             ),
-            _Comp(score=score, ranked=ranked),
+            comp=_Comp(score=score, ranked=ranked),
             links=backlinks,
             message="Articles that link to this one:",
         )
