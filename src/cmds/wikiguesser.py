@@ -58,8 +58,7 @@ class ExcerptButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
         self.ind += 1
-        self.score[0] -= len(self.summary[self.ind]) // 2
-        print(self.score)
+        self.score[0] -= (len(''.join(self.summary[: self.ind]))-len(''.join(self.summary[: self.ind-1]))) // 2
 
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
@@ -209,10 +208,6 @@ def main(tree: app_commands.CommandTree) -> None:
         await interaction.response.send_message(content="Hello, we are processing your request...", ephemeral=ranked)
         article = await rand_wiki()
         print(article.title())
-
-        if not article:
-            await interaction.followup.send(content="An error occured", ephemeral=True)
-            await interaction.delete_original_response()
 
         links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
         backlinks = [link.title() for link in article.backlinks() if is_article_title(link.title())]
