@@ -26,10 +26,10 @@ class _Button(NamedTuple):
 
 
 class _Comp(NamedTuple):
+    user: discord.User
     score: list[int]
     ranked: bool = False
     article: Page = None
-    user: discord.User
 
 
 class _Ranked(Enum):
