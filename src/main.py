@@ -2,6 +2,7 @@ import os
 
 import discord
 from discord import app_commands
+from discord.ext.commands import HelpCommand
 from dotenv import load_dotenv
 
 from cmds import leaderboard, user_info, wikiguesser, wikirandom, wikisearch
@@ -20,10 +21,12 @@ async def on_ready() -> None:  # noqa: D103
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
 
+
 wikiguesser.main(tree)
 wikirandom.main(tree)
 leaderboard.main(tree)
 user_info.main(tree)
 wikisearch.main(tree)
+client.help_command = HelpCommand()
 
 client.run(os.environ["DISAPI"])

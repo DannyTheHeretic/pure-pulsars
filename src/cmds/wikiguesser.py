@@ -187,52 +187,55 @@ def main(tree: app_commands.CommandTree) -> None:
         description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
     )
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
-        ranked: bool = bool(ranked.value)
-        score = [1000]
+        try:
+            ranked: bool = bool(ranked.value)
+            score = [1000]
 
-        await interaction.response.send_message(content="Hello, we are processing your request...")
-        article = await rand_wiki()
-        print(article.title())
+            await interaction.response.send_message(content="Hello, we are processing your request...")
+            article = await rand_wiki()
+            print(article.title())
 
-        links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
+            links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
 
-        excerpt = article.extract(chars=1200)
+            excerpt = article.extract(chars=1200)
 
-        for i in article.title().split():
-            excerpt = excerpt.replace(i, "~~CENSORED~~")
-            excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
+            for i in article.title().split():
+                excerpt = excerpt.replace(i, "~~CENSORED~~")
+                excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
 
-        sentances = excerpt.split(". ")
+            sentances = excerpt.split(". ")
 
-        excerpt_view = discord.ui.View()
-        guess_button = GuessButton(
-            info=_Button(label="Guess!", style=discord.ButtonStyle.success),
-            comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
-        )
-        excerpt_button = ExcerptButton(
-            info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
-        )
+            excerpt_view = discord.ui.View()
+            guess_button = GuessButton(
+                info=_Button(label="Guess!", style=discord.ButtonStyle.success),
+                comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
+            )
+            excerpt_button = ExcerptButton(
+                info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
+            )
 
-        excerpt_view.add_item(excerpt_button)
-        excerpt_view.add_item(guess_button)
+            excerpt_view.add_item(excerpt_button)
+            excerpt_view.add_item(guess_button)
 
-        await interaction.followup.send(
-            content=f"Excerpt: {sentances[0]}.",
-            view=excerpt_view,
-            wait=True,
-        )
+            await interaction.followup.send(
+                content=f"Excerpt: {sentances[0]}.",
+                view=excerpt_view,
+                wait=True,
+            )
 
-        view = discord.ui.View()
-        link_button = LinkListButton(
-            info=_Button(
-                label="Show more links in article",
-            ),
-            comp=_Comp(score=score),
-            links=links,
-            message="Links in article:",
-        )
+            view = discord.ui.View()
+            link_button = LinkListButton(
+                info=_Button(
+                    label="Show more links in article",
+                ),
+                comp=_Comp(score=score),
+                links=links,
+                message="Links in article:",
+            )
 
-        view.add_item(link_button)
+            view.add_item(link_button)
 
-        await interaction.followup.send(view=view, wait=True)
-        await interaction.delete_original_response()
+            await interaction.followup.send(view=view, wait=True)
+            await interaction.delete_original_response()
+        except discord.app_commands.errors.CommandInvokeError as e:
+            print(e)
