@@ -10,7 +10,7 @@ from pywikibot import Page
 
 from database.database_core import DATA, NullUserError
 from database.user import User
-from wikiutils import is_article_title, make_embed, rand_wiki
+from wikiutils import is_article_title, make_embed, rand_wiki, search_wikipedia
 
 ACCURACY_THRESHOLD = 0.8
 
@@ -107,14 +107,14 @@ class GuessInput(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
+        await interaction.response.defer(thinking=True)
         if (
-            SequenceMatcher(None, self.children[0].value.lower(), self.article.title().lower()).ratio()
-            >= ACCURACY_THRESHOLD
+            search_wikipedia(self.children[0].value).title() == self.article.title()
         ):
             embed = make_embed(self.article)
             # TODO: For Some Reason this doesnt work, it got mad
             msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
-            await interaction.response.send_message(content=msg, embed=embed)
+            await interaction.followup.send(content=msg, embed=embed)
             print(self.ranked)
             if self.ranked:
                 print(self.score[0])
@@ -155,7 +155,7 @@ class GuessInput(discord.ui.Modal):
                     await DATA.add_user(user.id, new_user, interaction.guild_id)
             await interaction.message.edit(view=None)
             return
-        await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
+        await interaction.followup.send("That's incorect, please try again.", ephemeral=True)
         self.score[0] -= 5
 
 
@@ -231,6 +231,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
         for i in article.title().split():
             excerpt = excerpt.replace(i, "~~CENSORED~~")
+            excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
 
         sentances = excerpt.split(". ")
 
