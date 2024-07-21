@@ -27,14 +27,12 @@ def main(tree: app_commands.CommandTree) -> None:
         lead.sort(key=_sort_leaders, reverse=True)
         lead = lead[0:10]
         embed = discord.Embed(
-            title=f"Leaderboard for {interaction.guild.name}",
+            title=f"Wikiguesser leaderboard for {interaction.guild.name}",
         )
 
         ls_uid = [f"- {uid["name"]} /// {uid["score"]}" for uid in lead]
-        embed.description = f"{"\n".join(ls_uid)}\n"
-
         score = [str(uid["score"]) for uid in lead]
-        names = [uid["name"] for uid in lead]
+        names = [f"{lead.index(uid)}. {uid["name"]}" for uid in lead]
         embed.add_field(name="Users", value=f"{"\n".join(names)}\n")
         embed.add_field(name="Score", value=f"{"\n".join(score)}\n")
 

@@ -13,13 +13,15 @@ tree = app_commands.CommandTree(client)
 
 t = wikipediaapi.Wikipedia(user_agent="CoolBot/0.0 (https://example.org/coolbot/) generic-library/0.0")
 
+
 def rand_date() -> datetime.date:
     """Takes the current time returning the timetuple."""  # noqa: D401
-    now = int(datetime.datetime.now(tz=datetime.UTC).timestamp()//1)
-    y = int((now - 252482400) - now % 31557600//1)
+    now = int(datetime.datetime.now(tz=datetime.UTC).timestamp() // 1)
+    y = int((now - 252482400) - now % 31557600 // 1)
     return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
 
-def rand_wiki()->str:
+
+def rand_wiki() -> str:
     """Dw abt it."""
     try:
         rd = rand_date()
@@ -32,13 +34,13 @@ def rand_wiki()->str:
         random.shuffle(mr["articles"])
         select = mr["articles"][0]
         w = wikipediaapi.WikipediaPage(wiki=t, title=select["normalizedtitle"])
-        ans+="\n"+w.title+"\n\n"
+        ans += "\n" + w.title + "\n\n"
 
         links = [link for link in w.links if ":" not in link]
 
         backlinks = [link for link in w.backlinks if ":" not in link]
 
-        return ans+f"Links: {len(links)}\nBackLinks: {len(backlinks)}\n"
+        return ans + f"Links: {len(links)}\nBackLinks: {len(backlinks)}\n"
     except KeyError as e:
         print(req_json)
         print(e)
@@ -50,11 +52,12 @@ async def on_ready() -> None:  # noqa: D103
     await tree.sync(guild=discord.Object(id=1262497899925995563))
 
 
-@tree.command(name="wiki",description="its the command thingy",guild=discord.Object(id=1262497899925995563))
+@tree.command(name="wiki", description="its the command thingy", guild=discord.Object(id=1262497899925995563))
 async def wiki(interaction: discord.Interaction) -> None:  # noqa: D103
     await interaction.response.send_message(content="hello, we are processing ur request")
     y = rand_wiki()
     await interaction.followup.send(content=rf"\`\`\`{y}\`\`\`")
+
 
 x = os.getenv("DISAPI")
 client.run(x)

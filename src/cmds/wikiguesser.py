@@ -121,28 +121,29 @@ class GuessInput(discord.ui.Modal):
                 print(self.score[0])
                 user = interaction.user
                 try:
-                    db_ref_user = await DATA.get_user(interaction.guild_id, user.id)
-                    await DATA.update_value_for_user(
-                        guild_id=interaction.guild_id,
-                        user_id=user.id,
-                        key="times_played",
-                        value=db_ref_user["times_played"] + 1,
-                    )
-                    await DATA.update_value_for_user(
-                        guild_id=interaction.guild_id,
-                        user_id=user.id,
-                        key="score",
-                        value=db_ref_user["score"] + self.score[0],
-                    )
-                    await DATA.update_value_for_user(
-                        guild_id=interaction.guild_id,
-                        user_id=user.id,
-                        key="last_played",
-                        value=datetime.now(UTC).timestamp(),
-                    )
-                    await DATA.update_value_for_user(
-                        guild_id=interaction.guild_id, user_id=user.id, key="wins", value=db_ref_user["wins"] + 1
-                    )
+                    for i in [interaction.guild_id, 0]:
+                        db_ref_user = await DATA.get_user(interaction.guild_id, user.id)
+                        await DATA.update_value_for_user(
+                            guild_id=i,
+                            user_id=user.id,
+                            key="times_played",
+                            value=db_ref_user["times_played"] + 1,
+                        )
+                        await DATA.update_value_for_user(
+                            guild_id=i,
+                            user_id=user.id,
+                            key="score",
+                            value=db_ref_user["score"] + self.score[0],
+                        )
+                        await DATA.update_value_for_user(
+                            guild_id=i,
+                            user_id=user.id,
+                            key="last_played",
+                            value=datetime.now(UTC).timestamp(),
+                        )
+                        await DATA.update_value_for_user(
+                            guild_id=i, user_id=user.id, key="wins", value=db_ref_user["wins"] + 1
+                        )
                 except NullUserError:
                     new_user = User(
                         name=user.global_name,
