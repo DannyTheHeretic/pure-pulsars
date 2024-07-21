@@ -13,6 +13,6 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     async def wiki(interaction: discord.Interaction, query:str) -> None:
         await interaction.response.send_message(content="Finding your really cool article...")
-        embed = make_embed(article=search_wikipedia(query))
+        embed = make_embed(article=await search_wikipedia(query))
         await interaction.followup.send(embed=embed)
         await interaction.delete_original_response()
