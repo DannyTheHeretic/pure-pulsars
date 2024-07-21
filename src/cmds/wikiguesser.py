@@ -89,10 +89,7 @@ class GuessButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
         guess_modal = GuessInput(
-            title="Guess!", comp=_Comp(ranked=self.ranked,
-                                       article=self.article,
-                                       score=self.score,
-                                       user=self.user)
+            title="Guess!", comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user)
         )
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(guess_modal)
@@ -116,7 +113,7 @@ class GuessInput(discord.ui.Modal):
         if self.ranked and interaction.user.id == self.user.id:
             await interaction.followup.send(
                 "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
-                ephemeral=True
+                ephemeral=True,
             )
 
         if search_wikipedia(self.children[0].value).title() == self.article.title():
@@ -161,7 +158,7 @@ class GuessInput(discord.ui.Modal):
                             last_played=datetime.now(UTC).timestamp(),
                             failure=0,
                         )
-                        await DATA.add_user(user.id, new_user, interaction.guild_id)
+                        await DATA.add_user(user.id, new_user, i)
             await interaction.message.edit(view=None)
             return
         await interaction.followup.send("That's incorect, please try again.", ephemeral=True)
