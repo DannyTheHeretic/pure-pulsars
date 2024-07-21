@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from difflib import SequenceMatcher
 from random import randint
 from typing import NamedTuple
 
@@ -108,9 +107,7 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         await interaction.response.defer(thinking=True)
-        if (
-            search_wikipedia(self.children[0].value).title() == self.article.title()
-        ):
+        if search_wikipedia(self.children[0].value).title() == self.article.title():
             embed = make_embed(self.article)
             # TODO: For Some Reason this doesnt work, it got mad
             msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"

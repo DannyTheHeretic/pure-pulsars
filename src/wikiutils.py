@@ -55,8 +55,11 @@ def make_embed(article: Page) -> Embed:
     embed.set_image(url=url)
     return embed
 
-def search_wikipedia(query:str) -> Page:
-    return next(site.search(query,total=1))
+
+def search_wikipedia(query: str) -> Page:
+    """Search wikipedia and return the first result."""
+    return next(site.search(query, total=1))
+
 
 async def rand_wiki() -> Page:
     """Return a random popular wikipedia article."""
