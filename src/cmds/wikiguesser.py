@@ -116,40 +116,40 @@ class GuessInput(discord.ui.Modal):
             if self.ranked:
                 print(self.score[0])
                 user = interaction.user
-                try:
-                    i = interaction.guild_id
-                    db_ref_user = await DATA.get_user(interaction.guild_id, user.id)
-                    await DATA.update_value_for_user(
-                        guild_id=i,
-                        user_id=user.id,
-                        key="times_played",
-                        value=db_ref_user["times_played"] + 1,
-                    )
-                    await DATA.update_value_for_user(
-                        guild_id=i,
-                        user_id=user.id,
-                        key="score",
-                        value=db_ref_user["score"] + self.score[0],
-                    )
-                    await DATA.update_value_for_user(
-                        guild_id=i,
-                        user_id=user.id,
-                        key="last_played",
-                        value=datetime.now(UTC).timestamp(),
-                    )
-                    await DATA.update_value_for_user(
-                        guild_id=i, user_id=user.id, key="wins", value=db_ref_user["wins"] + 1
-                    )
-                except NullUserError:
-                    new_user = User(
-                        name=user.global_name,
-                        times_played=1,
-                        wins=1,
-                        score=self.score[0],
-                        last_played=datetime.now(UTC).timestamp(),
-                        failure=0,
-                    )
-                    await DATA.add_user(user.id, new_user, interaction.guild_id)
+                for i in [interaction.guild_id, 0]:
+                    try:
+                        db_ref_user = await DATA.get_user(i, user.id)
+                        await DATA.update_value_for_user(
+                            guild_id=i,
+                            user_id=user.id,
+                            key="times_played",
+                            value=db_ref_user["times_played"] + 1,
+                        )
+                        await DATA.update_value_for_user(
+                            guild_id=i,
+                            user_id=user.id,
+                            key="score",
+                            value=db_ref_user["score"] + self.score[0],
+                        )
+                        await DATA.update_value_for_user(
+                            guild_id=i,
+                            user_id=user.id,
+                            key="last_played",
+                            value=datetime.now(UTC).timestamp(),
+                        )
+                        await DATA.update_value_for_user(
+                            guild_id=i, user_id=user.id, key="wins", value=db_ref_user["wins"] + 1
+                        )
+                    except NullUserError:
+                        new_user = User(
+                            name=user.global_name,
+                            times_played=1,
+                            wins=1,
+                            score=self.score[0],
+                            last_played=datetime.now(UTC).timestamp(),
+                            failure=0,
+                        )
+                        await DATA.add_user(user.id, new_user, interaction.guild_id)
             await interaction.message.edit(view=None)
             return
         await interaction.followup.send("That's incorect, please try again.", ephemeral=True)
