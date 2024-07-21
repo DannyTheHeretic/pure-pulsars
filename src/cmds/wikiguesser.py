@@ -38,7 +38,7 @@ class _Ranked(Enum):
 class GiveUpButton(discord.ui.Button):
     """Button for exiting/"giving up" on game."""
 
-    def __init__(self, *, info: _Button, summary: str) -> None:
+    def __init__(self, *, info: _Button) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -50,8 +50,6 @@ class GiveUpButton(discord.ui.Button):
             sku_id=info.sku_id,
         )
 
-        self.summary = summary
-
     async def callback(self, interaction: discord.Interaction) -> None:
         """Exit the game."""
         # TODO(teald): Ensure the score is saved properly.
@@ -59,6 +57,8 @@ class GiveUpButton(discord.ui.Button):
 
         # Exit the game.
         logging.debug("GiveUpButton handling exit for %s.", interaction)
+
+        # TODO(teald): Add state save other than just exiting.
 
 
 class ExcerptButton(discord.ui.Button):
@@ -233,16 +233,23 @@ def main(tree: app_commands.CommandTree) -> None:
             sentances = excerpt.split(". ")
 
             excerpt_view = discord.ui.View()
+
             guess_button = GuessButton(
                 info=_Button(label="Guess!", style=discord.ButtonStyle.success),
                 comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
             )
+
             excerpt_button = ExcerptButton(
                 info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
             )
 
+            give_up_button = GiveUpButton(
+                info=_Button(label="Give up", style=discord.ButtonStyle.danger),
+            )
+
             excerpt_view.add_item(excerpt_button)
             excerpt_view.add_item(guess_button)
+            excerpt_view.add_item(give_up_button)
 
             await interaction.followup.send(
                 content=f"Excerpt: {sentances[0]}.",
