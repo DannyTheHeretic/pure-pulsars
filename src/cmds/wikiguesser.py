@@ -29,6 +29,7 @@ class _Comp(NamedTuple):
     score: list[int]
     ranked: bool = False
     article: Page = None
+    user: discord.User
 
 
 class _Ranked(Enum):
@@ -83,11 +84,15 @@ class GuessButton(discord.ui.Button):
         self.ranked = comp.ranked
         self.article = comp.article
         self.score = comp.score
+        self.user = comp.user
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
         guess_modal = GuessInput(
-            title="Guess!", comp=_Comp(ranked=self.ranked, article=self.article, score=self.score)
+            title="Guess!", comp=_Comp(ranked=self.ranked,
+                                       article=self.article,
+                                       score=self.score,
+                                       user=self.user)
         )
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(guess_modal)
@@ -102,11 +107,18 @@ class GuessInput(discord.ui.Modal):
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = comp.ranked
         self.score = comp.score
+        self.user = comp.user
         self.article = comp.article
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         await interaction.response.defer(thinking=True)
+        if self.ranked and interaction.user.id == self.user.id:
+            await interaction.followup.send(
+                "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
+                ephemeral=True
+            )
+
         if search_wikipedia(self.children[0].value).title() == self.article.title():
             embed = make_embed(self.article)
             # TODO: For Some Reason this doesnt work, it got mad
@@ -235,7 +247,7 @@ def main(tree: app_commands.CommandTree) -> None:
         excerpt_view = discord.ui.View()
         guess_button = GuessButton(
             info=_Button(label="Guess!", style=discord.ButtonStyle.success),
-            comp=_Comp(ranked=ranked, article=article, score=score),
+            comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user),
         )
         excerpt_button = ExcerptButton(
             info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score

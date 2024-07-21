@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 
-from cmds import wikiguesser,wikirandom,wikisearch,user_info,leaderboard
+from cmds import leaderboard, user_info, wikiguesser, wikirandom, wikisearch
 
 load_dotenv(".env")
 intents = discord.Intents.all()
