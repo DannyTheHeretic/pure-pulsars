@@ -127,7 +127,7 @@ class GuessInput(discord.ui.Modal):
                     update_user(i, user, self.score[0])
             await interaction.message.edit(view=None)
             return
-        await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
+        await interaction.response.send_message("That's incorrect, please try again.", ephemeral=True)
         self.score[0] -= 5
 
 
