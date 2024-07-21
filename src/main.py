@@ -21,6 +21,7 @@ async def on_ready() -> None:  # noqa: D103
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
 
+
 wikiguesser.main(tree)
 wikirandom.main(tree)
 leaderboard.main(tree)

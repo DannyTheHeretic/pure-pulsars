@@ -12,8 +12,11 @@ def main(tree: app_commands.CommandTree) -> None:
         description="get a random wikipedia article",
     )
     async def wiki(interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(content="Finding a really cool article...")
-        article = await rand_wiki()
-        embed = make_embed(article=article)
-        await interaction.followup.send(embed=embed)
-        await interaction.delete_original_response()
+        try:
+            await interaction.response.send_message(content="Finding a really cool article...")
+            article = await rand_wiki()
+            embed = make_embed(article=article)
+            await interaction.followup.send(embed=embed)
+            await interaction.delete_original_response()
+        except discord.app_commands.errors.CommandInvokeError as e:
+            print(e)
