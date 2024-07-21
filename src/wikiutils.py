@@ -1,12 +1,14 @@
-import datetime
 import random
+from datetime import UTC, date, datetime
 
 import aiohttp
 import pywikibot
 import pywikibot.page
-from discord import Embed
+from discord import Embed, User
 from fake_useragent import UserAgent
 from pywikibot import Page
+
+from database.database_core import DATA, NullUserError
 
 NON_LINK_PREFIXS = [
     "Category:",
@@ -33,11 +35,11 @@ def is_article_title(link: str) -> bool:
     return all(not link.startswith(prefix) for prefix in NON_LINK_PREFIXS)
 
 
-def rand_date() -> datetime.date:
+def rand_date() -> date:
     """Take the current time returning the timetuple."""
-    now = int(datetime.datetime.now(tz=datetime.UTC).timestamp() // 1)
+    now = int(datetime.now(tz=UTC).timestamp() // 1)
     y = int((now - 252482400) - now % 31557600 // 1)
-    return datetime.datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=datetime.UTC)  # noqa: S311
+    return datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=UTC)  # noqa: S311
 
 
 def make_embed(article: Page) -> Embed:
@@ -76,3 +78,39 @@ async def rand_wiki() -> Page:
     if page.isRedirectPage() or not page.exists():
         return rand_wiki()
     return page
+
+
+async def update_user(guild: int, user: User, score: int) -> None:
+    """Update the user in the database."""
+    uid = user.id
+    try:
+        db_ref_user = await DATA.get_user(guild, uid)
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="times_played",
+            value=db_ref_user["times_played"] + 1,
+        )
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="score",
+            value=db_ref_user["score"] + score,
+        )
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="last_played",
+            value=datetime.now(UTC).timestamp(),
+        )
+        await DATA.update_value_for_user(guild_id=guild, user_id=uid, key="wins", value=db_ref_user["wins"] + 1)
+    except NullUserError:
+        new_user = User(
+            name=user.global_name,
+            times_played=1,
+            wins=1,
+            score=score,
+            last_played=datetime.now(UTC).timestamp(),
+            failure=0,
+        )
+        await DATA.add_user(uid, new_user, guild)
