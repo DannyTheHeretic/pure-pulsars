@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext.commands import HelpCommand
 from dotenv import load_dotenv
 
-from cmds import leaderboard, user_info, wikiguesser, wikirandom, wikisearch
+from cmds import leaderboard, reset_scores, user_info, wikiguesser, wikirandom, wikisearch
 
 load_dotenv(".env")
 intents = discord.Intents.all()
@@ -27,6 +27,6 @@ wikirandom.main(tree)
 leaderboard.main(tree)
 user_info.main(tree)
 wikisearch.main(tree)
+reset_scores.main(tree)
 client.help_command = HelpCommand()
-
 client.run(os.environ["DISAPI"])

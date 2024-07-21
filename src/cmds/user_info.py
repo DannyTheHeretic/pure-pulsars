@@ -26,7 +26,7 @@ def main(tree: app_commands.CommandTree) -> None:
                         inline=False,
                     )
             except NullUserError:
-                await interaction.followup.send(content=f"User: {user.mention} has **not** been added")
+                await interaction.followup.send(content=f"User: {user.mention} has **not** played any games")
                 return
 
             await interaction.followup.send(embed=embed)
