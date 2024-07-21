@@ -27,7 +27,7 @@ def main(tree: app_commands.CommandTree) -> None:
         lead.sort(key=_sort_leaders, reverse=True)
         lead = lead[0:10]
         embed = discord.Embed(
-            title=f"Wikiguesser leaderboard for {interaction.guild.name}",
+            title=f"Wikiguesser leaderboard for {interaction.guild.name if ser_id != 0 else "THE ENTIRE WORLD"}",
         )
 
         score = [str(uid["score"]) for uid in lead]
