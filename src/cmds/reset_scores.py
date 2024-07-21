@@ -1,5 +1,5 @@
 import discord
-from discord import Enum, app_commands
+from discord import app_commands
 
 from database.database_core import DATA
 
@@ -7,13 +7,10 @@ from database.database_core import DATA
 def main(tree: app_commands.CommandTree) -> None:
     """Create Wiki Guesser command."""
 
-    def _sort_leaders(e: dict) -> int:
-        return e["score"]
-
     @tree.command(
         name="reset-scores",
         description="Reset scores of all users in this guild for this guild",
-        
+
     )
     async def reset_scores(interaction: discord.Interaction) -> None:
         await interaction.response.defer(thinking=True)
@@ -24,4 +21,4 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.followup.send("Scores Reset!", ephemeral=True)
         else:
             await interaction.followup.send("You must have **MANAGE SERVER** permissions to reset scores", ephemeral=True)
-        
+
