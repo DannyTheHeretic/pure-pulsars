@@ -30,7 +30,6 @@ def main(tree: app_commands.CommandTree) -> None:
             title=f"Wikiguesser leaderboard for {interaction.guild.name}",
         )
 
-        ls_uid = [f"- {uid["name"]} /// {uid["score"]}" for uid in lead]
         score = [str(uid["score"]) for uid in lead]
         names = [f"{lead.index(uid)}. {uid["name"]}" for uid in lead]
         embed.add_field(name="Users", value=f"{"\n".join(names)}\n")
