@@ -1,3 +1,4 @@
+import logging
 from random import randint
 from typing import NamedTuple
 
@@ -32,6 +33,32 @@ class _Comp(NamedTuple):
 class _Ranked(Enum):
     YES = 1
     NO = 0
+
+
+class GiveUpButton(discord.ui.Button):
+    """Button for exiting/"giving up" on game."""
+
+    def __init__(self, *, info: _Button, summary: str) -> None:
+        super().__init__(
+            style=info.style,
+            label=info.label,
+            disabled=info.disabled,
+            custom_id=info.custom_id,
+            url=info.url,
+            emoji=info.emoji,
+            row=info.row,
+            sku_id=info.sku_id,
+        )
+
+        self.summary = summary
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Exit the game."""
+        # TODO(teald): Ensure the score is saved properly.
+        logging.warning("Score saving is not yet implemented for exiting the game.")
+
+        # Exit the game.
+        logging.debug("GiveUpButton handling exit for %s.", interaction)
 
 
 class ExcerptButton(discord.ui.Button):
