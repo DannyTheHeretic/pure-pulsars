@@ -113,7 +113,6 @@ class GuessInput(discord.ui.Modal):
         ):
             embed = make_embed(self.article)
             # TODO: For Some Reason this doesnt work, it got mad
-            """await interaction.message.edit(view=None)"""
             msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
             await interaction.response.send_message(content=msg, embed=embed)
             print(self.ranked)
@@ -154,6 +153,7 @@ class GuessInput(discord.ui.Modal):
                         failure=0,
                     )
                     await DATA.add_user(user.id, new_user, interaction.guild_id)
+            await interaction.message.edit(view=None)
             return
         await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
         self.score[0] -= 5
