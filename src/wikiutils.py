@@ -56,7 +56,7 @@ def make_embed(article: Page) -> Embed:
     return embed
 
 
-def search_wikipedia(query: str) -> Page:
+async def search_wikipedia(query: str) -> Page:
     """Search wikipedia and return the first result."""
     return next(site.search(query, total=1))
 
@@ -72,6 +72,7 @@ async def rand_wiki() -> Page:
     articles = json["items"][0]["articles"]
     random.shuffle(articles)
     title = articles[0]["article"]
-    if not is_article_title(title):
+    page = Page(site, title)
+    if page.isRedirectPage() or not page.exists():
         return rand_wiki()
-    return Page(site, title)
+    return page

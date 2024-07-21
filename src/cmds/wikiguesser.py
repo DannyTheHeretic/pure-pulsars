@@ -29,7 +29,7 @@ class _Comp(NamedTuple):
     score: list[int]
     ranked: bool = False
     article: Page = None
-    user: discord.User = None
+    user: int = 0
 
 
 class _Ranked(Enum):
@@ -109,18 +109,19 @@ class GuessInput(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
-        await interaction.response.defer(thinking=True)
-        if self.ranked and interaction.user.id == self.user.id:
-            await interaction.followup.send(
+        if self.ranked and interaction.user.id != self.user:
+            await interaction.response.send_message(
                 "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
                 ephemeral=True,
             )
+            return
 
-        if search_wikipedia(self.children[0].value).title() == self.article.title():
+        page = await search_wikipedia(self.children[0].value)
+        if page.title() == self.article.title():
             embed = make_embed(self.article)
             # TODO: For Some Reason this doesnt work, it got mad
             msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
-            await interaction.followup.send(content=msg, embed=embed)
+            await interaction.response.send_message(content=msg, embed=embed)
             print(self.ranked)
             if self.ranked:
                 print(self.score[0])
@@ -161,7 +162,7 @@ class GuessInput(discord.ui.Modal):
                         await DATA.add_user(user.id, new_user, i)
             await interaction.message.edit(view=None)
             return
-        await interaction.followup.send("That's incorect, please try again.", ephemeral=True)
+        await interaction.response.send_message("That's incorect, please try again.", ephemeral=True)
         self.score[0] -= 5
 
 
@@ -231,7 +232,6 @@ def main(tree: app_commands.CommandTree) -> None:
         print(article.title())
 
         links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
-        backlinks = [link.title() for link in article.backlinks(total=50) if is_article_title(link.title())]
 
         excerpt = article.extract(chars=1200)
 
@@ -244,7 +244,7 @@ def main(tree: app_commands.CommandTree) -> None:
         excerpt_view = discord.ui.View()
         guess_button = GuessButton(
             info=_Button(label="Guess!", style=discord.ButtonStyle.success),
-            comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user),
+            comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
         )
         excerpt_button = ExcerptButton(
             info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
@@ -268,17 +268,8 @@ def main(tree: app_commands.CommandTree) -> None:
             links=links,
             message="Links in article:",
         )
-        backlink_button = LinkListButton(
-            info=_Button(
-                label="Show more articles that link to this one",
-            ),
-            comp=_Comp(score=score),
-            links=backlinks,
-            message="Articles that link to this one:",
-        )
 
         view.add_item(link_button)
-        view.add_item(backlink_button)
 
         await interaction.followup.send(view=view, wait=True)
         await interaction.delete_original_response()
