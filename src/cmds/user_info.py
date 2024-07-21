@@ -10,7 +10,6 @@ def main(tree: app_commands.CommandTree) -> None:
     @tree.command(
         name="user-info",
         description="Returns your stats",
-        guild=discord.Object(id=1262497899925995563),
     )
     async def user_info(interaction: discord.Interaction, user: discord.User) -> None:
         await interaction.response.defer(thinking=True)
