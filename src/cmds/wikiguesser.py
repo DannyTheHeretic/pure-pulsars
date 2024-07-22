@@ -80,8 +80,7 @@ class GiveUpButton(discord.ui.Button):
         """
         # TODO(teald): Eventually factor this out (probably suited for some
         # message state class?).
-        for child in view.children:
-            logging.info("Clear %s", child)
+        logging.info("Clearing child objects: %s", list(view.children))
 
         view.clear_items()
 
