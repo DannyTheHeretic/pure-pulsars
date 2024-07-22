@@ -63,7 +63,7 @@ class GiveUpButton(discord.ui.Button):
         logging.warning("Score saving is not yet implemented for exiting the game.")
 
         # Exit the game.
-        logging.debug("GiveUpButton handling exit for %s.", interaction)
+        logging.info("GiveUpButton handling exit for %s.", interaction)
 
         msg = self._end_message
         article = self.article
