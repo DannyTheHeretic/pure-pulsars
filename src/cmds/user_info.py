@@ -3,7 +3,10 @@ from discord import app_commands
 
 from database.database_core import DATA, NullUserError
 
-
+SKIP = [
+    'userid',
+    'last_played'
+]
 def main(tree: app_commands.CommandTree) -> None:
     """Create user-info command."""
 
@@ -18,7 +21,7 @@ def main(tree: app_commands.CommandTree) -> None:
             try:
                 user_data = await DATA.get_user(interaction.guild_id, user.id)
                 for key, value in user_data.items():
-                    if key.lower() == "userid":
+                    if key.lower() in SKIP:
                         continue
                     embed.add_field(
                         name=key.capitalize().replace("_", " ").replace("Failure", "Failures"),

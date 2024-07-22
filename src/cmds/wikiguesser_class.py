@@ -11,7 +11,7 @@ from wikiutils import is_article_title, make_embed, rand_wiki, search_wikipedia,
 ACCURACY_THRESHOLD = 0.8
 
 
-class Button(NamedTuple):
+class _Button(NamedTuple):
     style: ButtonStyle = ButtonStyle.secondary
     label: str | None = None
     disabled: bool = False
@@ -22,7 +22,7 @@ class Button(NamedTuple):
     sku_id: int | None = None
 
 
-class Comp(NamedTuple):
+class _Comp(NamedTuple):
     score: list[int]
     ranked: bool = False
     article: Page = None
@@ -37,7 +37,7 @@ class _Ranked(Enum):
 class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
-    def __init__(self, *, info: Button, summary: str, score: list[int], owners: list[discord.User]) -> None:
+    def __init__(self, *, info: _Button, summary: str, score: list[int]) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -51,12 +51,9 @@ class ExcerptButton(discord.ui.Button):
         self.summary = summary
         self.score = score
         self.ind = 1
-        self.owners = owners
+
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)       
-            return 
         self.ind += 1
         self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
@@ -65,10 +62,12 @@ class ExcerptButton(discord.ui.Button):
 
         await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
         await interaction.response.defer()
+
+
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
-    def __init__(self, *, info: Button, comp: Comp, owners: list[discord.User]) -> None:
+    def __init__(self, *, info: _Button, comp: _Comp) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -83,14 +82,11 @@ class GuessButton(discord.ui.Button):
         self.article = comp.article
         self.score = comp.score
         self.user = comp.user
-        self.owners = owners
+
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)      
-            return  
         guess_modal = GuessInput(
-            title="Guess!", comp=Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user)
+            title="Guess!", comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user)
         )
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(guess_modal)
@@ -100,13 +96,14 @@ class GuessInput(discord.ui.Modal):
     """Input feild for guessing."""
 
     def __init__(
-        self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, comp: Comp
+        self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, comp: _Comp
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = comp.ranked
         self.score = comp.score
         self.user = comp.user
         self.article = comp.article
+
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         if self.ranked and interaction.user.id != self.user:
@@ -140,11 +137,10 @@ class LinkListButton(discord.ui.Button):
     def __init__(
         self,
         *,
-        info: Button,
-        comp: Comp,
+        info: _Button,
+        comp: _Comp,
         links: list[str],
         message: str,
-        owners : list[discord.User]
     ) -> None:
         super().__init__(
             style=info.style,
@@ -159,12 +155,9 @@ class LinkListButton(discord.ui.Button):
         self.score = comp.score
         self.message = message
         self.links = links
-        self.owners = owners
+
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
         if interaction.message.content:
             await interaction.message.edit(view=None)
         else:
@@ -196,16 +189,9 @@ def main(tree: app_commands.CommandTree) -> None:
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
         try:
             ranked: bool = bool(ranked.value)
-            if ranked == True:
-                owners = [interaction.user]
-            else:
-                owners = [*interaction.guild.members]
-                
             score = [1000]
-            if ranked:
-                await interaction.response.send_message(content=f"Starting a game of **Ranked** Wikiguesser for {owners[0].mention}")
-            else:
-                await interaction.response.send_message(content=f"Starting a game of Wikiguesser")
+
+            await interaction.response.send_message(content="Hello, we are processing your request...")
             article = await rand_wiki()
             print(article.title())
 
@@ -221,12 +207,11 @@ def main(tree: app_commands.CommandTree) -> None:
 
             excerpt_view = discord.ui.View()
             guess_button = GuessButton(
-                info=Button(label="Guess!", style=discord.ButtonStyle.success),
-                comp=Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
-                owners=owners
+                info=_Button(label="Guess!", style=discord.ButtonStyle.success),
+                comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
             )
             excerpt_button = ExcerptButton(
-                info=Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score, owners=owners
+                info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
             )
 
             excerpt_view.add_item(excerpt_button)
@@ -240,13 +225,12 @@ def main(tree: app_commands.CommandTree) -> None:
 
             view = discord.ui.View()
             link_button = LinkListButton(
-                info=Button(
+                info=_Button(
                     label="Show more links in article",
                 ),
-                comp=Comp(score=score),
+                comp=_Comp(score=score),
                 links=links,
                 message="Links in article:",
-                owners=owners
             )
 
             view.add_item(link_button)
