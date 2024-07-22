@@ -9,7 +9,7 @@ from cmds import help_bot, leaderboard, never, reset_scores, sync, user_info, wi
 
 load_dotenv(".env")
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix="/", intents=intents)
+client = commands.Bot(command_prefix="/", intents=intents, help_command=commands.DefaultHelpCommand())
 
 has_ran = False
 
@@ -29,6 +29,13 @@ async def on_ready() -> None:
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
+
+
+@client.event
+async def on_guild_join(guild: discord.Object) -> None:
+    """."""
+    await client.tree.sync(guild=guild)
+    logging.info("Joined and synced with \nname: %s\nid: %s", guild.name, guild.id)
 
 
 sync.main(client.tree)
