@@ -40,7 +40,7 @@ class GiveUpButton(discord.ui.Button):
 
     _end_message: str = "Thank you for trying!"
 
-    def __init__(self, *, info: _Button, article: Page) -> None:
+    def __init__(self, *, info: _Button, article: Page, view: discord.ui.View) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -55,6 +55,7 @@ class GiveUpButton(discord.ui.Button):
         # TODO(teald): This may be better handled with a GameState class, or
         # something that can be more easily accessed/passed around.
         self.article = article
+        self._view = view
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Exit the game."""
@@ -68,6 +69,21 @@ class GiveUpButton(discord.ui.Button):
         msg = self._end_message
         article = self.article
         await interaction.response.send_message(f"{msg}\nThe answer was: {article.title()}")
+        await self.clean_view(view=self._view)
+        await interaction.message.edit(content=interaction.message.content, view=self._view)
+
+    @staticmethod
+    async def clean_view(*, view: discord.ui.View) -> None:
+        """Clean a view of interactible things (e.g., buttons).
+
+        This method is only static because it's likely useful elsewhere.
+        """
+        # TODO(teald): Eventually factor this out (probably suited for some
+        # message state class?).
+        for child in view.children:
+            logging.info("Clear %s", child)
+
+        view.clear_items()
 
 
 class ExcerptButton(discord.ui.Button):
@@ -255,6 +271,7 @@ def main(tree: app_commands.CommandTree) -> None:
             give_up_button = GiveUpButton(
                 info=_Button(label="Give up", style=discord.ButtonStyle.danger),
                 article=article,
+                view=excerpt_view,
             )
 
             excerpt_view.add_item(excerpt_button)
