@@ -14,4 +14,4 @@ def main(tree: app_commands.CommandTree) -> None:
         for i in tree.get_commands():
             resp += f"{i.name} : {i.description}\n"
         resp += "```"
-        await interaction.response.send_message(content=resp)
+        await interaction.response.send_message(content=resp, ephemeral=True)
