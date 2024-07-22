@@ -243,6 +243,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.response.send_message(content="Hello, we are processing your request...")
             article = await rand_wiki()
+            print(article)
             logging.info("The current wikiguesser title is %s", article.title())
 
             links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]

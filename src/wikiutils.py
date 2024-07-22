@@ -78,9 +78,9 @@ async def rand_wiki() -> Page:
         title = articles[0]["article"]
         page = Page(site, title)
         if page.isRedirectPage() or not page.exists():
-            return rand_wiki()
+            return await rand_wiki()
     except KeyError:
-        return rand_wiki()
+        return await rand_wiki()
     return page
 
 
