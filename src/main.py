@@ -26,8 +26,8 @@ async def _first_run(client: commands.Bot) -> None:
 async def on_ready() -> None:
     """Ready command."""
     logging.info("ready for ACTION!!!")
-    if not has_ran:
-        await _first_run(client=client)
+    # if not has_ran:
+    # await _first run (client=client)
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )

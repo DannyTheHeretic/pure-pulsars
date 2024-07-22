@@ -1,3 +1,5 @@
+import logging
+
 import discord
 from discord import Enum, app_commands
 
@@ -37,4 +39,4 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.followup.send(embed=embed)
         except discord.app_commands.errors.CommandInvokeError as e:
-            print(e)
+            logging.info("Exception %s", e)

@@ -6,7 +6,7 @@ def main(tree: app_commands.CommandTree) -> None:
     """Create a wikiguesser command."""
 
     @tree.command(
-        name="h",
+        name="help",
         description="Responds with Help",
     )
     async def help_me(interaction: discord.Interaction) -> None:
