@@ -65,7 +65,6 @@ class GiveUpButton(discord.ui.Button):
         # Exit the game.
         logging.debug("GiveUpButton handling exit for %s.", interaction)
 
-        # TODO(teald): Add state save other than just exiting.
         msg = self._end_message
         article = self.article
         await interaction.response.send_message(f"{msg}\nThe answer was: {article.title()}")
