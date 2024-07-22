@@ -1,4 +1,7 @@
+from datetime import UTC, datetime
+
 import discord
+import humanize
 from discord import app_commands
 
 from database.database_core import DATA, NullUserError
@@ -20,11 +23,14 @@ def main(tree: app_commands.CommandTree) -> None:
                     user = interaction.user
                 user_data = await DATA.get_user(interaction.guild_id, user.id)
                 for key, value in user_data.items():
+                    _ = value
                     if key.lower() == "userid":
                         continue
+                    if key.lower() == "last_played":
+                        _ = humanize.naturaltime(datetime.now(UTC) - value)
                     embed.add_field(
                         name=key.capitalize().replace("_", " ").replace("Failure", "Failures"),
-                        value=value,
+                        value=_,
                         inline=False,
                     )
             except NullUserError:
