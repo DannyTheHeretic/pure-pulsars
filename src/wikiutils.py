@@ -72,11 +72,14 @@ async def rand_wiki() -> Page:
     json = None
     async with aiohttp.ClientSession() as session, session.get(url) as response:
         json = await response.json()
-    articles = json["items"][0]["articles"]
-    random.shuffle(articles)
-    title = articles[0]["article"]
-    page = Page(site, title)
-    if page.isRedirectPage() or not page.exists():
+    try:
+        articles = json["items"][0]["articles"]
+        random.shuffle(articles)
+        title = articles[0]["article"]
+        page = Page(site, title)
+        if page.isRedirectPage() or not page.exists():
+            return rand_wiki()
+    except KeyError:
         return rand_wiki()
     return page
 
