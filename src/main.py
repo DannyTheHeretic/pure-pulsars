@@ -2,6 +2,7 @@ import logging
 import os
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -9,7 +10,8 @@ from cmds import help_bot, leaderboard, never, reset_scores, sync, user_info, wi
 
 load_dotenv(".env")
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix="/", intents=intents, help_command=commands.DefaultHelpCommand())
+client = discord.Client(intents=intents)
+client.tree = app_commands.CommandTree(client)
 
 has_ran = False
 
