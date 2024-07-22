@@ -38,7 +38,9 @@ class _Ranked(Enum):
 class GiveUpButton(discord.ui.Button):
     """Button for exiting/"giving up" on game."""
 
-    def __init__(self, *, info: _Button) -> None:
+    _end_message: str = "Thank you for trying!"
+
+    def __init__(self, *, info: _Button, article: Page) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -50,6 +52,10 @@ class GiveUpButton(discord.ui.Button):
             sku_id=info.sku_id,
         )
 
+        # TODO(teald): This may be better handled with a GameState class, or
+        # something that can be more easily accessed/passed around.
+        self.article = article
+
     async def callback(self, interaction: discord.Interaction) -> None:
         """Exit the game."""
         # TODO(teald): Ensure the score is saved properly.
@@ -59,6 +65,9 @@ class GiveUpButton(discord.ui.Button):
         logging.debug("GiveUpButton handling exit for %s.", interaction)
 
         # TODO(teald): Add state save other than just exiting.
+        msg = self._end_message
+        article = self.article
+        await interaction.response.send_message(f"{msg}\nThe answer was: {article.title()}")
 
 
 class ExcerptButton(discord.ui.Button):
@@ -245,6 +254,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
             give_up_button = GiveUpButton(
                 info=_Button(label="Give up", style=discord.ButtonStyle.danger),
+                article=article,
             )
 
             excerpt_view.add_item(excerpt_button)
