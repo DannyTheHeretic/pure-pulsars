@@ -11,20 +11,27 @@ load_dotenv(".env")
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="/", intents=intents)
 
-gid = 1262497899925995563
+has_ran = False
+
+
+async def _first_run(client: commands.Bot) -> None:
+    has_ran = True
+    await client.tree.sync()
+    logging.info("The sync has been ran: %s", has_ran)
 
 
 @client.event
 async def on_ready() -> None:
     """Ready command."""
     logging.info("ready for ACTION!!!")
-    await client.tree.sync(guild=discord.Object(id=gid))
+    if not has_ran:
+        await _first_run(client=client)
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
 
 
-sync.main(client)
+sync.main(client.tree)
 wikiguesser.main(client.tree)
 wikirandom.main(client.tree)
 leaderboard.main(client.tree)
