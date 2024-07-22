@@ -67,7 +67,9 @@ class GiveUpButton(discord.ui.Button):
 
         msg = self._end_message
         article = self.article
-        await interaction.response.send_message(f"{msg}\nThe answer was: {article.title()}")
+        embed = make_embed(article)
+        embed.set_footer(text=msg)
+        await interaction.response.send_message(embed=embed)
         await self.clean_view(view=self._view)
         await interaction.message.edit(content=interaction.message.content, view=self._view)
 
@@ -78,7 +80,7 @@ class GiveUpButton(discord.ui.Button):
         This method is only static because it's likely useful elsewhere.
         """
         # TODO(teald): Probably better as a helper function.
-        logging.info("Clearing child objects: %s", list(view.children))
+        logging.debug("Clearing child objects: %s", list(view.children))
 
         view.clear_items()
 

@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from cmds import help_bot, leaderboard, never, reset_scores, sync, user_info, wikiguesser, wikirandom, wikisearch
+from cmds import help_bot, leaderboard, never, reset_scores, user_info, wikiguesser, wikirandom, wikisearch
 
 load_dotenv(".env")
 intents = discord.Intents.all()
@@ -15,12 +15,13 @@ client = commands.Bot(command_prefix="/", intents=intents)
 @client.event
 async def on_ready() -> None:  # noqa: D103
     logging.info("ready for ACTION!!!")
+    await client.tree.sync()
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
 
 
-sync.main(client)
+# sync main(client.tree)
 wikiguesser.main(client.tree)
 wikirandom.main(client.tree)
 leaderboard.main(client.tree)
