@@ -77,8 +77,7 @@ class GiveUpButton(discord.ui.Button):
 
         This method is only static because it's likely useful elsewhere.
         """
-        # TODO(teald): Eventually factor this out (probably suited for some
-        # message state class?).
+        # TODO(teald): Probably better as a helper function.
         logging.info("Clearing child objects: %s", list(view.children))
 
         view.clear_items()
