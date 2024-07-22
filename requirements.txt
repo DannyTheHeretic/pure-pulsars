@@ -4,3 +4,4 @@ pywikibot
 firebase_admin
 python-dotenv
 fake_useragent
+humanize
