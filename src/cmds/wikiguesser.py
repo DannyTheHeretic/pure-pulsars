@@ -246,7 +246,7 @@ def main(tree: app_commands.CommandTree) -> None:
             print(article)
             logging.info("The current wikiguesser title is %s", article.title())
 
-            links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
+            links = [link.title() for link in article.linkedPages(total=50) if is_article_title(link.title())]
 
             excerpt = article.extract(chars=1200)
 
