@@ -13,7 +13,8 @@ client = commands.Bot(command_prefix="/", intents=intents)
 
 
 @client.event
-async def on_ready() -> None:  # noqa: D103
+async def on_ready() -> None:
+    """Ready command."""
     logging.info("ready for ACTION!!!")
     await client.tree.sync()
     await client.change_presence(

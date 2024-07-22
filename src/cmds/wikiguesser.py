@@ -1,5 +1,5 @@
 import logging
-from random import randint
+import secrets
 from typing import NamedTuple
 
 import discord
@@ -10,6 +10,7 @@ from pywikibot import Page
 from wikiutils import is_article_title, make_embed, rand_wiki, search_wikipedia, update_user
 
 ACCURACY_THRESHOLD = 0.8
+MAX_LEN = 1990
 
 
 class _Button(NamedTuple):
@@ -108,7 +109,7 @@ class ExcerptButton(discord.ui.Button):
         self.ind += 1
         self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
-        if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
+        if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
             self.view.remove_item(self)
 
         await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
@@ -215,7 +216,7 @@ class LinkListButton(discord.ui.Button):
         selected_links = []
         self.score[0] -= 10
         for _ in range(10):
-            selected_links.append(self.links.pop(randint(0, len(self.links) - 1)))  # noqa: S311
+            selected_links.append(self.links.pop(secrets.randbelow(len(self.links) - 1)))
             if len(self.links) == 1:
                 selected_links.append(self.links.pop(0))
                 break
