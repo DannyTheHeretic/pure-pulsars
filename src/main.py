@@ -1,3 +1,4 @@
+import logging
 import os
 
 import discord
@@ -14,7 +15,7 @@ tree = app_commands.CommandTree(client)
 
 @client.event
 async def on_ready() -> None:  # noqa: D103
-    print("ready for ACTION!!!")
+    logging.info("ready for ACTION!!!")
     await tree.sync(guild=discord.object.Object(1262497899925995563))
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")

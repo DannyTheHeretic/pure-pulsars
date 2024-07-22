@@ -168,9 +168,7 @@ class GuessInput(discord.ui.Modal):
             # TODO: For Some Reason this doesnt work, it got mad
             msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
             await interaction.response.send_message(content=msg, embed=embed)
-            print(self.ranked)
             if self.ranked:
-                print(self.score[0])
                 user = interaction.user
                 for i in [interaction.guild_id, 0]:
                     await update_user(i, user, self.score[0])
@@ -242,7 +240,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.response.send_message(content="Hello, we are processing your request...")
             article = await rand_wiki()
-            print(article.title())
+            logging.info("The current wikiguesser title is %s", article.title())
 
             links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
 
