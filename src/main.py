@@ -29,4 +29,9 @@ wikisearch.main(tree)
 reset_scores.main(tree)
 never.main(tree)
 help_bot.main(tree)
-client.run(os.environ["DISAPI"])
+
+client.run(
+    os.environ["DISAPI"],
+    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    root_logger=True,
+)
