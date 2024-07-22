@@ -11,11 +11,13 @@ def main(tree: app_commands.CommandTree) -> None:
         name="user-info",
         description="Returns your stats",
     )
-    async def user_info(interaction: discord.Interaction, user: discord.User) -> None:
+    async def user_info(interaction: discord.Interaction, user: discord.User = None) -> None:
         try:
             await interaction.response.defer(thinking=True)
             embed = discord.embeds.Embed()
             try:
+                if user is None:
+                    user = interaction.user
                 user_data = await DATA.get_user(interaction.guild_id, user.id)
                 for key, value in user_data.items():
                     if key.lower() == "userid":
