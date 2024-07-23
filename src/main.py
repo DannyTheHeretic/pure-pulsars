@@ -49,7 +49,9 @@ wikisearch.main(client.tree)
 reset_scores.main(client.tree)
 never.main(client.tree)
 help_bot.main(client.tree)
-
+if bool(os.environ.get("Server",0)):
+    from cmds import shutdown
+    shutdown.main(client.tree)
 client.run(
     os.environ["DISAPI"],
     log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
