@@ -1,17 +1,18 @@
+from abc import ABC, abstractmethod
 from random import randint
 from typing import NamedTuple
 
 import discord
-from discord import ButtonStyle, Enum, app_commands
+from discord import ButtonStyle, Enum
 from discord.utils import MISSING
 from pywikibot import Page
 
-from wikiutils import is_article_title, make_embed, rand_wiki, search_wikipedia, update_user
+from wikiutils import search_wikipedia
 
 ACCURACY_THRESHOLD = 0.8
 
 
-class _Button(NamedTuple):
+class Button(NamedTuple):
     style: ButtonStyle = ButtonStyle.secondary
     label: str | None = None
     disabled: bool = False
@@ -22,7 +23,7 @@ class _Button(NamedTuple):
     sku_id: int | None = None
 
 
-class _Comp(NamedTuple):
+class Comp(NamedTuple):
     score: list[int]
     ranked: bool = False
     article: Page = None
@@ -33,11 +34,24 @@ class _Ranked(Enum):
     YES = 1
     NO = 0
 
+class WinLossManagement(ABC):
+    """Class that contains static methods that define what happens upon winning and what happens upon losing."""
+
+    def __init__(self, winargs: dict, lossargs: dict) -> None:
+        super().__init__()
+        self.winargs = winargs
+        self.lossargs = lossargs
+    @abstractmethod
+    async def on_win(self) -> None:  # noqa: D102
+        pass
+    @abstractmethod
+    async def on_loss(self) -> None:  # noqa: D102
+        pass
 
 class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
-    def __init__(self, *, info: _Button, summary: str, score: list[int]) -> None:
+    def __init__(self, *, info: Button, summary: str, score: list[int], owners: list[discord.User], private: bool) -> None:  # noqa: PLR0913
         super().__init__(
             style=info.style,
             label=info.label,
@@ -51,23 +65,25 @@ class ExcerptButton(discord.ui.Button):
         self.summary = summary
         self.score = score
         self.ind = 1
-
+        self.owners = owners
+        self.private = private
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
+        if interaction.user not in self.owners:
+            await interaction.response.send_message("You may not interact with this", ephemeral=True)
+            return
         self.ind += 1
-        self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
+        self.score[0][0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
-
-        await interaction.message.edit(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
-        await interaction.response.defer()
-
-
+        if self.private:
+            await interaction.response.send_message(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view, ephemeral=True)
+        await interaction.edit_original_response(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
-    def __init__(self, *, info: _Button, comp: _Comp) -> None:
+    def __init__(self, *, info: Button, comp: Comp, owners: list[discord.User], winlossmanager: WinLossManagement) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -82,11 +98,15 @@ class GuessButton(discord.ui.Button):
         self.article = comp.article
         self.score = comp.score
         self.user = comp.user
-
+        self.owners = owners
+        self.winlossmanager = winlossmanager
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
+        if interaction.user not in self.owners:
+            await interaction.response.send_message("You may not interact with this", ephemeral=True)
+            return
         guess_modal = GuessInput(
-            title="Guess!", comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user)
+            title="Guess!", comp=Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user), winlossmanager=self.winlossmanager
         )
         guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(guess_modal)
@@ -95,52 +115,47 @@ class GuessButton(discord.ui.Button):
 class GuessInput(discord.ui.Modal):
     """Input feild for guessing."""
 
-    def __init__(
-        self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, comp: _Comp
+    def __init__(  # noqa: PLR0913
+            self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, comp: Comp, winlossmanager: WinLossManagement
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = comp.ranked
         self.score = comp.score
         self.user = comp.user
         self.article = comp.article
+        self.winlossmanager = winlossmanager
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
-        if self.ranked and interaction.user.id != self.user:
-            await interaction.response.send_message(
-                "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
-                ephemeral=True,
-            )
-            return
+        # if self.ranked and interaction.user.id != self.user:
+        #     await interaction.response.send_message(
+        #         "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
+        #         ephemeral=True,  # noqa: ERA001
+        #     )  # noqa: ERA001, RUF100
+        #     return  # noqa: ERA001
+        # This is probably redundant because GuessButton already checks for owners
 
         page = await search_wikipedia(self.children[0].value)
         if page.title() == self.article.title():
-            embed = make_embed(self.article)
-            # TODO: For Some Reason this doesnt work, it got mad
-            msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {self.score[0]}!"
-            await interaction.response.send_message(content=msg, embed=embed)
-            print(self.ranked)
-            if self.ranked:
-                print(self.score[0])
-                user = interaction.user
-                for i in [interaction.guild_id, 0]:
-                    await update_user(i, user, self.score[0])
-            await interaction.message.edit(view=None)
+            await self.winlossmanager.on_win()
             return
-        await interaction.response.send_message("That's incorrect, please try again.", ephemeral=True)
-        self.score[0] -= 5
+        await self.winlossmanager.on_loss()
+        self.score[0][0] -= 5
+        self.stop()
 
 
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
-        info: _Button,
-        comp: _Comp,
+        info: Button,
+        comp: Comp,
         links: list[str],
         message: str,
+        owners : list[discord.User],
+        private: bool
     ) -> None:
         super().__init__(
             style=info.style,
@@ -155,87 +170,31 @@ class LinkListButton(discord.ui.Button):
         self.score = comp.score
         self.message = message
         self.links = links
-
+        self.owners = owners
+        self.private = private
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
-        if interaction.message.content:
-            await interaction.message.edit(view=None)
-        else:
-            await interaction.message.delete()
+        if interaction.user not in self.owners:
+            await interaction.response.send_message("You may not interact with this", ephemeral=True)
+            return
+        # if not interaction.message.content:
+        #     await interaction.delete_original_response()
 
         selected_links = []
-        self.score[0] -= 10
+        self.score[0][0] -= 10
         for _ in range(10):
             selected_links.append(self.links.pop(randint(0, len(self.links) - 1)))  # noqa: S311
             if len(self.links) == 1:
                 selected_links.append(self.links.pop(0))
                 break
+        if selected_links == []:
+            await interaction.response.send_message('No more links!')
         await interaction.response.send_message(
             content=f"{self.message}\n```{"\n".join(selected_links)}```",
             view=self.view,
             delete_after=180,
+            ephemeral=self.private
         )
         if len(self.links) == 0:
             self.view.remove_item(self)
 
-
-def main(tree: app_commands.CommandTree) -> None:
-    """Create Wiki Guesser command."""
-
-    @tree.command(
-        name="wiki-guesser",
-        description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
-    )
-    async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
-        try:
-            ranked: bool = bool(ranked.value)
-            score = [1000]
-
-            await interaction.response.send_message(content="Hello, we are processing your request...")
-            article = await rand_wiki()
-            print(article.title())
-
-            links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
-
-            excerpt = article.extract(chars=1200)
-
-            for i in article.title().split():
-                excerpt = excerpt.replace(i, "~~CENSORED~~")
-                excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
-
-            sentances = excerpt.split(". ")
-
-            excerpt_view = discord.ui.View()
-            guess_button = GuessButton(
-                info=_Button(label="Guess!", style=discord.ButtonStyle.success),
-                comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
-            )
-            excerpt_button = ExcerptButton(
-                info=_Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score
-            )
-
-            excerpt_view.add_item(excerpt_button)
-            excerpt_view.add_item(guess_button)
-
-            await interaction.followup.send(
-                content=f"Excerpt: {sentances[0]}.",
-                view=excerpt_view,
-                wait=True,
-            )
-
-            view = discord.ui.View()
-            link_button = LinkListButton(
-                info=_Button(
-                    label="Show more links in article",
-                ),
-                comp=_Comp(score=score),
-                links=links,
-                message="Links in article:",
-            )
-
-            view.add_item(link_button)
-
-            await interaction.followup.send(view=view, wait=True)
-            await interaction.delete_original_response()
-        except discord.app_commands.errors.CommandInvokeError as e:
-            print(e)

@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
-from cmds.wikiguesser import *
 
+from cmds.wikiguesser import *
 
 
 def main(tree: app_commands.CommandTree):
