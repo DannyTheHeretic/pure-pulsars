@@ -1,4 +1,6 @@
 
+import logging
+
 import discord
 from discord import Enum, app_commands
 
@@ -49,8 +51,17 @@ def main(tree: app_commands.CommandTree) -> None:
             else:
                 await interaction.response.send_message(content="Starting a game of Wikiguesser")
 
-            article = await rand_wiki()
-            print(article.title())
+
+            # * I was encoutering an warning that happened sometimes that said 'rand_wiki' was never awaited but
+            # * when I ran the command again it didn't appear, so I'm just running this twice if it doesn't work the
+            # * first time
+            try:
+                article = await rand_wiki()
+                print(article.title())
+            except AttributeError:
+                logging.log(logging.INFO, "Wierd error occured")
+                article = await rand_wiki()
+                print(article.title())
 
             links = [link.title() for link in article.linkedPages() if is_article_title(link.title())]
 
@@ -81,7 +92,7 @@ def main(tree: app_commands.CommandTree) -> None:
             excerpt_view.add_item(excerpt_button)
             excerpt_view.add_item(guess_button)
             if ranked:
-                await interaction.followup.send(f"# RANKED WIKIGUESSER FOR {owners[0].mention}")
+                await interaction.followup.send(f"# RANKED WIKIGUESSER FOR {owners[0].mention}", ephemeral=True)
             await interaction.followup.send(
                 content=f"__**Excerpt**__: {sentances[0]}.",
                 view=excerpt_view,

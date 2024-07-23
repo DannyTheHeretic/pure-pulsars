@@ -12,7 +12,7 @@ from wikiutils import search_wikipedia
 ACCURACY_THRESHOLD = 0.8
 
 
-class Button(NamedTuple):
+class Button(NamedTuple):  # noqa: D101
     style: ButtonStyle = ButtonStyle.secondary
     label: str | None = None
     disabled: bool = False
@@ -23,8 +23,9 @@ class Button(NamedTuple):
     sku_id: int | None = None
 
 
-class Comp(NamedTuple):
-    score: list[int]
+class Comp(NamedTuple):  # noqa: D101
+    # TODO: DOCSTRING
+    score: list[list[int]]
     ranked: bool = False
     article: Page = None
     user: int = 0
@@ -69,6 +70,7 @@ class ExcerptButton(discord.ui.Button):
         self.private = private
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
+        await interaction.response.defer() # TODO: THIS LINE RAISES AN ERROR ON EVERY PRESS BUT IT WORKS AS EXPECTED
         if interaction.user not in self.owners:
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
@@ -77,9 +79,8 @@ class ExcerptButton(discord.ui.Button):
 
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
-        if self.private:
-            await interaction.response.send_message(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view, ephemeral=True)
         await interaction.edit_original_response(content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view)
+        await interaction.response.defer()
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
@@ -105,11 +106,11 @@ class GuessButton(discord.ui.Button):
         if interaction.user not in self.owners:
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
-        guess_modal = GuessInput(
+        self.guess_modal = GuessInput(
             title="Guess!", comp=Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user), winlossmanager=self.winlossmanager
         )
-        guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
-        await interaction.response.send_modal(guess_modal)
+        self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
+        await interaction.response.send_modal(self.guess_modal)
 
 
 class GuessInput(discord.ui.Modal):
@@ -124,9 +125,9 @@ class GuessInput(discord.ui.Modal):
         self.user = comp.user
         self.article = comp.article
         self.winlossmanager = winlossmanager
-
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
+        await interaction.response.defer()
         # if self.ranked and interaction.user.id != self.user:
         #     await interaction.response.send_message(
         #         "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
@@ -138,10 +139,13 @@ class GuessInput(discord.ui.Modal):
         page = await search_wikipedia(self.children[0].value)
         if page.title() == self.article.title():
             await self.winlossmanager.on_win()
+            await interaction.followup.send("Good job", ephemeral=True) # * IMPORTANT, you must respond to the interaction for the modal to close
+            # * or else it will just say something went wrong
             return
         await self.winlossmanager.on_loss()
+        await interaction.followup.send("Good job", ephemeral=True) # * IMPORTANT, you must respond to the interaction for the modal to close
+            # * or else it will just say something went wrong
         self.score[0][0] -= 5
-        self.stop()
 
 
 class LinkListButton(discord.ui.Button):
@@ -178,7 +182,7 @@ class LinkListButton(discord.ui.Button):
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
         # if not interaction.message.content:
-        #     await interaction.delete_original_response()
+        #     await interaction.delete_original_response()  # noqa: ERA001
 
         selected_links = []
         self.score[0][0] -= 10
