@@ -45,7 +45,7 @@ def main(tree: app_commands.CommandTree) -> None:
         try:
             ranked: bool = bool(ranked.value)
             owners = [interaction.user] if ranked else [*interaction.guild.members]
-            scores = [[1000]]
+            score = [1000]
             if ranked:
                 await interaction.response.send_message(content=f"Starting a game of **Ranked** Wikiguesser for {owners[0].mention}")
             else:
@@ -76,17 +76,17 @@ def main(tree: app_commands.CommandTree) -> None:
                 "interaction" : interaction,
                 "ranked": ranked,
                 "article" : article,
-                "scores": scores
+                "scores": score
             }
             excerpt_view = discord.ui.View()
             guess_button = wikiguesser_class.GuessButton(
                 info=wikiguesser_class.Button(label="Guess!", style=discord.ButtonStyle.success),
-                comp=wikiguesser_class.Comp(ranked=ranked, article=article, score=scores, user=interaction.user.id),
+                comp=wikiguesser_class.Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
                 owners=owners,
                 winlossmanager=WinLossFunctions(args, args)
             )
             excerpt_button = wikiguesser_class.ExcerptButton(
-                info=wikiguesser_class.Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=scores, owners=owners, private=ranked
+                info=wikiguesser_class.Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score, owners=owners, private=ranked
             )
 
             excerpt_view.add_item(excerpt_button)
@@ -106,7 +106,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     label="Show more links in article",
 
                 ),
-                comp=wikiguesser_class.Comp(score=scores),
+                comp=wikiguesser_class.Comp(score=score),
                 links=links,
                 message="Links in article:",
                 owners=owners,

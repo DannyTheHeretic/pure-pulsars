@@ -25,7 +25,7 @@ class Button(NamedTuple):  # noqa: D101
 
 class Comp(NamedTuple):  # noqa: D101
     # TODO: DOCSTRING
-    score: list[list[int]]
+    score: list[int]
     ranked: bool = False
     article: Page = None
     user: int = 0
@@ -75,7 +75,7 @@ class ExcerptButton(discord.ui.Button):
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
         self.ind += 1
-        self.score[0][0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
+        self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > 1990:  # noqa:PLR2004
             self.view.remove_item(self)
@@ -145,7 +145,7 @@ class GuessInput(discord.ui.Modal):
         await self.winlossmanager.on_loss()
         await interaction.followup.send("Good job", ephemeral=True) # * IMPORTANT, you must respond to the interaction for the modal to close
             # * or else it will just say something went wrong
-        self.score[0][0] -= 5
+        self.score[0] -= 5
 
 
 class LinkListButton(discord.ui.Button):
@@ -185,7 +185,7 @@ class LinkListButton(discord.ui.Button):
         #     await interaction.delete_original_response()  # noqa: ERA001
 
         selected_links = []
-        self.score[0][0] -= 10
+        self.score[0] -= 10
         for _ in range(10):
             selected_links.append(self.links.pop(randint(0, len(self.links) - 1)))  # noqa: S311
             if len(self.links) == 1:
