@@ -24,12 +24,12 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):  # noqa: D101
         article = self.winargs['article']
         embed = make_embed(article)
         # TODO: For Some Reason this doesnt work, it got mad
-        msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {scores[0][0]}!"
+        msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {scores[0]}!"
         await interaction.followup.send(content=msg, embed=embed)
         if ranked:
             user = interaction.user
             for i in [interaction.guild_id, 0]:
-                await update_user(i, user, scores[0][0])
+                await update_user(i, user, scores[0])
     async def on_loss(self) -> None:  # noqa: D102
         interaction: discord.Interaction = self.lossargs['interaction']
         await interaction.followup.send("That's incorrect, please try again.", ephemeral=True)

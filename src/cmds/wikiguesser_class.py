@@ -143,7 +143,7 @@ class GuessInput(discord.ui.Modal):
             # * or else it will just say something went wrong
             return
         await self.winlossmanager.on_loss()
-        await interaction.followup.send("Good job", ephemeral=True) # * IMPORTANT, you must respond to the interaction for the modal to close
+        await interaction.followup.send("bad job", ephemeral=True) # * IMPORTANT, you must respond to the interaction for the modal to close
             # * or else it will just say something went wrong
         self.score[0] -= 5
 
