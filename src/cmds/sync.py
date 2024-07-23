@@ -16,12 +16,14 @@ def main(bot: app_commands.CommandTree) -> None:
     @commands.is_owner()
     async def sync(inter: discord.Interaction) -> None:
         """."""
-        guild = inter.guild
         try:
-            await bot.sync(guild=guild)
-        except discord.HTTPException:
-            pass
-        else:
+            guild = inter.guild
+            try:
+                await bot.sync(guild=guild)
+            except discord.HTTPException as e:
+                logging.critical(e)
             msg = f"Synced the tree to {guild.name}"
             logging.info(msg=msg)
             await inter.followup.send(content=msg)
+        except discord.app_commands.errors.CommandInvokeError as e:
+            logging.critical(e)

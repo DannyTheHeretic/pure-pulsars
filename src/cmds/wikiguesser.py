@@ -298,4 +298,4 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.followup.send(view=view, wait=True)
             await interaction.delete_original_response()
         except discord.app_commands.errors.CommandInvokeError as e:
-            logging.info("Exception %s", e)
+            logging.critical("Exception %s", e)
