@@ -1,6 +1,8 @@
+import functools
 import logging
 import random
 import secrets
+from collections.abc import Sequence
 from datetime import UTC, date, datetime
 
 import aiohttp
@@ -120,3 +122,64 @@ async def update_user(guild: int, user: User, score: int) -> None:
             last_played=datetime.now(UTC).timestamp(),
         ))
         await DATA.add_user(uid, new_user, guild)
+
+
+@functools.cache
+async def get_all_valid_categories() -> Sequence[str]:
+    """Return all valid categories."""
+    _ = await site.all_categories()
+    return [category.title() async for category in _]
+
+
+class ArticleGeneratorError(Exception):
+    """Base class for ArticleGenerator exceptions."""
+
+
+class ArticleGenerator:
+    """Generates articles from Wikipedia."""
+
+    _current_article: Page
+
+    def __init__(
+        self,
+        categories: Sequence[str],
+    ) -> None:
+        self._current_article = None
+        self.categories = categories
+
+    @property
+    def categories(self) -> Sequence[str]:
+        """Return the categories."""
+        return self._categories
+
+    @categories.setter
+    async def categories(self, _value: Sequence[str]) -> None:
+        """Set the categories."""
+        value = tuple(_value)
+        self._categories = value
+
+        # Validate that these are Wikipedia article categories.
+        valid_categories = await self.get_valid_categories()
+
+        invalid_target_categories = [category for category in value if category not in valid_categories]
+
+        if invalid_target_categories:
+            message = f"Invalid categories: {', '.join(invalid_target_categories)}"
+            raise ArticleGeneratorError(message)
+
+    async def get_article(self) -> Page:
+        """Return an article."""
+        if not self._current_article:
+            self._current_article = await rand_wiki()
+        return self._current_article
+
+    async def next_article(self) -> Page:
+        """Return a new article."""
+        self._current_article = await rand_wiki()
+        return self._current_article
+
+    async def get_valid_categories(self) -> Sequence[str]:
+        """Return the valid categories."""
+        _ = await get_all_valid_categories()
+
+        raise NotImplementedError
