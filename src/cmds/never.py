@@ -18,7 +18,7 @@ def main(tree: app_commands.CommandTree) -> None:
     async def never_gonna_give_you_up(interaction: discord.Interaction, user: discord.User) -> None:
         await interaction.response.send_message(f"Starting deathmatch between {user.mention} and {interaction.user.mention}...")
         article = await search_wikipedia("Never gonna give you up")
-        asyncio.sleep(1)
+        await asyncio.sleep(1)
         await interaction.followup.send(embed=make_embed(article))
 
 
