@@ -6,7 +6,7 @@ from discord.ext import commands
 
 
 def main(bot: app_commands.CommandTree) -> None:
-    """."""
+    """Command to sync the tree."""
 
     @bot.command(
         name="sync",
@@ -15,7 +15,7 @@ def main(bot: app_commands.CommandTree) -> None:
     @commands.guild_only()
     @commands.is_owner()
     async def sync(inter: discord.Interaction) -> None:
-        """."""
+        """Command to sync the tree."""
         try:
             guild = inter.guild
             try:
