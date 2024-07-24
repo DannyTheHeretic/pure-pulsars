@@ -52,7 +52,7 @@ class WinLossManagement(ABC):
 class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self, *, info: _Button, summary: str, score: list[int], owners: list[discord.User], private: bool
     ) -> None:
         super().__init__(
@@ -128,7 +128,7 @@ class GuessButton(discord.ui.Button):
 class GuessInput(discord.ui.Modal):
     """Input feild for guessing."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         *,
         title: str = MISSING,
