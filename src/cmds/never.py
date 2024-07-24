@@ -1,4 +1,3 @@
-
 import asyncio
 
 import discord
@@ -13,15 +12,16 @@ def main(tree: app_commands.CommandTree) -> None:
     @tree.command(
         name="deathmatch",
         description="Multiplayer wikiguesser but whoever loses gets shot",
-
     )
     async def never_gonna_give_you_up(interaction: discord.Interaction, user: discord.User) -> None:
-        await interaction.response.send_message(f"Starting deathmatch between {user.mention} and {interaction.user.mention}...")
+        await interaction.response.send_message(
+            f"Starting deathmatch between {user.mention} and {interaction.user.mention}..."
+        )
         article = await search_wikipedia("Rickrolling")
         await asyncio.sleep(1)
         embed = make_embed(article)
-        embed.description = f"{article.extract(chars=400)}...([read more](https://www.youtube.com/watch?v=dQw4w9WgXcQ))"
+        embed.description = (
+            f"{article.extract(chars=400)}...([read more](https://www.youtube.com/watch?v=dQw4w9WgXcQ))"
+        )
         embed.set_image(url="https://upload.wikimedia.org/wikipedia/en/f/f7/RickRoll.png")
         await interaction.followup.send(embed=embed)
-
-
