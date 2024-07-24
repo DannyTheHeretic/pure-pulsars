@@ -253,7 +253,9 @@ def main(tree: app_commands.CommandTree) -> None:
                 await interaction.response.send_message(
                     content=f"Starting a game of **Ranked** Wikiguesser for {owners[0].mention}"
                 )
+                logging.info("There")
             else:
+                logging.info("Here")
                 await interaction.response.send_message(content="Starting a game of Wikiguesser")
 
             # * I was encoutering an warning that happened sometimes that said 'rand_wiki' was never awaited but
@@ -262,7 +264,7 @@ def main(tree: app_commands.CommandTree) -> None:
             try:
                 article = await rand_wiki()
             except AttributeError as e:
-                logging.criticle("Wierd error occured %s", e)
+                logging.critical("Wierd error occured %s", e)
                 article = await rand_wiki()
             logging.info("The current wikiguesser title is %s", article.title())
 
