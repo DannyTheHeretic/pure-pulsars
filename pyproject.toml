@@ -59,3 +59,30 @@ ignore = [
     "Q003",    # avoidable-escaped-quote
     "W191",    # tab-indentation
 ]
+
+[tool.poetry]
+name = "wikiwabbit"
+version = "0.1.0"
+description = "A cool discord bot that you can play games with. Centered around the Wikipedia site as its back bone"
+authors = ["Danny <dannytheheretic@proton.me>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.*"
+humanize = "~4.10.0"
+fake-useragent = "~1.5.1"
+aiohttp = "~3.9.5"
+pywikibot = "~9.2.1"
+"discord.py" = "~2.4.0"
+firebase-admin = "~6.5.0"
+python-dotenv = "~1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "~0.5.0"
+pre-commit = "~3.7.1"
+deptry = "^0.17.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
