@@ -280,13 +280,13 @@ def main(tree: app_commands.CommandTree) -> None:
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
             excerpt_view = discord.ui.View()
             guess_button = wikiguesser_class.GuessButton(
-                info=wikiguesser_class.Button(label="Guess!", style=discord.ButtonStyle.success),
-                comp=wikiguesser_class.Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
+                info=_Button(label="Guess!", style=discord.ButtonStyle.success),
+                comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
                 owners=owners,
                 winlossmanager=WinLossFunctions(args, args),
             )
             excerpt_button = wikiguesser_class.ExcerptButton(
-                info=wikiguesser_class.Button(label="Show more", style=discord.ButtonStyle.primary),
+                info=_Button(label="Show more", style=discord.ButtonStyle.primary),
                 summary=sentances,
                 score=score,
                 owners=owners,
@@ -312,10 +312,10 @@ def main(tree: app_commands.CommandTree) -> None:
 
             view = discord.ui.View()
             link_button = wikiguesser_class.LinkListButton(
-                info=wikiguesser_class.Button(
+                info=_Button(
                     label="Show more links in article",
                 ),
-                comp=wikiguesser_class.Comp(score=score),
+                comp=_Comp(score=score),
                 links=links,
                 message="Links in article:",
                 owners=owners,

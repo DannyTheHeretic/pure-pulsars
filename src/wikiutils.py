@@ -1,3 +1,4 @@
+import logging
 import random
 import secrets
 from datetime import UTC, date, datetime
@@ -40,7 +41,7 @@ def rand_date() -> date:
     """Take the current time returning the timetuple."""
     now = int(datetime.now(tz=UTC).timestamp() // 1)
     y = int((now - 252482400) - now % 31557600 // 1)
-    return datetime.fromtimestamp(timestamp=secrets.randbelow(now - y), tz=UTC)
+    return datetime.fromtimestamp(timestamp=now - secrets.randbelow(now - y), tz=UTC)
 
 
 def make_embed(article: Page) -> Embed:
@@ -70,6 +71,7 @@ async def rand_wiki() -> Page:
     date = f"{date.year}/{date.month:02}/{date.day:02}"
     url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
     json = None
+    logging.info("hello")
     async with aiohttp.ClientSession() as session, session.get(url) as response:
         json = await response.json()
     try:
@@ -77,9 +79,11 @@ async def rand_wiki() -> Page:
         random.shuffle(articles)
         title = articles[0]["article"]
         page = Page(site, title)
+        logging.info("there")
         if page.isRedirectPage() or not page.exists():
             return await rand_wiki()
-    except KeyError:
+    except KeyError as e:
+        logging.critical("Oops, %s", e)
         return await rand_wiki()
     return page
 
