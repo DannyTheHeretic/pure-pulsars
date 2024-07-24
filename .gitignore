@@ -36,3 +36,6 @@ test_wiki_rand.py
 *firebase-adminsdk*.json
 code-jam-11.code-workspace
 src/cmds/shutdown.py
+
+# Secrets!
+secrets/

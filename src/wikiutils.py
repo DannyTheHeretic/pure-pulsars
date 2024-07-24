@@ -1,4 +1,5 @@
 import random
+import secrets
 from datetime import UTC, date, datetime
 
 import aiohttp
@@ -39,7 +40,7 @@ def rand_date() -> date:
     """Take the current time returning the timetuple."""
     now = int(datetime.now(tz=UTC).timestamp() // 1)
     y = int((now - 252482400) - now % 31557600 // 1)
-    return datetime.fromtimestamp(timestamp=random.randrange(y, now), tz=UTC)  # noqa: S311
+    return datetime.fromtimestamp(timestamp=secrets.randbelow(now - y), tz=UTC)
 
 
 def make_embed(article: Page) -> Embed:
@@ -71,12 +72,15 @@ async def rand_wiki() -> Page:
     json = None
     async with aiohttp.ClientSession() as session, session.get(url) as response:
         json = await response.json()
-    articles = json["items"][0]["articles"]
-    random.shuffle(articles)
-    title = articles[0]["article"]
-    page = Page(site, title)
-    if page.isRedirectPage() or not page.exists():
-        return rand_wiki()
+    try:
+        articles = json["items"][0]["articles"]
+        random.shuffle(articles)
+        title = articles[0]["article"]
+        page = Page(site, title)
+        if page.isRedirectPage() or not page.exists():
+            return await rand_wiki()
+    except KeyError:
+        return await rand_wiki()
     return page
 
 
