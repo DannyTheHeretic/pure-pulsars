@@ -29,13 +29,6 @@ class _Button(NamedTuple):
     private: bool | None = None
 
 
-class _Comp(NamedTuple):
-    score: list[int]
-    ranked: bool = False
-    article: Page = None
-    user: int = 0
-
-
 class _Ranked(Enum):
     YES = 1
     NO = 0
@@ -56,6 +49,15 @@ class WinLossManagement(ABC):
     @abstractmethod
     async def _on_loss(self) -> None:
         pass
+
+
+
+class _Comp(NamedTuple):
+    score: list[int]
+    winlossmanager: WinLossManagement | None = None
+    ranked: bool = False
+    article: Page = None
+    user: int = 0
 
 
 class GiveUpButton(discord.ui.Button):
@@ -112,7 +114,7 @@ class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
     def __init__(
-        self, *, info: _Button, summary: str, score: list[int], owners: list[discord.User], private: bool
+        self, *, info: _Button, summary: str,
     ) -> None:
         super().__init__(
             style=info.style,
@@ -125,10 +127,10 @@ class ExcerptButton(discord.ui.Button):
             sku_id=info.sku_id,
         )
         self.summary = summary
-        self.score = score
+        self.score = info.score
         self.ind = 1
-        self.owners = owners
-        self.private = private
+        self.owners = info.owners
+        self.private = info.private
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
@@ -151,7 +153,7 @@ class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
     def __init__(
-        self, *, info: _Button, comp: _Comp, owners: list[discord.User], winlossmanager: WinLossManagement
+        self, *, info: _Button, comp: _Comp, owners: list[discord.User]
     ) -> None:
         super().__init__(
             style=info.style,
@@ -168,7 +170,7 @@ class GuessButton(discord.ui.Button):
         self.score = comp.score
         self.user = comp.user
         self.owners = owners
-        self.winlossmanager = winlossmanager
+        self.winlossmanager = comp.winlossmanager
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
@@ -177,8 +179,7 @@ class GuessButton(discord.ui.Button):
             return
         self.guess_modal = GuessInput(
             title="Guess!",
-            comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user),
-            winlossmanager=self.winlossmanager,
+            comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user, winlossmanager=self.winlossmanager,),
         )
         self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(self.guess_modal)
@@ -194,14 +195,13 @@ class GuessInput(discord.ui.Modal):
         timeout: float | None = None,
         custom_id: str = MISSING,
         comp: _Comp,
-        winlossmanager: WinLossManagement,
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.ranked = comp.ranked
         self.score = comp.score
         self.user = comp.user
         self.article = comp.article
-        self.winlossmanager = winlossmanager
+        self.winlossmanager = comp.winlossmanager
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
