@@ -40,7 +40,8 @@ async def on_ready() -> None:
     if not has_ran:
         await _first_run(client=client)
     await client.change_presence(
-        status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
+        status=discord.Status.online,
+        activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚"),
     )
 
 
@@ -64,6 +65,7 @@ help_bot.main(client.tree)
 
 if bool(os.environ.get("SERVER", 0)):
     from cmds import shutdown
+
     shutdown.main(client.tree)
 client.run(
     os.environ["DISAPI"],
