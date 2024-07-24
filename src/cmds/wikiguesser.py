@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 
 from cmds import wikiguesser_class
-from cmds.wikiguesser_class import _Button, _Comp, _List, _Ranked
+from cmds.wikiguesser_class import _Button, _Comp, _Ranked
 from wikiutils import is_article_title, make_embed, rand_wiki, update_user
 
 ACCURACY_THRESHOLD = 0.8

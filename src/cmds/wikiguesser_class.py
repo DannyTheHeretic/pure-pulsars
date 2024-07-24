@@ -1,7 +1,7 @@
 import logging
 import secrets
 from abc import ABC, abstractmethod
-from typing import ClassVar, NamedTuple
+from typing import NamedTuple
 
 import discord
 from discord import ButtonStyle, Enum
