@@ -1,5 +1,4 @@
 import logging
-from inspect import Parameter
 
 import discord
 from discord import app_commands
