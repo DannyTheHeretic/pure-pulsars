@@ -64,7 +64,6 @@ help_bot.main(client.tree)
 
 if bool(os.environ.get("SERVER", 0)):
     from cmds import shutdown
-
     shutdown.main(client.tree)
 client.run(
     os.environ["DISAPI"],
