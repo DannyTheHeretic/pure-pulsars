@@ -36,7 +36,7 @@ class _Ranked(Enum):
     NO = 0
 
 class WinLossManagement(ABC):
-    """Class that contains static methods that define what happens upon winning and what happens upon losing."""
+    """Class that contains abstract methods that define what happens upon winning and what happens upon losing."""
 
     def __init__(self, winargs: dict, lossargs: dict) -> None:
         super().__init__()
