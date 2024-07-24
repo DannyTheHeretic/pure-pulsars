@@ -31,6 +31,9 @@ async def _first_run(client: commands.Bot) -> None:
     has_ran = True
     await client.tree.sync()
     logging.info("The sync has been ran: %s", has_ran)
+    await client.change_presence(
+        status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
+    )
 
 
 @client.event
@@ -39,14 +42,11 @@ async def on_ready() -> None:
     logging.info("ready for ACTION!!!")
     if not has_ran:
         await _first_run(client=client)
-    await client.change_presence(
-        status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
-    )
 
 
 @client.event
 async def on_guild_join(guild: discord.Object) -> None:
-    """."""
+    """Declare the on guild join to sync it."""
     await client.tree.sync(guild=guild)
     logging.info("Joined and synced with \nname: %s\nid: %s", guild.name, guild.id)
 
