@@ -1,36 +1,17 @@
 import logging
 import secrets
-from typing import NamedTuple
 
 import discord
-from discord import ButtonStyle, Enum, app_commands
+from discord import Enum, app_commands
 from discord.utils import MISSING
 from pywikibot import Page
 
 from cmds import wikiguesser_class
+from cmds.wikiguesser_class import _Button, _Comp
 from wikiutils import is_article_title, make_embed, rand_wiki, search_wikipedia, update_user
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
-
-
-class _Button(NamedTuple):
-    style: ButtonStyle = ButtonStyle.secondary
-    label: str | None = None
-    disabled: bool = False
-    custom_id: str | None = None
-    url: str | None = None
-    emoji: str | discord.Emoji | discord.PartialEmoji | None = None
-    row: int | None = None
-    sku_id: int | None = None
-
-
-class _Comp(NamedTuple):
-    # TODO: DOCSTRING
-    score: list[int]
-    ranked: bool = False
-    article: Page = None
-    user: int = 0
 
 
 class _Ranked(Enum):
