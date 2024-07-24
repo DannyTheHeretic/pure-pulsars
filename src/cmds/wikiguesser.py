@@ -43,6 +43,7 @@ def main(tree: app_commands.CommandTree) -> None:
         name="wiki-guesser",
         description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
     )
+    @app_commands.describe(ranked = "Do you want to play ranked?")
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
         try:
             ranked: bool = bool(ranked.value)
