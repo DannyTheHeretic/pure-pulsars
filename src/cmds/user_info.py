@@ -7,7 +7,10 @@ from discord import app_commands
 
 from database.database_core import DATA, NullUserError
 
-
+SKIP = [
+    'userid',
+    'last_played'
+]
 def main(tree: app_commands.CommandTree) -> None:
     """Create user-info command."""
 

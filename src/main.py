@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from cmds import help_bot, leaderboard, never, reset_scores, sync, user_info, wikiguesser, wikirandom, wikisearch
+from cmds import challenge, help_bot, leaderboard, never, reset_scores, sync, user_info, wikiguesser, wikirandom, wikisearch
 
 load_dotenv(".env")
 intents = discord.Intents.all()
@@ -26,8 +26,8 @@ async def _first_run(client: commands.Bot) -> None:
 async def on_ready() -> None:
     """Ready command."""
     logging.info("ready for ACTION!!!")
-    # if not has_ran:
-    # await _first run (client=client)
+    if not has_ran:
+        await _first run (client=client)
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
@@ -48,7 +48,9 @@ user_info.main(client.tree)
 wikisearch.main(client.tree)
 reset_scores.main(client.tree)
 never.main(client.tree)
+challenge.main(client.tree)
 help_bot.main(client.tree)
+
 if bool(os.environ.get("Server",0)):
     from cmds import shutdown
     shutdown.main(client.tree)
