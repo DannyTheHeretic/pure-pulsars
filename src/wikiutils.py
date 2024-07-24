@@ -24,6 +24,7 @@ import pywikibot.page
 from discord import Embed, User
 from fake_useragent import UserAgent
 from pywikibot import Page
+from pywikibot.pagegenerators import CategoryFilterPageGenerator, RandomPageGenerator, RegexFilterPageGenerator
 
 from .database.database_core import DATA, NullUserError
 from database.user import UserController, _User
@@ -125,7 +126,12 @@ async def update_user(guild: int, user: User, score: int) -> None:
             key="last_played",
             value=datetime.now(UTC).timestamp(),
         )
-        await DATA.update_value_for_user(guild_id=guild, user_id=uid, key="wins", value=db_ref_user["wins"] + 1)
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="wins",
+            value=db_ref_user["wins"] + 1,
+        )
     except NullUserError:
         new_user = UserController(info=_User(
             name=user.global_name,
@@ -140,8 +146,7 @@ async def update_user(guild: int, user: User, score: int) -> None:
 @functools.cache
 async def get_all_valid_categories() -> Sequence[str]:
     """Return all valid categories."""
-    category_namespace = pywikibot.site.namespace.CATEGORY
-    return site.allpages(namespace=category_namespace)
+    raise NotImplementedError
 
 
 class ArticleGeneratorError(Exception):
@@ -153,8 +158,9 @@ class ArticleGenerator:
 
     _article_limit: ClassVar[int] = 1_000
 
+    categories: tuple[str]
     _current_article: Page
-    _titles: list[str]
+    titles: list[str]
 
     def __init__(
         self,
@@ -163,43 +169,7 @@ class ArticleGenerator:
     ) -> None:
         self._current_article = None
         self.titles = titles or []
-        self.categories = categories or []
-
-    @property
-    def titles(self) -> list[str]:
-        """The titles of allowed articles. If empty, any article title is allowed."""
-        return self._titles
-
-    @titles.setter
-    async def titles(self, _value: str | Sequence[str]) -> None:
-        value = [_value] if isinstance(_value, str) else list(_value)
-        self._titles = value
-
-        # Validate that these are Wikipedia article titles.
-        for title in value:
-            if not is_article_title(title):
-                message = f"Invalid title: {title}"
-                raise ArticleGeneratorError(message)
-
-    @property
-    def categories(self) -> Sequence[str]:
-        """Return the categories. If empty, any article category is allowed."""
-        return self._categories
-
-    @categories.setter
-    async def categories(self, _value: Sequence[str]) -> None:
-        """Set the categories."""
-        value = tuple(_value)
-        self._categories = value
-
-        # Validate that these are Wikipedia article categories.
-        valid_categories = await self.get_valid_categories()
-
-        invalid_target_categories = [category for category in value if category not in valid_categories]
-
-        if invalid_target_categories:
-            message = f"Invalid categories: {', '.join(invalid_target_categories)}"
-            raise ArticleGeneratorError(message)
+        self.categories = categories or ()
 
     @property
     def current_article(self) -> Page:
@@ -208,7 +178,7 @@ class ArticleGenerator:
 
     async def fetch_article(self) -> Page:
         """Return an article. Functon that retrieves the next article from the generator."""
-        return await self.next_article()
+        return await anext(self.next_article())
 
     async def next_article(self) -> Page:
         """Return a new article."""
@@ -218,23 +188,18 @@ class ArticleGenerator:
 
     async def fetch_valid_article(self) -> Page:
         """Return a valid Page based on the current constraints."""
-        # If no constraints are set, return a random article.
-        if not self.titles and not self.categories:
-            return await self.random_article()
+        generator = RandomPageGenerator(site=site)
 
-        # If titles are set, return a random article from the list of titles.
-        if self.titles:
-            title = random.choice(self.titles)  # noqa: S311
-            return await search_wikipedia(title)
-
-        # If categories are set, return a random article from the list of categories.
         if self.categories:
-            category = random.choice(self.categories)  # noqa: S311
-            return await search_wikipedia(category)
+            logging.info("Filtering by categories: %s", self.categories)
+            generator = CategoryFilterPageGenerator(generator, category_list=list(self.categories))
 
-        # TODO(teald): Deal with this better.
-        message = f"Invalid state for ArticleGenerator: {self}"
-        raise ArticleGeneratorError(message)
+        if self.titles:
+            logging.info("Filtering by titles: %s", self.titles)
+            generator = RegexFilterPageGenerator(generator, regex=r"|".join(self.titles))
+
+        # Get an article from the generator.
+        return next(generator)
 
     async def random_article(self) -> Page:
         """Return a random article."""
