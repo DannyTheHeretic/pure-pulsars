@@ -11,6 +11,7 @@ from cmds import (
     help_bot,
     leaderboard,
     never,
+    rabbit_hole,
     reset_scores,
     sync,
     user_info,
@@ -62,6 +63,7 @@ reset_scores.main(client.tree)
 never.main(client.tree)
 challenge.main(client.tree)
 help_bot.main(client.tree)
+rabbit_hole.main(client.tree)
 
 if bool(os.environ.get("SERVER", 0)):
     from cmds import shutdown
