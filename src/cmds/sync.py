@@ -23,7 +23,7 @@ def main(bot: app_commands.CommandTree) -> None:
             except discord.HTTPException as e:
                 logging.critical(e)
             msg = f"Synced the tree to {guild.name}"
-            logging.info(msg=msg)
+            logging.info(msg)
             await inter.response.send_message(content=msg, ephemeral=True)
         except discord.app_commands.errors.CommandInvokeError as e:
             logging.critical(e)

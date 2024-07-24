@@ -5,7 +5,7 @@ import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import db
 
-from .user import User
+from .user import UserController
 
 load_dotenv(".env")
 
@@ -17,7 +17,7 @@ class NullUserError(TypeError):
         super().__init__("User doesn't exist")
 
 
-class Database:
+class DatabaseController:
     """Class to interact with the user section of the Database."""
 
     SERVER_LIST: ClassVar = []
@@ -37,7 +37,7 @@ class Database:
     async def add_user(
         self,
         user_id: int,
-        user: User,
+        user: UserController,
         guild_id: int,
     ) -> None:
         """Add a user to the database using ref.set."""
@@ -82,4 +82,4 @@ class Database:
         return _ref.child(str(user_id))
 
 
-DATA = Database()
+DATA = DatabaseController()

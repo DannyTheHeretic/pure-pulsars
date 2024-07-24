@@ -11,6 +11,7 @@ from fake_useragent import UserAgent
 from pywikibot import Page
 
 from database.database_core import DATA, NullUserError
+from database.user import UserController, _User
 
 NON_LINK_PREFIXS = [
     "Category:",
@@ -71,7 +72,6 @@ async def rand_wiki() -> Page:
     date = f"{date.year}/{date.month:02}/{date.day:02}"
     url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
     json = None
-    logging.info("hello")
     async with aiohttp.ClientSession() as session, session.get(url) as response:
         json = await response.json()
     try:
@@ -79,7 +79,6 @@ async def rand_wiki() -> Page:
         random.shuffle(articles)
         title = articles[0]["article"]
         page = Page(site, title)
-        logging.info("there")
         if page.isRedirectPage() or not page.exists():
             return await rand_wiki()
     except KeyError as e:
@@ -113,12 +112,11 @@ async def update_user(guild: int, user: User, score: int) -> None:
         )
         await DATA.update_value_for_user(guild_id=guild, user_id=uid, key="wins", value=db_ref_user["wins"] + 1)
     except NullUserError:
-        new_user = User(
+        new_user = UserController(info=_User(
             name=user.global_name,
             times_played=1,
             wins=1,
             score=score,
             last_played=datetime.now(UTC).timestamp(),
-            failure=0,
-        )
+        ))
         await DATA.add_user(uid, new_user, guild)

@@ -204,14 +204,6 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         await interaction.response.defer()
-        # if self.ranked and interaction.user.id != self.user:
-        #     await interaction.response.send_message(
-        #         "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
-        #         ephemeral=True,  # noqa: ERA001
-        #     )  # noqa: ERA001, RUF100
-        #     return  # noqa: ERA001
-        # This is probably redundant because GuessButton already checks for owners
-
         page = await search_wikipedia(self.children[0].value)
         if page.title() == self.article.title():
             await self.winlossmanager.on_win()
@@ -255,18 +247,17 @@ class LinkListButton(discord.ui.Button):
         if interaction.user not in self.owners:
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
-        # if not interaction.message.content:
-        #     await interaction.delete_original_response()  # noqa: ERA001
 
         selected_links = []
         self.score[0] -= 10
         for _ in range(10):
-            selected_links.append(self.links.pop(secrets.randbelow((self.links) - 1)))
+            selected_links.append(self.links.pop(secrets.randbelow(len(self.links) - 1)))
             if len(self.links) == 1:
                 selected_links.append(self.links.pop(0))
                 break
         if selected_links == []:
             await interaction.response.send_message("No more links!")
+        logging.info("Private: %s", self.private)
         await interaction.response.send_message(
             content=f"{self.message}\n```{"\n".join(selected_links)}```",
             view=self.view,

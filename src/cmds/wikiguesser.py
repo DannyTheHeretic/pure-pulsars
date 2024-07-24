@@ -52,9 +52,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 await interaction.response.send_message(
                     content=f"Starting a game of **Ranked** Wikiguesser for {owners[0].mention}"
                 )
-                logging.info("There")
             else:
-                logging.info("Here")
                 await interaction.response.send_message(content="Starting a game of Wikiguesser")
 
             # * I was encoutering an warning that happened sometimes that said 'rand_wiki' was never awaited but

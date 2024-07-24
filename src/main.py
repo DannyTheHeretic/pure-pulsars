@@ -46,7 +46,7 @@ async def on_ready() -> None:
 
 @client.event
 async def on_guild_join(guild: discord.Object) -> None:
-    """."""
+    """Declare the on guild join to sync it."""
     await client.tree.sync(guild=guild)
     logging.info("Joined and synced with \nname: %s\nid: %s", guild.name, guild.id)
 
