@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 
 from cmds import wikiguesser_class
-from cmds.wikiguesser_class import _Button, _Comp, _Ranked
+from cmds.wikiguesser_class import _Button, _Comp, _List, _Ranked
 from wikiutils import is_article_title, make_embed, rand_wiki, update_user
 
 ACCURACY_THRESHOLD = 0.8
@@ -111,12 +111,12 @@ def main(tree: app_commands.CommandTree) -> None:
             link_button = wikiguesser_class.LinkListButton(
                 info=_Button(
                     label="Show more links in article",
+                    links=links,
+                    message="Links in article:",
+                    owners=owners,
+                    private=ranked,
                 ),
                 comp=_Comp(score=score),
-                links=links,
-                message="Links in article:",
-                owners=owners,
-                private=ranked,
             )
 
             view.add_item(link_button)

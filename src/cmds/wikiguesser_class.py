@@ -1,7 +1,7 @@
 import logging
 import secrets
 from abc import ABC, abstractmethod
-from typing import NamedTuple
+from typing import ClassVar, NamedTuple
 
 import discord
 from discord import ButtonStyle, Enum
@@ -23,10 +23,13 @@ class _Button(NamedTuple):
     emoji: str | discord.Emoji | discord.PartialEmoji | None = None
     row: int | None = None
     sku_id: int | None = None
+    links: list[str] | None = None
+    owners: list[discord.User] | None = None
+    message: str | None = None
+    private: bool | None = None
 
 
 class _Comp(NamedTuple):
-    # TODO: DOCSTRING
     score: list[int]
     ranked: bool = False
     article: Page = None
@@ -36,7 +39,6 @@ class _Comp(NamedTuple):
 class _Ranked(Enum):
     YES = 1
     NO = 0
-
 
 
 class WinLossManagement(ABC):
@@ -223,8 +225,8 @@ class GuessInput(discord.ui.Modal):
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
-    def __init__(  # noqa: PLR0913
-        self, *, info: _Button, comp: _Comp, links: list[str], message: str, owners: list[discord.User], private: bool
+    def __init__(
+        self, *, info: _Button, comp: _Comp
     ) -> None:
         super().__init__(
             style=info.style,
@@ -237,10 +239,10 @@ class LinkListButton(discord.ui.Button):
             sku_id=info.sku_id,
         )
         self.score = comp.score
-        self.message = message
-        self.links = links
-        self.owners = owners
-        self.private = private
+        self.message = info.message
+        self.links = info.links
+        self.owners = info.owners
+        self.private = info.private
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
