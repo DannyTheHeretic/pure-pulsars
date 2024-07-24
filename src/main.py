@@ -6,7 +6,18 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from cmds import challenge, help_bot, leaderboard, never, reset_scores, sync, user_info, wikiguesser, wikirandom, wikisearch
+from cmds import (
+    challenge,
+    help_bot,
+    leaderboard,
+    never,
+    reset_scores,
+    sync,
+    user_info,
+    wikiguesser,
+    wikirandom,
+    wikisearch,
+)
 
 load_dotenv(".env")
 intents = discord.Intents.all()
@@ -51,8 +62,9 @@ never.main(client.tree)
 challenge.main(client.tree)
 help_bot.main(client.tree)
 
-if bool(os.environ.get("Server",0)):
+if bool(os.environ.get("SERVER", 0)):
     from cmds import shutdown
+
     shutdown.main(client.tree)
 client.run(
     os.environ["DISAPI"],

@@ -3,27 +3,52 @@ import secrets
 from typing import NamedTuple
 
 import discord
-from discord import Enum, app_commands
+from discord import ButtonStyle, Enum, app_commands
+from discord.utils import MISSING
+from pywikibot import Page
 
 from cmds import wikiguesser_class
-from wikiutils import is_article_title, make_embed, rand_wiki, update_user
+from wikiutils import is_article_title, make_embed, rand_wiki, search_wikipedia, update_user
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
+
+
+class _Button(NamedTuple):
+    style: ButtonStyle = ButtonStyle.secondary
+    label: str | None = None
+    disabled: bool = False
+    custom_id: str | None = None
+    url: str | None = None
+    emoji: str | discord.Emoji | discord.PartialEmoji | None = None
+    row: int | None = None
+    sku_id: int | None = None
+
+
+class _Comp(NamedTuple):
+    # TODO: DOCSTRING
+    score: list[int]
+    ranked: bool = False
+    article: Page = None
+    user: int = 0
 
 
 class _Ranked(Enum):
     YES = 1
     NO = 0
 
-class WinLossFunctions(wikiguesser_class.WinLossManagement):  # noqa: D101
+
+class WinLossFunctions(wikiguesser_class.WinLossManagement):
+    """The Basic Win Loss Function."""
+
     def __init__(self, winargs: dict, lossargs: dict) -> None:
         super().__init__(winargs, lossargs)
-    async def on_win(self) -> None:  # noqa: D102
-        interaction: discord.Interaction = self.winargs['interaction']
-        ranked: bool = self.winargs['ranked']
-        scores: list[int] = self.winargs['scores']
-        article = self.winargs['article']
+
+    async def _on_win(self) -> None:
+        interaction: discord.Interaction = self.winargs["interaction"]
+        ranked: bool = self.winargs["ranked"]
+        scores: list[int] = self.winargs["scores"]
+        article = self.winargs["article"]
         embed = make_embed(article)
         # TODO: For Some Reason this doesnt work, it got mad
         msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {scores[0]}!"
@@ -32,8 +57,9 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):  # noqa: D101
             user = interaction.user
             for i in [interaction.guild_id, 0]:
                 await update_user(i, user, scores[0])
-    async def on_loss(self) -> None:  # noqa: D102
-        interaction: discord.Interaction = self.lossargs['interaction']
+
+    async def _on_loss(self) -> None:
+        interaction: discord.Interaction = self.lossargs["interaction"]
         await interaction.followup.send("That's incorrect, please try again.", ephemeral=True)
 
 
@@ -243,10 +269,11 @@ def main(tree: app_commands.CommandTree) -> None:
             owners = [interaction.user] if ranked else [*interaction.guild.members]
             score = [1000]
             if ranked:
-                await interaction.response.send_message(content=f"Starting a game of **Ranked** Wikiguesser for {owners[0].mention}")
+                await interaction.response.send_message(
+                    content=f"Starting a game of **Ranked** Wikiguesser for {owners[0].mention}"
+                )
             else:
                 await interaction.response.send_message(content="Starting a game of Wikiguesser")
-
 
             # * I was encoutering an warning that happened sometimes that said 'rand_wiki' was never awaited but
             # * when I ran the command again it didn't appear, so I'm just running this twice if it doesn't work the
@@ -267,21 +294,20 @@ def main(tree: app_commands.CommandTree) -> None:
                 excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
 
             sentances = excerpt.split(". ")
-            args = {
-                "interaction" : interaction,
-                "ranked": ranked,
-                "article" : article,
-                "scores": score
-            }
+            args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
             excerpt_view = discord.ui.View()
             guess_button = wikiguesser_class.GuessButton(
                 info=wikiguesser_class.Button(label="Guess!", style=discord.ButtonStyle.success),
                 comp=wikiguesser_class.Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
                 owners=owners,
-                winlossmanager=WinLossFunctions(args, args)
+                winlossmanager=WinLossFunctions(args, args),
             )
             excerpt_button = wikiguesser_class.ExcerptButton(
-                info=wikiguesser_class.Button(label="Show more", style=discord.ButtonStyle.primary), summary=sentances, score=score, owners=owners, private=ranked
+                info=wikiguesser_class.Button(label="Show more", style=discord.ButtonStyle.primary),
+                summary=sentances,
+                score=score,
+                owners=owners,
+                private=ranked,
             )
 
             give_up_button = GiveUpButton(
@@ -294,27 +320,23 @@ def main(tree: app_commands.CommandTree) -> None:
             excerpt_view.add_item(guess_button)
             if ranked:
                 await interaction.followup.send(f"# RANKED WIKIGUESSER FOR {owners[0].mention}", ephemeral=True)
-            
+
             excerpt_view.add_item(give_up_button)
-            
+
             await interaction.followup.send(
-                content=f"__**Excerpt**__: {sentances[0]}.",
-                view=excerpt_view,
-                wait=True,
-                ephemeral=ranked
+                content=f"__**Excerpt**__: {sentances[0]}.", view=excerpt_view, wait=True, ephemeral=ranked
             )
 
             view = discord.ui.View()
             link_button = wikiguesser_class.LinkListButton(
                 info=wikiguesser_class.Button(
                     label="Show more links in article",
-
                 ),
                 comp=wikiguesser_class.Comp(score=score),
                 links=links,
                 message="Links in article:",
                 owners=owners,
-                private=ranked
+                private=ranked,
             )
 
             view.add_item(link_button)
