@@ -15,6 +15,7 @@ import functools
 import logging
 import random
 import secrets
+from collections import defaultdict
 from collections.abc import Sequence
 from datetime import UTC, date, datetime
 from typing import ClassVar
@@ -77,7 +78,7 @@ def make_embed(article: Page) -> Embed:
     return embed
 
 
-def get_best_result(results: tuple[Page], query: str) -> Page:
+def get_best_result(results: tuple[Page], query: str) -> Page | None:
     """Return the best result from a list of results."""
     # Check for exact match in the title
     for result in results:
@@ -113,7 +114,7 @@ async def search_wikipedia(query: str) -> Page | None:
         if not results:
             return None
 
-        return get_best_result(results)
+        return get_best_result(results, query)
 
     try:
         return result
@@ -121,6 +122,25 @@ async def search_wikipedia(query: str) -> Page | None:
     except IndexError:
         logging.exception("No results found for query: %s", query)
         return None
+
+
+async def search_wikipedia_generator(query: str, max_number: int = 10) -> Page | None:
+    """Search wikipedia and return results matching the query.
+
+    Args:
+    ----
+    query (str): The query to search for.
+    max_number (int): The maximum number of results to return.
+
+    Returns:
+    -------
+    Page: The first page found. None if no results are found.
+
+    """
+    results = tuple(site.search(query, total=max_number))
+
+    for result in results:
+        yield result
 
 
 async def rand_wiki() -> Page:
@@ -186,15 +206,9 @@ async def update_user(guild: int, user: User, score: int) -> None:
         await DATA.add_user(uid, new_user, guild)
 
 
-@functools.cache
-async def get_all_valid_categories() -> Sequence[str]:
-    """Return all valid categories."""
-    raise NotImplementedError
-
-
 def get_all_categories_from_article(article: Page) -> list[str]:
     """Return all categories from an article."""
-    return [category.title() for category in article.categories()]
+    return [category.title().replace("Category:", "") for category in article.categories()]
 
 
 def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
@@ -268,57 +282,105 @@ class ArticleGenerator:
 
     async def fetch_valid_article(self) -> Page:
         """Return a valid Page based on the current constraints."""
-        articles = await self._article_from_titles() if self.titles else []
+        # TODO(teald): Refactor below.
+        articles = await self._articles_from_titles() if self.titles else []
 
         # Filter articles that have already been generated.
         articles = [article for article in articles if article not in self._generated_articles]
 
-        # TODO(teald): Refactor below.
         if self.categories:
             if not articles:
-                article = await self._article_from_categories()
+                articles = await self._articles_from_categories()
 
-            else:
-                article = random.choice(
-                    [
-                        article
-                        for article in articles
-                        if any(category in get_all_categories_from_article(article) for category in self.categories)
-                    ]
-                )
+            try:
+                article = random.choice([article for article in articles if self.article_has_categories(article)])
 
-        elif not articles:
+            except IndexError as err:
+                message = f"No articles found in the categories: {self.categories}."
+                raise ArticleGeneratorError(message) from err
+
+        elif not articles and not self.titles:
             article = await self.random_article()
 
         else:
-            article = articles[0]
+            try:
+                article = articles[0]
+
+            except IndexError as err:
+                message = "No articles found for the given titles."
+                raise ArticleGeneratorError(message) from err
 
         # Record this article as generated.
         self._generated_articles.add(article)
 
         return article
 
-    async def _article_from_categories(self) -> list[Page]:
+    async def _articles_from_categories(self) -> list[Page]:
         """Return an article from the list of categories."""
         category_pages = {category: set(pywikibot.Category(site, category).articles()) for category in self.categories}
 
         # If there are mutlitple categories, get the intersection of the articles.
         articles = functools.reduce(set.intersection, category_pages.values())
 
-        return random.choice(list(articles))
+        try:
+            return list(articles)
 
-    async def _article_from_titles(self) -> list[Page]:
+        except IndexError as err:
+            message = "No articles found in the categories."
+            raise ArticleGeneratorError(message) from err
+
+    async def _articles_from_titles(self) -> list[Page]:
         """Return an article from the list of titles."""
-        # Get top page for each of the titles.
-        return [await search_wikipedia(title) for title in self.titles]
+        # TODO(teald): Refactor this function.
+        # If categories are provided, do a broader search.
+        if self.categories:
+            title_articles: dict[str, set(Page)] = defaultdict(set)
+
+            for title in self.titles:
+                async for article in search_wikipedia_generator(title):
+                    title_articles[title].add(article)
+
+            articles = {a for articles in title_articles.values() for a in articles}
+
+            if any(article is None for article in title_articles.values()):
+                titles_not_found = [title for title, article in title_articles.items() if article is None]
+                message = f"No articles found for the following titles: {titles_not_found}"
+
+                raise ArticleGeneratorError(message)
+
+            # Ensure the title is at least a partial match.
+            articles = {
+                article
+                for article in articles
+                if any(title.casefold() in article.title().casefold() for title in self.titles)
+            }
+
+        else:
+            # Get top page for each of the titles.
+            articles = [await search_wikipedia(title) for title in self.titles]
+
+        if None in articles:
+            titles_not_found = [
+                title for title, article in zip(self.titles, articles, strict=False) if article is None
+            ]
+            message = f"No articles found for the following titles: {titles_not_found}"
+
+            raise ArticleGeneratorError(message)
+
+        if not articles:
+            message = "No articles found for the given titles"
+            raise ArticleGeneratorError(message)
+
+        return articles
 
     async def random_article(self) -> Page:
         """Return a random article."""
         # TODO(teald): Bring rand_wiki into this class.
         return await rand_wiki()
 
-    async def get_valid_categories(self) -> Sequence[str]:
-        """Return the valid categories."""
-        _ = await get_all_valid_categories()
+    def article_has_categories(self, article: Page) -> bool:
+        """Return True if the article has all the categories."""
+        article_categories = get_all_categories_from_article(article)
+        article_categories = {category.casefold() for category in article_categories}
 
-        raise NotImplementedError
+        return all(category.casefold() in article_categories for category in self.categories)

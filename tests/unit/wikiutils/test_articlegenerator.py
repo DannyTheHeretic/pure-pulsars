@@ -3,7 +3,7 @@
 
 import pytest
 from pywikibot import Page
-from src.wikiutils import ArticleGenerator
+from src.wikiutils import ArticleGenerator, ArticleGeneratorError
 
 
 def get_all_categories_from_article(article: Page) -> list[str]:
@@ -90,3 +90,56 @@ async def test_clear_cache() -> None:
     article_gen.clear_cache()
 
     assert article_gen._generated_articles == set()
+
+
+@pytest.mark.asyncio()
+async def test_invalid_cateory() -> None:
+    article_gen = ArticleGenerator(categories=("Invalid category",))
+
+    with pytest.raises(ArticleGeneratorError):
+        _ = await article_gen.fetch_article()
+
+
+@pytest.mark.asyncio()
+async def test_invalid_title() -> None:
+    article_gen = ArticleGenerator(titles=["Invalid title!!!.!"])
+
+    with pytest.raises(ArticleGeneratorError):
+        _ = await article_gen.fetch_article()
+
+
+@pytest.mark.asyncio()
+async def test_invalid_title_and_category() -> None:
+    article_gen = ArticleGenerator(titles=["Invalid title!!!.!"], categories=("Invalid category",))
+
+    with pytest.raises(ArticleGeneratorError):
+        _ = await article_gen.fetch_article()
+
+
+@pytest.mark.asyncio()
+async def test_invalid_title_and_valid_category() -> None:
+    article_gen = ArticleGenerator(titles=["Invalid title!!!.!"], categories=("Astronomy",))
+
+    with pytest.raises(ArticleGeneratorError):
+        _ = await article_gen.fetch_article()
+
+
+@pytest.mark.asyncio()
+async def test_valid_title_and_invalid_category() -> None:
+    article_gen = ArticleGenerator(titles=["Python (programming language)"], categories=("Invalid category",))
+
+    with pytest.raises(ArticleGeneratorError):
+        _ = await article_gen.fetch_article()
+
+
+@pytest.mark.asyncio()
+async def test_title_and_category() -> None:
+    # Note: the category capitalization vs. the actual category name is different.
+    #       This is intentional to test the case insensitivity of the category name.
+    article_gen = ArticleGenerator(titles=["Python"], categories=("Programming Languages",))
+
+    result = await article_gen.fetch_article()
+
+    assert result is not None
+    assert result.title() == "Python (programming language)"
+    assert "Category:Programming languages" in get_all_categories_from_article(result)
