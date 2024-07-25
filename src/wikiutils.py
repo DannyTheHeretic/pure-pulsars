@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 import aiohttp
 import pywikibot
 import pywikibot.page
-from discord import Embed, User
+from discord import Colour, Embed, User
 from fake_useragent import UserAgent
 from pywikibot import Page
 
@@ -57,6 +57,19 @@ def make_embed(article: Page) -> Embed:
         except AttributeError:
             url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
     embed.set_image(url=url)
+    return embed
+
+
+def make_img_embed(article: Page, error_message: str = "Sorry no image found") -> Embed:
+    """Return an embed with just an image."""
+    embed = Embed(colour=Colour.blue(), type="image")
+    img_data = article.page_image()
+    try:
+        img_url = img_data.get_file_url()
+    except AttributeError:
+        img_url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
+        embed.description = error_message
+    embed.set_image(url=img_url)
     return embed
 
 

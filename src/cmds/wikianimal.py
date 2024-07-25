@@ -6,7 +6,7 @@ from pywikibot import Page
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import _Button, _Comp
-from wikiutils import make_embed, rand_wiki
+from wikiutils import make_embed, make_img_embed, rand_wiki
 
 
 class WinLossFunctions(wikiguesser_class.WinLossManagement):
@@ -102,16 +102,11 @@ def main(tree: app_commands.CommandTree) -> None:
                 article = await rand_wiki()
             logging.info("The current wikiguesser title is %s", article.title())
 
-            excerpt = article.extract(chars=1200)
+            hint_view = discord.ui.View()
 
-            for i in article.title().split():
-                excerpt = excerpt.replace(i, "~~CENSORED~~")
-                excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
+            animal_name = article.title()
 
-            sentances = excerpt.split(". ")
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
-
-            excerpt_view = discord.ui.View()
 
             guess_button = wikiguesser_class.GuessButton(
                 info=_Button(label="Guess!", style=discord.ButtonStyle.success),
@@ -120,27 +115,26 @@ def main(tree: app_commands.CommandTree) -> None:
                 winlossmanager=WinLossFunctions(args, args),
             )
 
-            excerpt_button = wikiguesser_class.ExcerptButton(
-                info=_Button(label="Show more", style=discord.ButtonStyle.primary),
-                summary=sentances,
-                score=score,
-                owners=owners,
-                private=ranked,
-            )
-
             give_up_button = GiveUpButton(
                 info=_Button(label="Give up", style=discord.ButtonStyle.danger),
                 article=article,
-                view=excerpt_view,
+                view=hint_view,
             )
 
-            excerpt_view.add_item(excerpt_button)
-            excerpt_view.add_item(guess_button)
+            hint_view.add_item(guess_button)
 
-            excerpt_view.add_item(give_up_button)
+            hint_view.add_item(give_up_button)
+
+            img_embed = make_img_embed(
+                article=article, error_message="Sorry this animal's image is missing. Good Luck!"
+            )
 
             await interaction.followup.send(
-                content=f"__**Excerpt**__: {sentances[0]}.", view=excerpt_view, wait=True, ephemeral=ranked
+                content=f"Guess the {animal_name}'s weight.",
+                view=hint_view,
+                wait=True,
+                embed=img_embed,
+                ephemeral=ranked,
             )
 
             await interaction.delete_original_response()
