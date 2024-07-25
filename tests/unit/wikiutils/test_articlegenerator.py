@@ -23,7 +23,7 @@ async def test_plain_articlegenerator() -> None:
 
 @pytest.mark.asyncio()
 async def test_specific_page() -> None:
-    article_gen = ArticleGenerator(titles="Python (programming language)")
+    article_gen = ArticleGenerator(titles=["Python (programming language)"])
 
     result = await article_gen.fetch_article()
 
@@ -40,4 +40,4 @@ async def test_category_fetch() -> None:
     result = await article_gen.fetch_article()
 
     assert result is not None
-    assert "Astronomy" in get_all_categories_from_article(result)
+    assert "Category:Astronomy" in get_all_categories_from_article(result)

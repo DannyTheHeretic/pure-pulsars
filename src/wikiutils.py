@@ -9,6 +9,7 @@ Todo:
     - [ ] Works as `rand_wiki` with a list of allowed categories
 
 """
+# ruff: noqa: S311
 
 import functools
 import logging
@@ -24,10 +25,9 @@ import pywikibot.page
 from discord import Embed, User
 from fake_useragent import UserAgent
 from pywikibot import Page
-from pywikibot.pagegenerators import CategoryFilterPageGenerator, RandomPageGenerator, RegexFilterPageGenerator
 
 from .database.database_core import DATA, NullUserError
-from database.user import UserController, _User
+from .database.user import UserController, _User
 
 NON_LINK_PREFIXS = [
     "Category:",
@@ -77,9 +77,50 @@ def make_embed(article: Page) -> Embed:
     return embed
 
 
-async def search_wikipedia(query: str) -> Page:
-    """Search wikipedia and return the first result."""
-    return next(site.search(query, total=1))
+def get_best_result(results: tuple[Page], query: str) -> Page:
+    """Return the best result from a list of results."""
+    # Check for exact match in the title
+    for result in results:
+        if query.casefold().strip() == result.title().casefold().strip():
+            return result
+
+    # Check for near match in the title
+    for result in results:
+        if query.casefold().strip() in result.title().casefold().strip():
+            return result
+
+    return None
+
+
+async def search_wikipedia(query: str) -> Page | None:
+    """Search wikipedia and return the first result.
+
+    Args:
+    ----
+    query (str): The query to search for.
+
+    Returns:
+    -------
+    Page: The first page found. None if no results are found.
+
+    """
+    result = Page(site, title=query)
+
+    if not result.exists() or result.isRedirectPage():
+        # Try performing a search.
+        results = tuple(site.search(query, total=10))
+
+        if not results:
+            return None
+
+        return get_best_result(results)
+
+    try:
+        return result
+
+    except IndexError:
+        logging.exception("No results found for query: %s", query)
+        return None
 
 
 async def rand_wiki() -> Page:
@@ -133,13 +174,15 @@ async def update_user(guild: int, user: User, score: int) -> None:
             value=db_ref_user["wins"] + 1,
         )
     except NullUserError:
-        new_user = UserController(info=_User(
-            name=user.global_name,
-            times_played=1,
-            wins=1,
-            score=score,
-            last_played=datetime.now(UTC).timestamp(),
-        ))
+        new_user = UserController(
+            info=_User(
+                name=user.global_name,
+                times_played=1,
+                wins=1,
+                score=score,
+                last_played=datetime.now(UTC).timestamp(),
+            )
+        )
         await DATA.add_user(uid, new_user, guild)
 
 
@@ -147,6 +190,11 @@ async def update_user(guild: int, user: User, score: int) -> None:
 async def get_all_valid_categories() -> Sequence[str]:
     """Return all valid categories."""
     raise NotImplementedError
+
+
+def get_all_categories_from_article(article: Page) -> list[str]:
+    """Return all categories from an article."""
+    return [category.title() for category in article.categories()]
 
 
 class ArticleGeneratorError(Exception):
@@ -164,7 +212,7 @@ class ArticleGenerator:
 
     def __init__(
         self,
-        titles: str | Sequence[str] | None = None,
+        titles: Sequence[str] | None = None,
         categories: Sequence[str] | None = None,
     ) -> None:
         self._current_article = None
@@ -188,18 +236,38 @@ class ArticleGenerator:
 
     async def fetch_valid_article(self) -> Page:
         """Return a valid Page based on the current constraints."""
-        generator = RandomPageGenerator(site=site)
+        articles = await self._article_from_titles() if self.titles else []
 
+        # TODO(teald): Refactor below.
         if self.categories:
-            logging.info("Filtering by categories: %s", self.categories)
-            generator = CategoryFilterPageGenerator(generator, category_list=list(self.categories))
+            if not articles:
+                article = await self._article_from_categories()
 
-        if self.titles:
-            logging.info("Filtering by titles: %s", self.titles)
-            generator = RegexFilterPageGenerator(generator, regex=r"|".join(self.titles))
+            else:
+                article = random.choice(
+                    [
+                        article
+                        for article in articles
+                        if any(category in get_all_categories_from_article(article) for category in self.categories)
+                    ]
+                )
 
-        # Get an article from the generator.
-        return next(generator)
+        elif not articles:
+            article = await self.random_article()
+
+        else:
+            article = articles[0]
+
+        return article
+
+    async def _article_from_categories(self) -> list[Page]:
+        """Return an article from the list of categories."""
+        return await search_wikipedia(random.choice(self.categories))
+
+    async def _article_from_titles(self) -> list[Page]:
+        """Return an article from the list of titles."""
+        # Get top page for each of the titles.
+        return [await search_wikipedia(title) for title in self.titles]
 
     async def random_article(self) -> Page:
         """Return a random article."""
