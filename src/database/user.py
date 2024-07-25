@@ -13,10 +13,7 @@ class _User(NamedTuple):
 class UserController:
     """The Basic User Class."""
 
-    def __init__(
-        self,
-        info: _User
-    ) -> None:
+    def __init__(self, info: _User) -> None:
         self.name = info.name
         self.last_played = info.last_played
         self.score = info.score

@@ -13,7 +13,7 @@ def main(tree: app_commands.CommandTree) -> None:
         name="wiki-search",
         description="get a wikipedia article that you searched for",
     )
-    @app_commands.describe(query = "What are you asking it?")
+    @app_commands.describe(query="What are you asking it?")
     async def wiki(interaction: discord.Interaction, query: str) -> None:
         try:
             await interaction.response.send_message(content="Finding your really cool article...")
