@@ -143,3 +143,18 @@ async def test_title_and_category() -> None:
     assert result is not None
     assert result.title() == "Python (programming language)"
     assert "Category:Programming languages" in get_all_categories_from_article(result)
+
+
+@pytest.mark.asyncio()
+async def test_articlegenerator_as_iterator() -> None:
+    article_gen = ArticleGenerator(titles=["Python (programming language)", "Java (programming language)"])
+
+    recieved = []
+    async for article in article_gen:
+        assert article is not None
+        assert article.title() in article_gen.titles
+
+        recieved.append(article)
+
+    assert len(recieved) == len(article_gen.titles)
+    assert all(article in article_gen._generated_articles for article in recieved)

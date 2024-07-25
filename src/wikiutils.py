@@ -261,6 +261,20 @@ class ArticleGenerator:
         self.categories = categories or ()
         self._generated_articles = set()
 
+    # Make this class a generator that will iterate over subsequent calls to fetch_article.
+    def __aiter__(self) -> "ArticleGenerator":
+        """Return the generator."""
+        return self
+
+    async def __anext__(self) -> Page:
+        """Return the next article."""
+        try:
+            return await self.fetch_article()
+
+        # TODO(teald): This can definitely be handled better.
+        except ArticleGeneratorError as err:
+            raise StopAsyncIteration from err
+
     @property
     def current_article(self) -> Page:
         """Return the current article."""
