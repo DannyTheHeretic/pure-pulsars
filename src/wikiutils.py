@@ -197,6 +197,24 @@ def get_all_categories_from_article(article: Page) -> list[str]:
     return [category.title() for category in article.categories()]
 
 
+def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
+    """Get a list of articles with the given categories.
+
+    Args:
+    ----
+    categories (Sequence[str]): A list of categories to search for.
+    number (int): The number of articles to return.
+
+    Returns:
+    -------
+    list[Page]: A list of articles.
+
+    """
+    generator = ArticleGenerator(categories=categories)
+
+    return [generator.fetch_article() for _ in range(number)]
+
+
 class ArticleGeneratorError(Exception):
     """Base class for ArticleGenerator exceptions."""
 
@@ -206,8 +224,9 @@ class ArticleGenerator:
 
     _article_limit: ClassVar[int] = 1_000
 
-    categories: tuple[str]
     _current_article: Page
+    _generated_articles: set[Page]
+    categories: tuple[str]
     titles: list[str]
 
     def __init__(
@@ -215,14 +234,27 @@ class ArticleGenerator:
         titles: Sequence[str] | None = None,
         categories: Sequence[str] | None = None,
     ) -> None:
+        """Initialize the ArticleGenerator.
+
+        Args:
+        ----
+        titles (Sequence[str]): A list of titles to search for.
+        categories (Sequence[str]): A list of categories to search for.
+
+        """
         self._current_article = None
         self.titles = titles or []
         self.categories = categories or ()
+        self._generated_articles = set()
 
     @property
     def current_article(self) -> Page:
         """Return the current article."""
         return self._current_article
+
+    def clear_cache(self) -> None:
+        """Clear the cache."""
+        self._generated_articles.clear()
 
     async def fetch_article(self) -> Page:
         """Return an article. Functon that retrieves the next article from the generator."""
@@ -237,6 +269,9 @@ class ArticleGenerator:
     async def fetch_valid_article(self) -> Page:
         """Return a valid Page based on the current constraints."""
         articles = await self._article_from_titles() if self.titles else []
+
+        # Filter articles that have already been generated.
+        articles = [article for article in articles if article not in self._generated_articles]
 
         # TODO(teald): Refactor below.
         if self.categories:
@@ -258,11 +293,19 @@ class ArticleGenerator:
         else:
             article = articles[0]
 
+        # Record this article as generated.
+        self._generated_articles.add(article)
+
         return article
 
     async def _article_from_categories(self) -> list[Page]:
         """Return an article from the list of categories."""
-        return await search_wikipedia(random.choice(self.categories))
+        category_pages = {category: set(pywikibot.Category(site, category).articles()) for category in self.categories}
+
+        # If there are mutlitple categories, get the intersection of the articles.
+        articles = functools.reduce(set.intersection, category_pages.values())
+
+        return random.choice(list(articles))
 
     async def _article_from_titles(self) -> list[Page]:
         """Return an article from the list of titles."""
