@@ -9,14 +9,13 @@ Todo:
     - [ ] Works as `rand_wiki` with a list of allowed categories
 
 """
-# ruff: noqa: S311
 
 import functools
 import logging
 import random
 import secrets
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import AsyncGenerator, Sequence
 from datetime import UTC, date, datetime
 from typing import ClassVar
 
@@ -27,8 +26,8 @@ from discord import Embed, User
 from fake_useragent import UserAgent
 from pywikibot import Page
 
-from .database.database_core import DATA, NullUserError
-from .database.user import UserController, _User
+from database.database_core import DATA, NullUserError
+from database.user import UserController, _User
 
 NON_LINK_PREFIXS = [
     "Category:",
@@ -124,7 +123,7 @@ async def search_wikipedia(query: str) -> Page | None:
         return None
 
 
-async def search_wikipedia_generator(query: str, max_number: int = 10) -> Page | None:
+async def search_wikipedia_generator(query: str, max_number: int = 10) -> AsyncGenerator[Page, None]:
     """Search wikipedia and return results matching the query.
 
     Args:
@@ -164,7 +163,43 @@ async def rand_wiki() -> Page:
     return page
 
 
-async def update_user(guild: int, user: User, score: int) -> None:
+async def loss_update(guild: int, user: User, score: int) -> None:
+    """Update the user in the database."""
+    uid = user.id
+    try:
+        db_ref_user = await DATA.get_user(guild, uid)
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="times_played",
+            value=db_ref_user["times_played"] + 1,
+        )
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="failure",
+            value=db_ref_user["failure"] + 1,
+        )
+        await DATA.update_value_for_user(
+            guild_id=guild,
+            user_id=uid,
+            key="last_played",
+            value=datetime.now(UTC).timestamp(),
+        )
+    except NullUserError:
+        new_user = UserController(
+            info=_User(
+                name=user.global_name,
+                times_played=1,
+                failure=1,
+                score=score,
+                last_played=datetime.now(UTC).timestamp(),
+            )
+        )
+        await DATA.add_user(uid, new_user, guild)
+
+
+async def win_update(guild: int, user: User, score: int) -> None:
     """Update the user in the database."""
     uid = user.id
     try:
@@ -288,7 +323,7 @@ class ArticleGenerator:
         """Return an article. Functon that retrieves the next article from the generator."""
         return await anext(self.next_article())
 
-    async def next_article(self) -> Page:
+    async def next_article(self) -> AsyncGenerator[Page, None]:
         """Return a new article."""
         while True:
             self._current_article = await self.fetch_valid_article()
@@ -307,7 +342,7 @@ class ArticleGenerator:
                 articles = await self._articles_from_categories()
 
             try:
-                article = random.choice([article for article in articles if self.article_has_categories(article)])
+                article = secrets.choice([article for article in articles if self.article_has_categories(article)])
 
             except IndexError as err:
                 message = f"No articles found in the categories: {self.categories}."

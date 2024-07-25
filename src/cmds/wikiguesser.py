@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 
 from cmds import wikiguesser_class
-from cmds.wikiguesser_class import _Button, _Comp, _Ranked
+from cmds.wikiguesser_class import _Button, _Ranked
 from wikiutils import is_article_title, make_embed, rand_wiki, update_user
 
 ACCURACY_THRESHOLD = 0.8
@@ -17,7 +17,8 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
     def __init__(self, winargs: dict, lossargs: dict) -> None:
         super().__init__(winargs, lossargs)
 
-    async def _on_win(self) -> None:
+    async def on_win(self) -> None:
+        """Clean up on win."""
         interaction: discord.Interaction = self.winargs["interaction"]
         ranked: bool = self.winargs["ranked"]
         scores: list[int] = self.winargs["scores"]
@@ -31,7 +32,8 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
             for i in [interaction.guild_id, 0]:
                 await update_user(i, user, scores[0])
 
-    async def _on_loss(self) -> None:
+    async def on_loss(self) -> None:
+        """Clean up on loss."""
         interaction: discord.Interaction = self.lossargs["interaction"]
         await interaction.followup.send("That's incorrect, please try again.", ephemeral=True)
 
@@ -82,8 +84,6 @@ def main(tree: app_commands.CommandTree) -> None:
                     label="Guess!",
                     style=discord.ButtonStyle.success,
                     owners=owners,
-                ),
-                comp=_Comp(
                     ranked=ranked,
                     article=article,
                     score=score,
@@ -95,16 +95,19 @@ def main(tree: app_commands.CommandTree) -> None:
                 info=_Button(
                     label="Show more",
                     style=discord.ButtonStyle.primary,
-                    score=score,
                     owners=owners,
                     private=ranked,
+                    score=score,
                 ),
                 summary=sentances,
             )
 
             give_up_button = wikiguesser_class.GiveUpButton(
-                info=_Button(label="Give up", style=discord.ButtonStyle.danger),
-                article=article,
+                info=_Button(
+                    label="Give up",
+                    style=discord.ButtonStyle.danger,
+                    article=article,
+                ),
                 view=excerpt_view,
             )
 
@@ -127,8 +130,8 @@ def main(tree: app_commands.CommandTree) -> None:
                     message="Links in article:",
                     owners=owners,
                     private=ranked,
+                    score=score,
                 ),
-                comp=_Comp(score=score),
             )
 
             view.add_item(link_button)

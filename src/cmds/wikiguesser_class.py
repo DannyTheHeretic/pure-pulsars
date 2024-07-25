@@ -8,25 +8,10 @@ from discord import ButtonStyle, Enum
 from discord.utils import MISSING
 from pywikibot import Page
 
-from wikiutils import make_embed, search_wikipedia
+from wikiutils import loss_update, make_embed, search_wikipedia
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
-
-
-class _Button(NamedTuple):
-    style: ButtonStyle = ButtonStyle.secondary
-    label: str | None = None
-    disabled: bool = False
-    custom_id: str | None = None
-    url: str | None = None
-    emoji: str | discord.Emoji | discord.PartialEmoji | None = None
-    row: int | None = None
-    sku_id: int | None = None
-    links: list[str] | None = None
-    owners: list[discord.User] | None = None
-    message: str | None = None
-    private: bool | None = None
 
 
 class _Ranked(Enum):
@@ -43,16 +28,28 @@ class WinLossManagement(ABC):
         self.lossargs = lossargs
 
     @abstractmethod
-    async def _on_win(self) -> None:
-        pass
+    async def on_win(self) -> None:
+        """Clean up on win."""
 
     @abstractmethod
-    async def _on_loss(self) -> None:
-        pass
+    async def on_loss(self) -> None:
+        """Clean up on loss."""
 
 
-class _Comp(NamedTuple):
-    score: list[int]
+class _Button(NamedTuple):
+    style: ButtonStyle = ButtonStyle.secondary
+    label: str | None = None
+    disabled: bool = False
+    custom_id: str | None = None
+    url: str | None = None
+    emoji: str | discord.Emoji | discord.PartialEmoji | None = None
+    row: int | None = None
+    sku_id: int | None = None
+    links: list[str] | None = None
+    owners: list[discord.User] | None = None
+    message: str | None = None
+    private: bool | None = None
+    score: list[int] | None = None
     winlossmanager: WinLossManagement | None = None
     ranked: bool = False
     article: Page = None
@@ -64,7 +61,7 @@ class GiveUpButton(discord.ui.Button):
 
     _end_message: str = "Thank you for trying!"
 
-    def __init__(self, *, info: _Button, article: Page, view: discord.ui.View) -> None:
+    def __init__(self, *, info: _Button, view: discord.ui.View) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -78,7 +75,8 @@ class GiveUpButton(discord.ui.Button):
 
         # TODO(teald): This may be better handled with a GameState class, or
         # something that can be more easily accessed/passed around.
-        self.article = article
+        self.ranked = info.ranked
+        self.article = info.article
         self._view = view
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -88,14 +86,17 @@ class GiveUpButton(discord.ui.Button):
 
         # Exit the game.
         logging.info("GiveUpButton handling exit for %s.", interaction)
-
         msg = self._end_message
         article = self.article
         embed = make_embed(article)
         embed.set_footer(text=msg)
-        await interaction.response.send_message(embed=embed)
-        await self.clean_view(view=self._view)
-        await interaction.message.edit(content=interaction.message.content, view=self._view)
+        await loss_update()
+        try:
+            await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
+            await self.clean_view(view=self._view)
+            await interaction.message.edit(content=interaction.message.content, view=self._view)
+        except discord.errors.NotFound:
+            logging.info("Its okay, no worries")
 
     @staticmethod
     async def clean_view(*, view: discord.ui.View) -> None:
@@ -136,7 +137,8 @@ class ExcerptButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
-        await interaction.response.defer()  # TODO: THIS LINE RAISES AN ERROR ON EVERY PRESS BUT IT WORKS AS EXPECTED
+        await interaction.response.defer()
+
         if interaction.user not in self.owners:
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
@@ -148,13 +150,12 @@ class ExcerptButton(discord.ui.Button):
         await interaction.edit_original_response(
             content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view
         )
-        await interaction.response.defer()
 
 
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
-    def __init__(self, *, info: _Button, comp: _Comp, owners: list[discord.User]) -> None:
+    def __init__(self, *, info: _Button) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -165,12 +166,12 @@ class GuessButton(discord.ui.Button):
             row=info.row,
             sku_id=info.sku_id,
         )
-        self.ranked = comp.ranked
-        self.article = comp.article
-        self.score = comp.score
-        self.user = comp.user
-        self.owners = owners
-        self.winlossmanager = comp.winlossmanager
+        self.ranked = info.ranked
+        self.article = info.article
+        self.score = info.score
+        self.user = info.user
+        self.owners = info.owners
+        self.winlossmanager = info.winlossmanager
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
@@ -179,7 +180,7 @@ class GuessButton(discord.ui.Button):
             return
         self.guess_modal = GuessInput(
             title="Guess!",
-            comp=_Comp(
+            info=_Button(
                 ranked=self.ranked,
                 article=self.article,
                 score=self.score,
@@ -200,14 +201,14 @@ class GuessInput(discord.ui.Modal):
         title: str = MISSING,
         timeout: float | None = None,
         custom_id: str = MISSING,
-        comp: _Comp,
+        info: _Button,
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
-        self.ranked = comp.ranked
-        self.score = comp.score
-        self.user = comp.user
-        self.article = comp.article
-        self.winlossmanager = comp.winlossmanager
+        self.ranked = info.ranked
+        self.score = info.score
+        self.user = info.user
+        self.article = info.article
+        self.winlossmanager = info.winlossmanager
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
@@ -231,7 +232,7 @@ class GuessInput(discord.ui.Modal):
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
-    def __init__(self, *, info: _Button, comp: _Comp) -> None:
+    def __init__(self, *, info: _Button) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -242,7 +243,7 @@ class LinkListButton(discord.ui.Button):
             row=info.row,
             sku_id=info.sku_id,
         )
-        self.score = comp.score
+        self.score = info.score
         self.message = info.message
         self.links = info.links
         self.owners = info.owners
