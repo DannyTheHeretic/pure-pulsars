@@ -51,7 +51,6 @@ class WinLossManagement(ABC):
         pass
 
 
-
 class _Comp(NamedTuple):
     score: list[int]
     winlossmanager: WinLossManagement | None = None
@@ -114,7 +113,10 @@ class ExcerptButton(discord.ui.Button):
     """Button for revealing more of the summary."""
 
     def __init__(
-        self, *, info: _Button, summary: str,
+        self,
+        *,
+        info: _Button,
+        summary: str,
     ) -> None:
         super().__init__(
             style=info.style,
@@ -152,9 +154,7 @@ class ExcerptButton(discord.ui.Button):
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
-    def __init__(
-        self, *, info: _Button, comp: _Comp, owners: list[discord.User]
-    ) -> None:
+    def __init__(self, *, info: _Button, comp: _Comp, owners: list[discord.User]) -> None:
         super().__init__(
             style=info.style,
             label=info.label,
@@ -179,7 +179,13 @@ class GuessButton(discord.ui.Button):
             return
         self.guess_modal = GuessInput(
             title="Guess!",
-            comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user, winlossmanager=self.winlossmanager,),
+            comp=_Comp(
+                ranked=self.ranked,
+                article=self.article,
+                score=self.score,
+                user=self.user,
+                winlossmanager=self.winlossmanager,
+            ),
         )
         self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(self.guess_modal)
@@ -225,9 +231,7 @@ class GuessInput(discord.ui.Modal):
 class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
-    def __init__(
-        self, *, info: _Button, comp: _Comp
-    ) -> None:
+    def __init__(self, *, info: _Button, comp: _Comp) -> None:
         super().__init__(
             style=info.style,
             label=info.label,

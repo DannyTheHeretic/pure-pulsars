@@ -43,7 +43,7 @@ def main(tree: app_commands.CommandTree) -> None:
         name="wiki-guesser",
         description="Starts a game of wiki-guesser! Try and find what wikipedia article your in.",
     )
-    @app_commands.describe(ranked = "Do you want to play ranked?")
+    @app_commands.describe(ranked="Do you want to play ranked?")
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
         try:
             ranked: bool = bool(ranked.value)
@@ -78,8 +78,18 @@ def main(tree: app_commands.CommandTree) -> None:
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
             excerpt_view = discord.ui.View()
             guess_button = wikiguesser_class.GuessButton(
-                info=_Button(label="Guess!", style=discord.ButtonStyle.success, owners=owners,),
-                comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id, winlossmanager=WinLossFunctions(args, args),),
+                info=_Button(
+                    label="Guess!",
+                    style=discord.ButtonStyle.success,
+                    owners=owners,
+                ),
+                comp=_Comp(
+                    ranked=ranked,
+                    article=article,
+                    score=score,
+                    user=interaction.user.id,
+                    winlossmanager=WinLossFunctions(args, args),
+                ),
             )
             excerpt_button = wikiguesser_class.ExcerptButton(
                 info=_Button(

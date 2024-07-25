@@ -17,7 +17,7 @@ def main(tree: app_commands.CommandTree) -> None:
         name="user-info",
         description="Returns your stats",
     )
-    @app_commands.describe(user = "Who are you asking about, leave blank for self?")
+    @app_commands.describe(user="Who are you asking about, leave blank for self?")
     async def user_info(interaction: discord.Interaction, user: discord.User = None) -> None:
         try:
             await interaction.response.defer(thinking=True, ephemeral=True)

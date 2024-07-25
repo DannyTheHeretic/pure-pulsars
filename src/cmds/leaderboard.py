@@ -21,7 +21,7 @@ def main(tree: app_commands.CommandTree) -> None:
         name="leaderboard",
         description="Returns your guilds leaderboard",
     )
-    @app_commands.describe(globe = "Do you want the global leaderboard?")
+    @app_commands.describe(globe="Do you want the global leaderboard?")
     async def leaderboard(interaction: discord.Interaction, globe: _GloSer = _GloSer.No) -> None:
         try:
             ser_id = interaction.guild_id if bool(globe.value) else 0
