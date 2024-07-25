@@ -5,7 +5,7 @@ from discord import app_commands
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import _Button, _Ranked
-from wikiutils import is_article_title, make_embed, rand_wiki, update_user
+from wikiutils import is_article_title, make_embed, rand_wiki, win_update
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
@@ -30,7 +30,7 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
         if ranked:
             user = interaction.user
             for i in [interaction.guild_id, 0]:
-                await update_user(i, user, scores[0])
+                await win_update(i, user, scores[0])
 
     async def on_loss(self) -> None:
         """Clean up on loss."""
