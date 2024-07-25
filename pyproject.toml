@@ -83,6 +83,11 @@ ruff = "~0.5.0"
 pre-commit = "~3.7.1"
 deptry = "^0.17.0"
 
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.1"
+pytest-asyncio = "^0.23.8"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
