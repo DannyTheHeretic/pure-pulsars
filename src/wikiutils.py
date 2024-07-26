@@ -25,8 +25,8 @@ import pywikibot.page
 from discord import Colour, Embed, User
 from pywikibot import Page
 
-from database.database_core import DATA, NullUserError
-from database.user import UserController, _User
+from src.database.database_core import DATA, NullUserError
+from src.database.user import UserController, _User
 
 ua = "WikiWabbit/0.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
 site = pywikibot.Site("en", "wikipedia")
@@ -132,23 +132,7 @@ async def search_wikipedia_generator(query: str, max_number: int = 10) -> AsyncG
 
 async def rand_wiki() -> Page:
     """Return a random popular wikipedia article."""
-    date = rand_date()
-    date = f"{date.year}/{date.month:02}/{date.day:02}"
-    url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
-    json = None
-    async with aiohttp.ClientSession() as session, session.get(url) as response:
-        json = await response.json()
-    try:
-        articles = json["items"][0]["articles"]
-        random.shuffle(articles)
-        title = articles[0]["article"]
-        page = Page(site, title)
-        if page.isRedirectPage() or not page.exists():
-            return await rand_wiki()
-    except KeyError as e:
-        logging.critical("Oops, %s", e)
-        return await rand_wiki()
-    return page
+    return await ArticleGenerator().fetch_article()
 
 
 async def loss_update(guild: int, user: User) -> None:
@@ -410,10 +394,27 @@ class ArticleGenerator:
 
         return articles
 
-    async def random_article(self) -> Page:
+    @staticmethod
+    async def random_article() -> Page:
         """Return a random article."""
         # TODO(teald): Bring rand_wiki into this class.
-        return await rand_wiki()
+        date = rand_date()
+        date = f"{date.year}/{date.month:02}/{date.day:02}"
+        url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
+        json = None
+        async with aiohttp.ClientSession() as session, session.get(url) as response:
+            json = await response.json()
+        try:
+            articles = json["items"][0]["articles"]
+            random.shuffle(articles)
+            title = articles[0]["article"]
+            page = Page(site, title)
+            if page.isRedirectPage() or not page.exists():
+                return await rand_wiki()
+        except KeyError as e:
+            logging.critical("Oops, %s", e)
+            return await rand_wiki()
+        return page
 
     def article_has_categories(self, article: Page) -> bool:
         """Return True if the article has all the categories."""
