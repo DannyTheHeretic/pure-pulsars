@@ -215,7 +215,7 @@ async def win_update(guild: int, user: User, score: int) -> None:
 
 def get_all_categories_from_article(article: Page) -> list[str]:
     """Return all categories from an article."""
-    return [category.title().replace("Category:", "") for category in article.categories()]
+    return ArticleGenerator.get_all_categories_from_article(article)
 
 
 def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
@@ -394,6 +394,13 @@ class ArticleGenerator:
 
         return articles
 
+    def article_has_categories(self, article: Page) -> bool:
+        """Return True if the article has all the categories."""
+        article_categories = get_all_categories_from_article(article)
+        article_categories = {category.casefold() for category in article_categories}
+
+        return all(category.casefold() in article_categories for category in self.categories)
+
     @staticmethod
     async def random_article() -> Page:
         """Return a random article."""
@@ -416,9 +423,7 @@ class ArticleGenerator:
             return await rand_wiki()
         return page
 
-    def article_has_categories(self, article: Page) -> bool:
-        """Return True if the article has all the categories."""
-        article_categories = get_all_categories_from_article(article)
-        article_categories = {category.casefold() for category in article_categories}
-
-        return all(category.casefold() in article_categories for category in self.categories)
+    @staticmethod
+    def get_all_categories_from_article(article: Page) -> list[str]:
+        """Return all categories from an article."""
+        return [category.title().replace("Category:", "") for category in article.categories()]
