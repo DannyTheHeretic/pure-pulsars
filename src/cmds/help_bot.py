@@ -15,4 +15,3 @@ def main(tree: app_commands.CommandTree) -> None:
             resp += f"{i.name} : {i.description}\n"
         resp += "```"
         await interaction.response.send_message(content=resp, ephemeral=True)
-

@@ -22,4 +22,3 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.followup.send(
                 "You must have **MANAGE SERVER** permissions to reset scores", ephemeral=True
             )
-

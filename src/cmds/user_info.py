@@ -62,4 +62,3 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.followup.send(embed=embed, ephemeral=True)
         except discord.app_commands.errors.CommandInvokeError as e:
             logging.critical("Exception %s", e)
-

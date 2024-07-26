@@ -11,4 +11,3 @@ COPY . .
 RUN "ls"
 
 CMD ["python", "src/main.py"]
-

@@ -158,4 +158,3 @@ async def test_articlegenerator_as_iterator() -> None:
 
     assert len(recieved) == len(article_gen.titles)
     assert all(article in article_gen._generated_articles for article in recieved)
-

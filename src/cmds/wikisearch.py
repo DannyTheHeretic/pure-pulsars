@@ -22,4 +22,3 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.delete_original_response()
         except discord.app_commands.errors.CommandInvokeError as e:
             logging.critical("Exception %s", e)
-

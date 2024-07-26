@@ -273,4 +273,3 @@ class LinkListButton(discord.ui.Button):
         )
         if len(self.links) == 0:
             self.view.remove_item(self)
-

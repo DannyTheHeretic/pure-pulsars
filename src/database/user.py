@@ -31,4 +31,3 @@ class UserController:
             "wins": self.wins,
             "failure": self.failure,
         }
-

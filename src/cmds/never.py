@@ -25,4 +25,3 @@ def main(tree: app_commands.CommandTree) -> None:
         )
         embed.set_image(url="https://upload.wikimedia.org/wikipedia/en/f/f7/RickRoll.png")
         await interaction.followup.send(embed=embed)
-

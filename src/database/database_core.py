@@ -86,4 +86,3 @@ class DatabaseController:
 
 
 DATA = DatabaseController()
-

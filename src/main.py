@@ -71,4 +71,3 @@ client.run(
     log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
     root_logger=True,
 )
-

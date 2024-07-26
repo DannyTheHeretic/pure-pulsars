@@ -432,4 +432,3 @@ class ArticleGenerator:
         article_categories = {category.casefold() for category in article_categories}
 
         return all(category.casefold() in article_categories for category in self.categories)
-
