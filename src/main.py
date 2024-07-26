@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
+# Imports the commands
 from cmds import (
     challenge,
     help_bot,
@@ -19,6 +20,7 @@ from cmds import (
     wikisearch,
 )
 
+# loads the enviroment variables and initilazies the discord client
 load_dotenv(".env")
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
@@ -28,6 +30,7 @@ has_ran = False
 
 
 async def _first_run(client: commands.Bot) -> None:
+    """Sync command tree and update the app's discord status."""
     has_ran = True
     await client.tree.sync()
     logging.info("The sync has been ran: %s", has_ran)
@@ -38,7 +41,7 @@ async def _first_run(client: commands.Bot) -> None:
 
 @client.event
 async def on_ready() -> None:
-    """Ready command."""
+    """Start the client."""
     logging.info("ready for ACTION!!!")
     if not has_ran:
         await _first_run(client=client)
@@ -51,6 +54,7 @@ async def on_guild_join(guild: discord.Object) -> None:
     logging.info("Joined and synced with \nname: %s\nid: %s", guild.name, guild.id)
 
 
+# activates the commands
 sync.main(client.tree)
 wikiguesser.main(client.tree)
 wikirandom.main(client.tree)
@@ -62,10 +66,13 @@ never.main(client.tree)
 challenge.main(client.tree)
 help_bot.main(client.tree)
 
+# activates shutdown command if the app is running on the server
 if bool(os.environ.get("SERVER", 0)):
     from cmds import shutdown
 
     shutdown.main(client.tree)
+
+# runs the client
 client.run(
     os.environ["DISAPI"],
     log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
