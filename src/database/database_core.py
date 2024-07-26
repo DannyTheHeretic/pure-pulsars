@@ -7,7 +7,10 @@ from firebase_admin import db
 
 from .user import UserController
 
-load_dotenv(".env")
+if load_dotenv(".env"):
+    ...
+else:
+    load_dotenv("docker.env")
 
 
 class NullUserError(TypeError):
