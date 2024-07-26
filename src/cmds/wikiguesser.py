@@ -5,7 +5,7 @@ from discord import app_commands
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import _Button, _Ranked
-from wikiutils import is_article_title, make_embed, rand_wiki, win_update
+from wikiutils import make_embed, rand_wiki, win_update
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
@@ -68,7 +68,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 article = await rand_wiki()
             logging.info("The current wikiguesser title is %s", article.title())
 
-            links = [link.title() for link in article.linkedPages(total=50) if is_article_title(link.title())]
+            links = [link.title() for link in article.linkedPages(total=50)]
 
             excerpt = article.extract(chars=1200)
 
