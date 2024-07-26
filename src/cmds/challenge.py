@@ -36,3 +36,4 @@ def main(tree: app_commands.CommandTree) -> None:
                 content=f"Join the newly created thread to play, GAME BEGINS IN {i}"
             )
             await asyncio.sleep(1)
+

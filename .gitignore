@@ -40,3 +40,5 @@ src/cmds/shutdown.py
 # Secrets!
 secrets/
 src/test.py
+
+docker.env

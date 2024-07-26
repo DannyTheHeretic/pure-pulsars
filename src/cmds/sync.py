@@ -27,3 +27,4 @@ def main(bot: app_commands.CommandTree) -> None:
             await inter.response.send_message(content=msg, ephemeral=True)
         except discord.app_commands.errors.CommandInvokeError as e:
             logging.critical(e)
+
