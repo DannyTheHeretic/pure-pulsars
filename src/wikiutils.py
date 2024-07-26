@@ -23,7 +23,6 @@ import aiohttp
 import pywikibot
 import pywikibot.page
 from discord import Embed, User
-from fake_useragent import UserAgent
 from pywikibot import Page
 
 from database.database_core import DATA, NullUserError
@@ -45,7 +44,7 @@ NON_LINK_PREFIXS = [
     "File:",
 ]
 
-ua = UserAgent()
+ua = "WikiWabbit/0.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
 site = pywikibot.Site("en", "wikipedia")
 
 
@@ -383,7 +382,7 @@ class ArticleGenerator:
         # TODO(teald): Refactor this function.
         # If categories are provided, do a broader search.
         if self.categories:
-            title_articles: dict[str, set(Page)] = defaultdict(set)
+            title_articles: dict[str, set[Page]] = defaultdict(set)
 
             for title in self.titles:
                 async for article in search_wikipedia_generator(title):
