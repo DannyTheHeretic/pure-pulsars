@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "public",
+    "redirects":[{
+      "source":"/install",
+      "destination":"https://discord.com/oauth2/authorize?client_id=1263215753524543621",
+      "type":301
+    }],
+    "cleanUrls": true,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
