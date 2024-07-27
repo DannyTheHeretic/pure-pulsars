@@ -90,7 +90,8 @@ class GiveUpButton(discord.ui.Button):
         article = self.article
         embed = make_embed(article)
         embed.set_footer(text=msg)
-        await loss_update()
+        for i in [interaction.guild_id, 0]:
+            await loss_update(i, user=interaction.user)
         try:
             await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
             await self.clean_view(view=self._view)

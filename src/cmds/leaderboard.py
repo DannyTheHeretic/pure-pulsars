@@ -33,10 +33,11 @@ def main(tree: app_commands.CommandTree) -> None:
             embed = discord.Embed(
                 title=f"Wikiguesser leaderboard for {interaction.guild.name if ser_id != 0 else "THE ENTIRE WORLD"}",
             )
-            score = [str(uid["score"]) for uid in lead]
-            names = [f"{lead.index(uid)}. {uid["name"]}" for uid in lead]
-            embed.add_field(name="Users", value=f"{"\n".join(names)}\n")
-            embed.add_field(name="Score", value=f"{"\n".join(score)}\n")
+            names = [f"{idx+1}. {uid["name"]} /// {uid["score"]}" for idx, uid in enumerate(lead)]
+            embed.add_field(
+                name="Users /// Score",
+                value=f"{"\n".join(names)}\n",
+            )
 
             await interaction.followup.send(embed=embed)
         except discord.app_commands.errors.CommandInvokeError as e:
