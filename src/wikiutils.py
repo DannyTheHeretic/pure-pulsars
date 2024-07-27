@@ -28,29 +28,8 @@ from pywikibot import Page
 from database.database_core import DATA, NullUserError
 from database.user import UserController, _User
 
-NON_LINK_PREFIXS = [
-    "Category:",
-    "Help:",
-    "Template talk:",
-    "Template:",
-    "Wikipedia:",
-    "Talk:",
-    "User:",
-    "User talk:",
-    "Wikipedia talk:",
-    "List of ",
-    "Draft:",
-    "Portal:",
-    "File:",
-]
-
 ua = "WikiWabbit/0.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
 site = pywikibot.Site("en", "wikipedia")
-
-
-def is_article_title(link: str) -> bool:
-    """Check if the provided link is a standard text link."""
-    return all(not link.startswith(prefix) for prefix in NON_LINK_PREFIXS)
 
 
 def rand_date() -> date:
