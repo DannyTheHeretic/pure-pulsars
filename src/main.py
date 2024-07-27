@@ -16,6 +16,7 @@ from cmds import (
     reset_scores,
     sync,
     user_info,
+    wikianimal,
     wikiguesser,
     wikirandom,
     wikisearch,
@@ -71,6 +72,7 @@ wikirandom.main(client.tree)
 leaderboard.main(client.tree)
 user_info.main(client.tree)
 wikisearch.main(client.tree)
+wikianimal.main(client.tree)
 reset_scores.main(client.tree)
 never.main(client.tree)
 challenge.main(client.tree)
