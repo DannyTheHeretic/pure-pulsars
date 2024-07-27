@@ -1,4 +1,10 @@
-# `[Wikipedia geoguesser thing WIP]`
+<!-- Banner -->
+<figure style="margin: auto; max-height: 200px; padding: 10px 5px 10px 5px;">
+   <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="webpage/public/images/banner/banner_1_no_background_dark_mode.png">
+      <img src="webpage/public/images/banner/banner_1_no_background.png" align="center">
+   </picture>
+</figure>
 
 # Features
 
