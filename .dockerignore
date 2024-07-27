@@ -1,0 +1,14 @@
+__pycache__
+.github
+.ruff_cache
+tests
+docs
+.vscode
+.venv
+
+.env
+config.env
+.gitignore
+.pre-commit-config.yaml
+pyproject.toml
+requirements-dev.txt\
