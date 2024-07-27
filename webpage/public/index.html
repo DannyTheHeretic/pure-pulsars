@@ -16,10 +16,13 @@
   <body>
   <section class="section">
     <div class="container block pb-4">
-      <figure class="image is-600x240">
-        <img src="/images/banner/banner_1_no_background_dark_mode.png"
-          alt="Wiki-Wabbit Banner Logo, it's the phrase Wiki-Wabbit with a cartoon image of a pair of bunny ears."/>
-      </figure>
+      <picture>
+        <source srcset="/images/logo_1_draft_1.svg" type="image/svg" media="(prefers-color-scheme: light)">
+        <source srcset="/images/logo_1_draft_1_dark_mode.svg" type="image/svg" media="(prefers-color-scheme: dark)">
+
+        <!-- No color preference; default to light. -->
+        <img src="/images/logo_1_draft_1.svg" alt="Wiki-Wabbit Banner Logo, it's the phrase Wiki-Wabbit with a cartoon image of a pair of bunny ears.">
+      </picture>
     </div>
     <div class="container block has-text-centered">
       <h1 class="title">
