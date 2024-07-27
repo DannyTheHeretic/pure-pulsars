@@ -41,7 +41,11 @@ async def _first_run(client: commands.Bot) -> None:
         banner=Path.open("./imgs/banner.png", "rb").read(),
     )
     await client.change_presence(
-        status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
+        status=discord.Status.online,
+        activity=discord.activity.CustomActivity(
+            "📚 reading wikipedia",
+            emoji="📚",
+        ),
     )
 
 
