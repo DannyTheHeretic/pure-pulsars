@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import discord
 from discord import app_commands
@@ -34,6 +35,11 @@ async def _first_run(client: commands.Bot) -> None:
     has_ran = True
     await client.tree.sync()
     logging.info("The sync has been ran: %s", has_ran)
+    await client.user.edit(
+        username="WikiWabbit",
+        avatar=Path.open("./imgs/logo.png", "rb").read(),
+        banner=Path.open("./imgs/banner.png", "rb").read(),
+    )
     await client.change_presence(
         status=discord.Status.online, activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚")
     )
