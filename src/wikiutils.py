@@ -166,7 +166,7 @@ async def loss_update(guild: int, user: User) -> None:
                 failure=1,
                 score=0,
                 last_played=datetime.now(UTC).timestamp(),
-            )
+            ),
         )
         await DATA.add_user(uid, new_user, guild)
 
@@ -208,7 +208,7 @@ async def win_update(guild: int, user: User, score: int) -> None:
                 wins=1,
                 score=score,
                 last_played=datetime.now(UTC).timestamp(),
-            )
+            ),
         )
         await DATA.add_user(uid, new_user, guild)
 
