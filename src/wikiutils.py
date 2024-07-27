@@ -404,7 +404,6 @@ class ArticleGenerator:
     @staticmethod
     async def random_article() -> Page:
         """Return a random article."""
-        # TODO(teald): Bring rand_wiki into this class.
         date = rand_date()
         date = f"{date.year}/{date.month:02}/{date.day:02}"
         url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
