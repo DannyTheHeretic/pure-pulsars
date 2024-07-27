@@ -2,11 +2,14 @@ import logging
 
 import discord
 from discord import app_commands
+from pint import UnitRegistry
 from pywikibot import Page
 
 from cmds import wikiguesser_class
-from cmds.wikiguesser_class import _Button, _Comp
+from cmds.wikiguesser_class import GameType, _Button, _Comp
 from wikiutils import make_embed, make_img_embed, rand_wiki
+
+ureg = UnitRegistry()
 
 
 class WinLossFunctions(wikiguesser_class.WinLossManagement):
@@ -78,6 +81,13 @@ class GiveUpButton(discord.ui.Button):
         view.clear_items()
 
 
+def find_animal_weight(article: Page) -> tuple[str, ...]:
+    """Determine animal's weight ranges based on article text"""
+    # TODO(Gobleizer): scrape article for weight data
+    print("find animal weight")
+    return ("1lb", "3lb", "20 kg", "40 kilos")
+
+
 def main(tree: app_commands.CommandTree) -> None:
     """Create Wiki Animal command."""
 
@@ -102,6 +112,8 @@ def main(tree: app_commands.CommandTree) -> None:
                 article = await rand_wiki()
             logging.info("The current wikiguesser title is %s", article.title())
 
+            weight_ranges = find_animal_weight(article)
+
             hint_view = discord.ui.View()
 
             animal_name = article.title()
@@ -110,7 +122,13 @@ def main(tree: app_commands.CommandTree) -> None:
 
             guess_button = wikiguesser_class.GuessButton(
                 info=_Button(label="Guess!", style=discord.ButtonStyle.success),
-                comp=_Comp(ranked=ranked, article=article, score=score, user=interaction.user.id),
+                comp=_Comp(
+                    ranked=ranked,
+                    article=article,
+                    score=score,
+                    user=interaction.user.id,
+                    game_type=GameType.wikianimal,
+                ),
                 owners=owners,
                 winlossmanager=WinLossFunctions(args, args),
             )

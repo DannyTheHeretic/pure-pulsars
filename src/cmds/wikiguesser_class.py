@@ -1,5 +1,6 @@
 import secrets
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import NamedTuple
 
 import discord
@@ -11,6 +12,12 @@ from wikiutils import search_wikipedia
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
+
+
+class GameType(Enum):
+    """Possible games to be played"""
+    wikiguesser = 0
+    wikianimal = 1
 
 
 class _Button(NamedTuple):
@@ -30,6 +37,7 @@ class _Comp(NamedTuple):
     ranked: bool = False
     article: Page = None
     user: int = 0
+    game_type: GameType = GameType.wikiguesser
 
 
 class WinLossManagement(ABC):
@@ -108,6 +116,7 @@ class GuessButton(discord.ui.Button):
         self.article = comp.article
         self.score = comp.score
         self.user = comp.user
+        self.game_type = comp.game_type
         self.owners = owners
         self.winlossmanager = winlossmanager
 
@@ -118,7 +127,9 @@ class GuessButton(discord.ui.Button):
             return
         self.guess_modal = GuessInput(
             title="Guess!",
-            comp=_Comp(ranked=self.ranked, article=self.article, score=self.score, user=self.user),
+            comp=_Comp(
+                ranked=self.ranked, article=self.article, score=self.score, user=self.user, game_type=self.game_type
+            ),
             winlossmanager=self.winlossmanager,
         )
         self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
@@ -138,37 +149,64 @@ class GuessInput(discord.ui.Modal):
         winlossmanager: WinLossManagement,
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
+        self.comp = comp
         self.ranked = comp.ranked
         self.score = comp.score
         self.user = comp.user
         self.article = comp.article
+        self.game_type = comp.game_type
         self.winlossmanager = winlossmanager
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        """Guess the article."""
-        await interaction.response.defer()
-        # if self.ranked and interaction.user.id != self.user:
-        #     await interaction.response.send_message(
-        #         "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
-        #         ephemeral=True,  # noqa: ERA001
-        #     )  # noqa: ERA001, RUF100
-        #     return  # noqa: ERA001
-        # This is probably redundant because GuessButton already checks for owners
+        user_input = self.children[0].value
+        print("user input ", user_input)
+        print("comp ", self.comp)
+        print("game_type wikiguesser", GameType.wikiguesser)
+        print(self.game_type == GameType.wikiguesser)
+        print(self.game_type == GameType.wikianimal)
+        if self.game_type == GameType.wikiguesser:
+            await wikiguesser_on_submit(self.comp, interaction, user_input, self.winlossmanager)
+        elif self.game_type == GameType.wikianimal:
+            await wikianimal_on_submit(self.comp, interaction, user_input, self.winlossmanager)
 
-        page = await search_wikipedia(self.children[0].value)
-        if page.title() == self.article.title():
-            await self.winlossmanager.on_win()
-            await interaction.followup.send(
-                "Good job", ephemeral=True
-            )  # * IMPORTANT, you must respond to the interaction for the modal to close
-            # * or else it will just say something went wrong
-            return
-        await self.winlossmanager.on_loss()
+
+async def wikiguesser_on_submit(
+    comp: _Comp, interaction: discord.Interaction, user_guess: str, winlossmanager: WinLossManagement
+) -> None:
+    """Guess the article."""
+    await interaction.response.defer()
+    # if self.ranked and interaction.user.id != self.user:
+    #     await interaction.response.send_message(
+    #         "You cannot guess because you were not the on who started this ranked game of wiki-guesser.",
+    #         ephemeral=True,  # noqa: ERA001
+    #     )  # noqa: ERA001, RUF100
+    #     return  # noqa: ERA001
+    # This is probably redundant because GuessButton already checks for owners
+    print("1")
+    page = await search_wikipedia(user_guess)
+    print("2")
+    if page.title() == comp.article.title():
+        print("3")
+        await winlossmanager._on_win()
         await interaction.followup.send(
-            "bad job", ephemeral=True
+            "Good job", ephemeral=True
         )  # * IMPORTANT, you must respond to the interaction for the modal to close
         # * or else it will just say something went wrong
-        self.score[0] -= 5
+        return
+    print("4")
+    await winlossmanager._on_loss()
+    print("5")
+    await interaction.followup.send(
+        "bad job", ephemeral=True
+    )  # * IMPORTANT, you must respond to the interaction for the modal to close
+    # * or else it will just say something went wrong
+    comp.score[0] -= 5
+
+
+async def wikianimal_on_submit(
+    comp: _Comp, interaction: discord.Interaction, user_guess: str, winlossmanager: WinLossManagement
+) -> None:
+    print("well you made it this far")
 
 
 class LinkListButton(discord.ui.Button):

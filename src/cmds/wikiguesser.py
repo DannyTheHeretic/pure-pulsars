@@ -1,8 +1,9 @@
 import logging
 import secrets
+from enum import Enum
 
 import discord
-from discord import Enum, app_commands
+from discord import app_commands
 from discord.utils import MISSING
 from pywikibot import Page
 
@@ -153,7 +154,7 @@ class GuessButton(discord.ui.Button):
 
 
 class GuessInput(discord.ui.Modal):
-    """Input feild for guessing."""
+    """Input field for guessing."""
 
     def __init__(
         self, *, title: str = MISSING, timeout: float | None = None, custom_id: str = MISSING, comp: _Comp
