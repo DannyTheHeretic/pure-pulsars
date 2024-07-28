@@ -1,7 +1,11 @@
+"""User information classes for the database."""
+
 from typing import NamedTuple
 
 
 class _User(NamedTuple):
+    """User NamedTuple."""
+
     name: str = ""
     last_played: int = 0
     score: int = 0
@@ -14,6 +18,18 @@ class UserController:
     """The Basic User Class."""
 
     def __init__(self, info: _User) -> None:
+        """Initialize the User Class.
+
+        Args:
+        ----
+        info (_User): The user information.
+
+        Notes:
+        -----
+        User information is stored as a NamedTuple. See _User for more
+        information on what names are expected.
+
+        """
         self.name = info.name
         self.last_played = info.last_played
         self.score = info.score
