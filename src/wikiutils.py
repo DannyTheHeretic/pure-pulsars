@@ -23,8 +23,8 @@ from pywikibot import Page
 from database.database_core import DATA, NullUserError
 from database.user import UserController, _User
 
-ua = "WikiWabbit/1.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
-site = pywikibot.Site("en", "wikipedia", user=ua)
+UA = "WikiWabbit/1.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
+site = pywikibot.Site("en", "wikipedia", user=UA)
 
 
 def rand_date() -> date:
@@ -510,7 +510,7 @@ class ArticleGenerator:
         date = f"{date.year}/{date.month:02}/{date.day:02}"
         url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
         json = None
-        async with aiohttp.ClientSession() as session, session.get(url) as response:
+        async with aiohttp.ClientSession(headers={"UserAgent": UA}) as session, session.get(url) as response:
             json = await response.json()
         try:
             articles = json["items"][0]["articles"]

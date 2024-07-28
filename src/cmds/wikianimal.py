@@ -9,7 +9,7 @@ from pint import UnitRegistry
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import GameType, GiveUpButton, _Button
-from wikiutils import get_articles_with_categories, make_img_embed
+from wikiutils import UA, make_img_embed, search_wikipedia
 
 UREG = UnitRegistry()
 
@@ -66,9 +66,15 @@ async def find_animal_weight(animal_name: str) -> list[str]:
 async def find_new_animal(interaction: discord.Interaction) -> dict:
     """Return random animal's information."""
     try:
-        articles = await get_articles_with_categories(["Mammals of the United States"], 1)
-        await interaction.followup.send("Still chasing animals...")
-        article = articles[0]
+        api_url = "https://en.wikipedia.org/wiki/Special:RandomInCategory?wpcategory=Mammals of the United States"
+        async with (
+            aiohttp.ClientSession(headers={"UserAgent": UA}, timeout=aiohttp.ClientTimeout(total=20)) as session,
+            session.get(api_url) as response,
+        ):
+            if response.ok:
+                loc = str(response.real_url)
+                title = loc.split("=")[1].split("&")[0]
+        article = await search_wikipedia(title)
         animal_name = article.title().split(" ")[-1]
         logging.info("The current wikianimal is %s", animal_name)
         weight_ranges = await find_animal_weight(animal_name)

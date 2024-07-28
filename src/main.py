@@ -84,6 +84,8 @@ if bool(os.environ.get("SERVER", 0)):
     shutdown.main(client.tree)
 
 logging.getLogger("discord.gateway").setLevel(logging.CRITICAL)
+logging.getLogger("google").setLevel(logging.ERROR)
+
 
 # runs the client
 client.run(

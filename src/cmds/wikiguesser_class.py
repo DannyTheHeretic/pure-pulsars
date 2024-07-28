@@ -332,7 +332,7 @@ async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, 
 
     async def win() -> None:
         article = info.article
-        embed = make_embed(article)
+        embed = await make_embed(article)
         msg = f"Congratulations {interaction.user.mention}! You guessed correctly!"
         await interaction.response.send_message("Crikey! You're a winner!", ephemeral=True)
         await interaction.followup.send(content=msg, embed=embed)
