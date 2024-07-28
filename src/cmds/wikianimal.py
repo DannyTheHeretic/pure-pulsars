@@ -4,11 +4,12 @@ import re
 
 import aiohttp
 import discord
-from discord import app_commands
+from discord import NotFound, app_commands
+from discord.app_commands.errors import CommandInvokeError
 from pint import UnitRegistry
 
-from cmds import wikiguesser_class
-from cmds.wikiguesser_class import GameType, GiveUpButton, _Button
+import button_class
+from button_class import GameType, GiveUpButton, GuessButton, _Button
 from wikiutils import UA, make_img_embed, search_wikipedia
 
 UREG = UnitRegistry()
@@ -23,7 +24,7 @@ class IncompatibleAnimalError(Exception):
         super().__init__("No valid animal weights")
 
 
-class WinLossFunctions(wikiguesser_class.WinLossManagement):
+class WinLossFunctions(button_class.WinLossManagement):
     """The Basic Win Loss Function for WikiAnimal."""
 
     def __init__(self, winargs: dict, lossargs: dict) -> None:
@@ -76,7 +77,6 @@ async def find_new_animal(interaction: discord.Interaction) -> dict:
                 title = loc.split("=")[1].split("&")[0]
         article = await search_wikipedia(title)
         animal_name = article.title().split(" ")[-1]
-        logging.info("The current wikianimal is %s", animal_name)
         weight_ranges = await find_animal_weight(animal_name)
     except IncompatibleAnimalError:
         return await find_new_animal(interaction)
@@ -91,7 +91,6 @@ def main(tree: app_commands.CommandTree) -> None:
         description="Starts a game of wiki-animal! Try and guess the animal's mass!",
     )
     async def wiki(interaction: discord.Interaction) -> None:
-        logging.info("Catching animal, wikipedia is slow, please standby.")
         try:
             ranked = False
             owners = [*interaction.guild.members]
@@ -109,7 +108,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
 
-            guess_button = wikiguesser_class.GuessButton(
+            guess_button = GuessButton(
                 info=_Button(
                     label="Guess!",
                     style=discord.ButtonStyle.success,
@@ -146,5 +145,7 @@ def main(tree: app_commands.CommandTree) -> None:
             )
 
             await interaction.delete_original_response()
-        except discord.app_commands.errors.CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
+            logging.info("Wiki-Animal:\nFunc: main\nException %s", e)
+        except NotFound as e:
+            logging.info("Wiki-Animal:\nFunc: main\nException %s", e)

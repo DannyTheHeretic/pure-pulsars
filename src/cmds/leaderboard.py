@@ -58,4 +58,4 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.followup.send(embed=embed)
         except CommandInvokeError as e:
-            logging.critical("Leaderboard had an issue: \nLine: 61 \nException: %s", e)
+            logging.info("Leaderboard:\nException: %s", e)

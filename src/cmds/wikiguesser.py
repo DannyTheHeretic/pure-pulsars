@@ -3,12 +3,11 @@
 import logging
 
 import discord
-from discord import app_commands
+from discord import NotFound, app_commands
 from discord.app_commands.errors import CommandInvokeError
-from discord.errors import NotFound
 
-from cmds import wikiguesser_class
-from cmds.wikiguesser_class import _Button, _Ranked
+import button_class
+from button_class import ExcerptButton, GiveUpButton, GuessButton, LinkListButton, _Button, _Ranked
 from wikiutils import make_embed, rand_wiki, win_update
 
 ACCURACY_THRESHOLD = 0.8
@@ -16,7 +15,7 @@ MAX_LEN = 1990
 LEN_OF_STR = 10
 
 
-class WinLossFunctions(wikiguesser_class.WinLossManagement):
+class WinLossFunctions(button_class.WinLossManagement):
     """The Basic Win Loss Function."""
 
     def __init__(self, winargs: dict, lossargs: dict) -> None:
@@ -78,9 +77,9 @@ def main(tree: app_commands.CommandTree) -> None:
             try:
                 article = await rand_wiki()
             except AttributeError as e:
-                logging.critical("Wierd error occured %s", e)
+                logging.info("Wiki-Guesser:\nFunc: main\nException %s", e)
                 article = await rand_wiki()
-            logging.critical("The current wikiguesser title is %s", article.title())
+            logging.info("The current wikiguesser title is %s", article.title())
 
             links = [link.title() for link in article.linkedPages(total=50)]
 
@@ -93,7 +92,7 @@ def main(tree: app_commands.CommandTree) -> None:
             sentances = [i for i in excerpt.strip("\n").split(".") if i]
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
             excerpt_view = discord.ui.View()
-            guess_button = wikiguesser_class.GuessButton(
+            guess_button = GuessButton(
                 info=_Button(
                     label="Guess!",
                     style=discord.ButtonStyle.success,
@@ -106,7 +105,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     winlossmanager=WinLossFunctions(args, args),
                 ),
             )
-            excerpt_button = wikiguesser_class.ExcerptButton(
+            excerpt_button = ExcerptButton(
                 info=_Button(
                     label="Show more",
                     style=discord.ButtonStyle.primary,
@@ -118,7 +117,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 summary=sentances,
             )
 
-            give_up_button = wikiguesser_class.GiveUpButton(
+            give_up_button = GiveUpButton(
                 info=_Button(
                     label="Give up",
                     style=discord.ButtonStyle.danger,
@@ -140,7 +139,7 @@ def main(tree: app_commands.CommandTree) -> None:
             )
 
             view = discord.ui.View()
-            link_button = wikiguesser_class.LinkListButton(
+            link_button = LinkListButton(
                 info=_Button(
                     label="Show more links in article",
                     links=links,
@@ -157,6 +156,6 @@ def main(tree: app_commands.CommandTree) -> None:
             await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
             await interaction.delete_original_response()
         except NotFound as e:
-            logging.critical("Exception %s", e)
+            logging.info("Wiki-Guesser:\nFunc: main\nException %s", e)
         except CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+            logging.info("Wiki-Guesser:\nFunc: main\nException %s", e)

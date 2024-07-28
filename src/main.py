@@ -52,7 +52,7 @@ async def _first_run(client: commands.Bot) -> None:
 @client.event
 async def on_ready() -> None:
     """Start the client."""
-    logging.info("ready for ACTION!!!")
+    logging.info("Bot is ready")
     if not has_ran:
         await _first_run(client=client)
 
@@ -84,7 +84,7 @@ logging.getLogger("google").setLevel(logging.ERROR)
 
 # runs the client
 client.run(
-    os.environ["DISAPI"],
+    os.environ["TOKEN"],
     log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
     root_logger=True,
 )

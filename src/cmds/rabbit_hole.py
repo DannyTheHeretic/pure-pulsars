@@ -43,7 +43,7 @@ Do not format the message with ```json```, as it is not neccessary. Return the J
 """
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=sys_ins)
+model = genai.GenerativeModel("gemini-1.5-pro", system_instruction=sys_ins)
 
 
 def make_embed(summary: dict) -> Embed:
@@ -128,9 +128,9 @@ async def rabbit_hole_helper(interaction: discord.Interaction, article: Page) ->
 
         await interaction.followup.send(embed=embed, view=WikiButtons(related_pages))
     except NotFound as e:
-        logging.critical("Exception %s", e)
+        logging.info("Rabbit Hole:\nFunc: rabbit_hole_helper\nException %s", e)
     except CommandInvokeError as e:
-        logging.critical("Exception %s", e)
+        logging.info("Rabbit Hole:\nFunc: rabbit_hole_helper\nException %s", e)
 
 
 def main(tree: app_commands.CommandTree) -> None:
@@ -148,6 +148,6 @@ def main(tree: app_commands.CommandTree) -> None:
             article = await rand_wiki()
             await rabbit_hole_helper(interaction, article)
         except NotFound as e:
-            logging.critical("Exception %s", e)
+            logging.info("Rabbit Hole:\nFunc: rabbit_hole\nException %s", e)
         except CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+            logging.info("Rabbit Hole:\nFunc: rabbit_hole\nException %s", e)

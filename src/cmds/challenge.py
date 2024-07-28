@@ -10,7 +10,6 @@ game jam. The code is here for future reference.
 """
 
 import asyncio
-import logging
 
 import discord
 from discord import app_commands
@@ -50,13 +49,11 @@ def main(tree: app_commands.CommandTree) -> None:
             name=f"Wikiguesser between {user.name} and {interaction.user.name}",
             type=discord.ChannelType.private_thread,
         )
-        logging.info("It takes %s points to win", points_to_win)
         await interaction.response.send_message("Join the newly created thread to play, GAME BEGINS IN 10")
         await thread.add_user(user)
         await thread.add_user(interaction.user)
         await countdown(interaction=interaction)
-        await thread.send("YOOOOOOOOOOOOOOOO")
-
+        await thread.send(points_to_win)
         await thread.delete()
 
     async def countdown(interaction: discord.Interaction) -> None:

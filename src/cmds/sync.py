@@ -25,11 +25,11 @@ def main(bot: app_commands.CommandTree) -> None:
             try:
                 await bot.sync(guild=guild)
             except discord.HTTPException as e:
-                logging.critical(e)
+                logging.info("Tried to sync: %s", e)
             msg = f"Synced the tree to {guild.name}"
             logging.info(msg)
             await inter.response.send_message(content=msg, ephemeral=True)
         except NotFound as e:
-            logging.critical(e)
+            logging.info("Failed to sync: %s", e)
         except CommandInvokeError as e:
-            logging.critical(e)
+            logging.info("Failed to sync: %s", e)

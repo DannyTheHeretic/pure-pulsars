@@ -42,6 +42,6 @@ def main(tree: app_commands.CommandTree) -> None:
             )
             await interaction.delete_original_response()
         except NotFound as e:
-            logging.critical("Exception %s", e)
+            logging.info("Wiki-Search:\nFunc: main\nException %s", e)
         except CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+            logging.info("Wiki-Search:\nFunc: main\nException %s", e)

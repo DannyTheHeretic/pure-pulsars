@@ -6,8 +6,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 import discord
-from discord import ButtonStyle, Enum
-from discord.errors import NotFound
+from discord import ButtonStyle, Enum, NotFound
+from discord.app_commands.errors import CommandInvokeError
 from discord.utils import MISSING
 from pint import UnitRegistry
 from pywikibot import Page
@@ -114,7 +114,7 @@ class GiveUpButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Exit the game."""
-        logging.info("GiveUpButton handling exit for %s.", interaction)
+        logging.debug("GiveUpButton handling exit for %s.", interaction)
         msg = self._end_message
         article = self.article
         embed = await make_embed(article)
@@ -127,7 +127,9 @@ class GiveUpButton(discord.ui.Button):
             await self.clean_view(view=self._view)
             await interaction.message.edit(content=interaction.message.content, view=self._view)
         except NotFound as e:
-            logging.info("Its okay, no worries %s", e)
+            logging.info("button_class:\nFunc: GiveUpButton\nException %s", e)
+        except CommandInvokeError as e:
+            logging.info("button_class:\nFunc: GiveUpButton\nException %s", e)
 
     @staticmethod
     async def clean_view(*, view: discord.ui.View) -> None:
@@ -189,8 +191,10 @@ class ExcerptButton(discord.ui.Button):
             await interaction.edit_original_response(
                 content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
             )
-        except NotFound:
-            logging.info("Its okay, no worries")
+        except NotFound as e:
+            logging.info("button_class:\nFunc: ExcerptButton\nException %s", e)
+        except CommandInvokeError as e:
+            logging.info("button_class:\nFunc: ExcerptButton\nException %s", e)
 
 
 class GuessButton(discord.ui.Button):
@@ -234,8 +238,10 @@ class GuessButton(discord.ui.Button):
             )
             self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
             await interaction.response.send_modal(self.guess_modal)
-        except NotFound:
-            logging.info("Its okay, no worries")
+        except NotFound as e:
+            logging.info("button_class:\nFunc: GuessButton\nException %s", e)
+        except CommandInvokeError as e:
+            logging.info("button_class:\nFunc: GuessButton\nException %s", e)
 
 
 class GuessInput(discord.ui.Modal):
@@ -274,17 +280,15 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         user_input = self.children[0].value
-        logging.info("user input %s", user_input)
-        logging.info("game_type wikiguesser %s", GameType.wikiguesser)
-        logging.info(self.game_type == GameType.wikiguesser)
-        logging.info(self.game_type == GameType.wikianimal)
         try:
             if self.game_type == GameType.wikiguesser:
                 await wikiguesser_on_submit(self.info, interaction, user_input)
             elif self.game_type == GameType.wikianimal:
                 await wikianimal_on_submit(self.info, interaction, user_input)
-        except NotFound:
-            logging.info("Its okay, no worries")
+        except NotFound as e:
+            logging.info("button_class:\nFunc: GuessInput\nException %s", e)
+        except CommandInvokeError as e:
+            logging.info("button_class:\nFunc: GuessInput\nException %s", e)
 
 
 async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
@@ -418,7 +422,6 @@ class LinkListButton(discord.ui.Button):
                     selected_links.append(self.links.pop(0))
                     break
 
-            logging.info("Private: %s", self.private)
             await interaction.response.send_message(
                 content=f"{self.message}\n```{"\n".join(selected_links)}```",
                 view=self.view,
@@ -429,5 +432,7 @@ class LinkListButton(discord.ui.Button):
                 await interaction.message.delete()
                 return
             await interaction.message.edit(view=None)
-        except NotFound:
-            logging.info("Its okay, no worries")
+        except NotFound as e:
+            logging.info("button_class:\nFunc: LinkListButton\nException %s", e)
+        except CommandInvokeError as e:
+            logging.info("button_class:\nFunc: LinkListButton\nException %s", e)

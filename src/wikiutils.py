@@ -520,7 +520,7 @@ class ArticleGenerator:
             if page.isRedirectPage() or not page.exists():
                 return await rand_wiki()
         except KeyError as e:
-            logging.critical("Line 523, Exception: %s", e)
+            logging.info("Wikiutils:\nFunc: random_article\nException: %s", e)
             return await rand_wiki()
         return page
 

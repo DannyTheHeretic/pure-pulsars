@@ -9,7 +9,6 @@ docs
 Pipfile
 poetry.lock
 code-jam-11.code-workspace
-.env
 config.env
 .gitignore
 .pre-commit-config.yaml

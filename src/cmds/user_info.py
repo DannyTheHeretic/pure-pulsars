@@ -77,6 +77,6 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.followup.send(embed=embed, ephemeral=True)
         except NotFound as e:
-            logging.critical(e)
+            logging.info("Tried to get User-Info: %s", e)
         except CommandInvokeError as e:
-            logging.critical(e)
+            logging.info("Tried to get User-Info: %s", e)
