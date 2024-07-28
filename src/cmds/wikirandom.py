@@ -2,6 +2,8 @@ import logging
 
 import discord
 from discord import app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 
 from wikiutils import make_embed, rand_wiki
 
@@ -20,5 +22,7 @@ def main(tree: app_commands.CommandTree) -> None:
             embed = make_embed(article=article)
             await interaction.followup.send(embed=embed)
             await interaction.delete_original_response()
-        except discord.app_commands.errors.CommandInvokeError as e:
+        except NotFound as e:
+            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
             logging.critical("Exception %s", e)

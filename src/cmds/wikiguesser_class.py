@@ -5,6 +5,7 @@ from typing import NamedTuple
 
 import discord
 from discord import ButtonStyle, Enum
+from discord.errors import NotFound
 from discord.utils import MISSING
 from pywikibot import Page
 from pywikibot.exceptions import InvalidTitleError
@@ -90,10 +91,6 @@ class GiveUpButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Exit the game."""
-        # TODO(teald): Ensure the score is saved properly.
-        logging.warning("Score saving is not yet implemented for exiting the game.")
-
-        # Exit the game.
         logging.info("GiveUpButton handling exit for %s.", interaction)
         msg = self._end_message
         article = self.article
@@ -105,7 +102,7 @@ class GiveUpButton(discord.ui.Button):
             await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
             await self.clean_view(view=self._view)
             await interaction.message.edit(content=interaction.message.content, view=self._view)
-        except discord.errors.NotFound:
+        except NotFound:
             logging.info("Its okay, no worries")
 
     @staticmethod
@@ -147,19 +144,22 @@ class ExcerptButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
-        await interaction.response.defer()
+        try:
+            await interaction.response.defer()
 
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
-        self.ind += 1
-        self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
+            if interaction.user not in self.owners:
+                await interaction.response.send_message("You may not interact with this", ephemeral=True)
+                return
+            self.ind += 1
+            self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
-        if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
-            self.view.remove_item(self)
-        await interaction.edit_original_response(
-            content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
-        )
+            if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
+                self.view.remove_item(self)
+            await interaction.edit_original_response(
+                content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
+            )
+        except NotFound:
+            logging.info("Its okay, no worries")
 
 
 class GuessButton(discord.ui.Button):
@@ -186,15 +186,18 @@ class GuessButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
-        self.guess_modal = GuessInput(
-            title="Guess!",
-            info=self.info,
-        )
-        self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
-        await interaction.response.send_modal(self.guess_modal)
+        try:
+            if interaction.user not in self.owners:
+                await interaction.response.send_message("You may not interact with this", ephemeral=True)
+                return
+            self.guess_modal = GuessInput(
+                title="Guess!",
+                info=self.info,
+            )
+            self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
+            await interaction.response.send_modal(self.guess_modal)
+        except NotFound:
+            logging.info("Its okay, no worries")
 
 
 class GuessInput(discord.ui.Modal):
@@ -220,41 +223,47 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         user_input = self.children[0].value
-        print("user input ", user_input)
-        print("info ", self.info)
-        print("game_type wikiguesser", GameType.wikiguesser)
-        print(self.game_type == GameType.wikiguesser)
-        print(self.game_type == GameType.wikianimal)
-        if self.game_type == GameType.wikiguesser:
-            await wikiguesser_on_submit(self.info, interaction, user_input)
-        elif self.game_type == GameType.wikianimal:
-            await wikianimal_on_submit(self.info, interaction, user_input)
+        logging.info("user input %s", user_input)
+        logging.info("info %s", self.info)
+        logging.info("game_type wikiguesser %s", GameType.wikiguesser)
+        logging.info(self.game_type == GameType.wikiguesser)
+        logging.info(self.game_type == GameType.wikianimal)
+        try:
+            if self.game_type == GameType.wikiguesser:
+                await wikiguesser_on_submit(self.info, interaction, user_input)
+            elif self.game_type == GameType.wikianimal:
+                await wikianimal_on_submit(self.info, interaction, user_input)
+        except NotFound:
+            logging.info("Its okay, no worries")
 
 
 async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
     """Guess the article."""
-    await interaction.response.defer()
-    page = await search_wikipedia(user_guess)
     try:
-        if page.title() == info.article.title():
-            await info.winlossmanager.on_win()
+        await interaction.response.defer()
+        page = await search_wikipedia(user_guess)
+        try:
+            if page.title() == info.article.title():
+                await info.winlossmanager.on_win()
+                await interaction.followup.send(
+                    "Good job", ephemeral=True
+                )  # * IMPORTANT, you must respond to the interaction for the modal to close
+                # * or else it will just say something went wrong
+                return
+        except InvalidTitleError:
+            await interaction.followup.send(content="Sorry, the article title was not valid.")
+        except AttributeError:
             await interaction.followup.send(
-                "Good job", ephemeral=True
-            )  # * IMPORTANT, you must respond to the interaction for the modal to close
-            # * or else it will just say something went wrong
-            return
-    except InvalidTitleError:
-        await interaction.followup.send(content="Sorry, the article title was not valid.")
-    except AttributeError:
+                content="Sorry, an error with that article occured, please try a different one."
+            )
+        await info.winlossmanager.on_loss()
         await interaction.followup.send(
-            content="Sorry, an error with that article occured, please try a different one."
-        )
-    await info.winlossmanager.on_loss()
-    await interaction.followup.send(
-        "bad job", ephemeral=True
-    )  # * IMPORTANT, you must respond to the interaction for the modal to close
-    # * or else it will just say something went wrong
-    info.score[0] -= 5
+            "bad job", ephemeral=True
+        )  # * IMPORTANT, you must respond to the interaction for the modal to close
+        # * or else it will just say something went wrong
+        info.score[0] -= 5
+    except NotFound:
+        logging.info("Its okay, no worries")
 
 
 async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
@@ -287,32 +296,35 @@ class LinkListButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
+        try:
+            if interaction.user not in self.owners:
+                await interaction.response.send_message("You may not interact with this", ephemeral=True)
+                return
 
-        if not self.links:
-            self.view.remove_item(self)
-            await interaction.message.edit(view=self.view)
-            await interaction.response.send_message("No more links!", ephemeral=True)
-            return
+            if not self.links:
+                self.view.remove_item(self)
+                await interaction.message.edit(view=self.view)
+                await interaction.response.send_message("No more links!", ephemeral=True)
+                return
 
-        selected_links = []
-        self.score[0] -= 10
-        for _ in range(10):
-            selected_links.append(self.links.pop(secrets.randbelow(len(self.links))))
-            if len(self.links) == 1:
-                selected_links.append(self.links.pop(0))
-                break
+            selected_links = []
+            self.score[0] -= 10
+            for _ in range(10):
+                selected_links.append(self.links.pop(secrets.randbelow(len(self.links))))
+                if len(self.links) == 1:
+                    selected_links.append(self.links.pop(0))
+                    break
 
-        logging.info("Private: %s", self.private)
-        await interaction.response.send_message(
-            content=f"{self.message}\n```{"\n".join(selected_links)}```",
-            view=self.view,
-            delete_after=180,
-            ephemeral=self.private,
-        )
-        if not interaction.message.content:
-            await interaction.message.delete()
-            return
-        await interaction.message.edit(view=None)
+            logging.info("Private: %s", self.private)
+            await interaction.response.send_message(
+                content=f"{self.message}\n```{"\n".join(selected_links)}```",
+                view=self.view,
+                delete_after=180,
+                ephemeral=self.private,
+            )
+            if not interaction.message.content:
+                await interaction.message.delete()
+                return
+            await interaction.message.edit(view=None)
+        except NotFound:
+            logging.info("Its okay, no worries")

@@ -2,6 +2,8 @@ import logging
 
 import discord
 from discord import app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 from pywikibot.exceptions import InvalidTitleError
 
 from wikiutils import make_embed, search_wikipedia
@@ -29,5 +31,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 content="Sorry, an error with that article occured, please try a different one."
             )
             await interaction.delete_original_response()
-        except discord.app_commands.errors.CommandInvokeError as e:
+        except NotFound as e:
+            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
             logging.critical("Exception %s", e)

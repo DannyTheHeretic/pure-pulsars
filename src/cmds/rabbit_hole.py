@@ -6,6 +6,8 @@ import random
 import discord
 import google.generativeai as genai
 from discord import Embed, app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 from pywikibot import Page
 
 from wikiutils import rand_wiki
@@ -102,7 +104,9 @@ async def rabbit_hole_helper(interaction: discord.Interaction, article: Page) ->
         related_pages = random.sample(tuple(article.linkedPages()), 3)
 
         await interaction.followup.send(embed=embed, view=WikiButtons(related_pages))
-    except discord.app_commands.errors.CommandInvokeError as e:
+    except NotFound as e:
+        logging.critical("Exception %s", e)
+    except CommandInvokeError as e:
         logging.critical("Exception %s", e)
 
 
@@ -120,5 +124,7 @@ def main(tree: app_commands.CommandTree) -> None:
             # Get a random Wikipedia article, generate a summary, and return an embed message
             article = await rand_wiki()
             await rabbit_hole_helper(interaction, article)
-        except discord.app_commands.errors.CommandInvokeError as e:
+        except NotFound as e:
+            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
             logging.critical("Exception %s", e)

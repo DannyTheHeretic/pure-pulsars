@@ -112,3 +112,4 @@ node_modules/
 
 # Other
 *throttle.ctrl*
+docker.env

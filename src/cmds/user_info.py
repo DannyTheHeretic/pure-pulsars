@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 import discord
 import humanize
 from discord import app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 
 from database.database_core import DATA, NullUserError
 
@@ -60,5 +62,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 return
 
             await interaction.followup.send(embed=embed, ephemeral=True)
-        except discord.app_commands.errors.CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+        except NotFound as e:
+            logging.critical(e)
+        except CommandInvokeError as e:
+            logging.critical(e)

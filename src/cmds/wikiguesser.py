@@ -2,6 +2,8 @@ import logging
 
 import discord
 from discord import app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import _Button, _Ranked
@@ -139,5 +141,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
             await interaction.delete_original_response()
-        except discord.app_commands.errors.CommandInvokeError as e:
+        except NotFound as e:
+            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
             logging.critical("Exception %s", e)
