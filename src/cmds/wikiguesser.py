@@ -1,3 +1,5 @@
+"""Wiki Guesser Command."""
+
 import logging
 
 import discord
@@ -50,6 +52,17 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     @app_commands.describe(ranked="Do you want to play ranked?")
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
+        """Run the wiki-guesser command.
+
+        This command will start a game of wiki-guesser, where you have to guess
+        the wikipedia article you are in.
+
+        Args:
+        ----
+        interaction (discord.Interaction): The interaction object.
+        ranked (_Ranked, optional): Whether the game is ranked or not. Defaults to _Ranked.NO.
+
+        """
         try:
             ranked: bool = bool(ranked.value)
             owners = [interaction.user] if ranked else [*interaction.guild.members]

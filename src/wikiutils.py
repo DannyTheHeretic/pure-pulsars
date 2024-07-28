@@ -20,8 +20,8 @@ import pywikibot.page
 from discord import Embed, User
 from pywikibot import Page
 
-from src.database.database_core import DATA, NullUserError
-from src.database.user import UserController, _User
+from database.database_core import DATA, NullUserError
+from database.user import UserController, _User
 
 ua = "WikiWabbit/0.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
 site = pywikibot.Site("en", "wikipedia")
@@ -203,7 +203,20 @@ async def loss_update(guild: int, user: User, score: int) -> None:
 
 
 async def win_update(guild: int, user: User, score: int) -> None:
-    """Update the user in the database."""
+    """Update the user in the database.
+
+    Args:
+    ----
+    guild (int): The guild id.
+    user (User): The user to update.
+    score (int): The score to update.
+
+    Notes:
+    -----
+    This interfaces directly with the database connection provided by database_core.py.
+    For more information on the functions used here, see database_core.py.
+
+    """
     uid = user.id
     try:
         db_ref_user = await DATA.get_user(guild, uid)

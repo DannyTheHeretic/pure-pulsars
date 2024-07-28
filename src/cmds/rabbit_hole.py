@@ -1,3 +1,9 @@
+"""Logic for the rabbit hole command.
+
+This command interacts with the Wikipedia API and the Google Gemini API to
+curate a Wikipedia experience, getting lost down a "rabbit hole" of information.
+"""
+
 import json
 import logging
 import os
@@ -41,7 +47,17 @@ model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=sys_ins)
 
 
 def make_embed(summary: dict) -> Embed:
-    """Create an embed message for Wikipedia."""
+    """Create an embed message for Wikipedia.
+
+    Args:
+    ----
+    summary (dict): The summary of the Wikipedia article.
+
+    Returns:
+    -------
+    discord.Embed: The embed message.
+
+    """
     embed_msg = Embed(title=summary["Title"], description=summary["Intro"], url=summary["URL"], color=0xFFFFFF)
     for section, sentences in summary["Sections"].items():
         embed_msg.add_field(name=section, value="\n".join([f"- {sentence}" for sentence in sentences]), inline=False)
@@ -54,6 +70,13 @@ class WikiButtons(discord.ui.View):
     """Buttons for exploring more Wikipedia articles."""
 
     def __init__(self, pages: list[Page]) -> None:
+        """Initialize the WikiButtons class.
+
+        Args:
+        ----
+        pages (list[Page]): The Wikipedia pages to explore.
+
+        """
         super().__init__(timeout=None)
         self.pages = pages
         self.create_buttons()

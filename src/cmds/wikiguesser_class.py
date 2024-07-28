@@ -1,3 +1,5 @@
+"""Class(es) for managing wiki-guesser logic."""
+
 import logging
 import secrets
 from abc import ABC, abstractmethod
@@ -32,6 +34,14 @@ class WinLossManagement(ABC):
     """Class that contains abstract methods that define what happens upon winning and what happens upon losing."""
 
     def __init__(self, winargs: dict, lossargs: dict) -> None:
+        """Initialize the WinLossManagement class.
+
+        Args:
+        ----
+        winargs (dict): Arguments for winning.
+        lossargs (dict): Arguments for losing.
+
+        """
         super().__init__()
         self.winargs = winargs
         self.lossargs = lossargs
@@ -46,6 +56,8 @@ class WinLossManagement(ABC):
 
 
 class _Button(NamedTuple):
+    """NamedTuple for button information."""
+
     style: ButtonStyle = ButtonStyle.secondary
     label: str | None = None
     disabled: bool = False
@@ -72,6 +84,14 @@ class GiveUpButton(discord.ui.Button):
     _end_message: str = "Thank you for trying!"
 
     def __init__(self, *, info: _Button, view: discord.ui.View) -> None:
+        """Initialize the GiveUpButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+        view (discord.ui.View): The view to clean up.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -83,8 +103,6 @@ class GiveUpButton(discord.ui.Button):
             sku_id=info.sku_id,
         )
 
-        # TODO(teald): This may be better handled with a GameState class, or
-        # something that can be more easily accessed/passed around.
         self.ranked = info.ranked
         self.article = info.article
         self._view = view
@@ -111,7 +129,6 @@ class GiveUpButton(discord.ui.Button):
 
         This method is only static because it's likely useful elsewhere.
         """
-        # TODO(teald): Probably better as a helper function.
         logging.debug("Clearing child objects: %s", list(view.children))
 
         view.clear_items()
@@ -126,6 +143,14 @@ class ExcerptButton(discord.ui.Button):
         info: _Button,
         summary: str,
     ) -> None:
+        """Initialize the ExcerptButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+        summary (str): The summary to reveal.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -166,6 +191,13 @@ class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
     def __init__(self, *, info: _Button) -> None:
+        """Initialize the GuessButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -211,6 +243,19 @@ class GuessInput(discord.ui.Modal):
         custom_id: str = MISSING,
         info: _Button,
     ) -> None:
+        """Initialize the GuessInput class.
+
+        This class manages displaying a modal for guessing the article, and
+        retrieving input from the user.
+
+        Args:
+        ----
+        title (str): The title of the modal.
+        timeout (float | None): The time until the modal times out.
+        custom_id (str): The custom ID of the modal.
+        info (_Button): Information about the button.
+
+        """
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.info = info
         self.ranked = info.ranked
@@ -238,36 +283,49 @@ class GuessInput(discord.ui.Modal):
 
 
 async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
-    """Guess the article."""
+    """Guess the article.
+
+    Args:
+    ----
+    info (_Button): Information about the button.
+    interaction (discord.Interaction): The interaction object.
+    user_guess (str): The user's guess.
+
+    """
+    await interaction.response.defer()
+    page = await search_wikipedia(user_guess)
     try:
-        await interaction.response.defer()
-        page = await search_wikipedia(user_guess)
-        try:
-            if page.title() == info.article.title():
-                await info.winlossmanager.on_win()
-                await interaction.followup.send(
-                    "Good job", ephemeral=True
-                )  # * IMPORTANT, you must respond to the interaction for the modal to close
-                # * or else it will just say something went wrong
-                return
-        except InvalidTitleError:
-            await interaction.followup.send(content="Sorry, the article title was not valid.")
-        except AttributeError:
+        if page.title() == info.article.title():
+            await info.winlossmanager.on_win()
             await interaction.followup.send(
-                content="Sorry, an error with that article occured, please try a different one."
-            )
-        await info.winlossmanager.on_loss()
+                "Good job", ephemeral=True
+            )  # * IMPORTANT, you must respond to the interaction for the modal to close
+            # * or else it will just say something went wrong
+            return
+    except InvalidTitleError:
+        await interaction.followup.send(content="Sorry, the article title was not valid.")
+    except AttributeError:
         await interaction.followup.send(
-            "bad job", ephemeral=True
-        )  # * IMPORTANT, you must respond to the interaction for the modal to close
-        # * or else it will just say something went wrong
-        info.score[0] -= 5
-    except NotFound:
-        logging.info("Its okay, no worries")
+            content="Sorry, an error with that article occured, please try a different one."
+        )
+    await info.winlossmanager.on_loss()
+    await interaction.followup.send(
+        "bad job", ephemeral=True
+    )  # * IMPORTANT, you must respond to the interaction for the modal to close
+    # * or else it will just say something went wrong
+    info.score[0] -= 5
 
 
 async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
-    """."""
+    """Handle the user's guess for the animal game.
+
+    Args:
+    ----
+    info (_Button): Information about the button.
+    interaction (discord.Interaction): The interaction object.
+    user_guess (str): The user's guess.
+
+    """
     print(info)
     print(interaction)
     print(user_guess)
@@ -278,6 +336,13 @@ class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
     def __init__(self, *, info: _Button) -> None:
+        """Initialize the LinkListButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
