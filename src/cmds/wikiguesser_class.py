@@ -9,6 +9,7 @@ import discord
 from discord import ButtonStyle, Enum
 from discord.errors import NotFound
 from discord.utils import MISSING
+from pint import UnitRegistry
 from pywikibot import Page
 from pywikibot.exceptions import InvalidTitleError
 
@@ -16,6 +17,7 @@ from wikiutils import loss_update, make_embed, search_wikipedia
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
+UREG = UnitRegistry()
 
 
 class GameType(Enum):
@@ -76,6 +78,7 @@ class _Button(NamedTuple):
     article: Page = None
     user: int = 0
     game_type: GameType = GameType.wikiguesser
+    animal_info: dict | None = None
 
 
 class GiveUpButton(discord.ui.Button):
@@ -310,7 +313,7 @@ async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction,
         )
     await info.winlossmanager.on_loss()
     await interaction.followup.send(
-        "bad job", ephemeral=True
+        "Guess again! You got this!", ephemeral=True
     )  # * IMPORTANT, you must respond to the interaction for the modal to close
     # * or else it will just say something went wrong
     info.score[0] -= 5
@@ -326,10 +329,40 @@ async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, 
     user_guess (str): The user's guess.
 
     """
-    print(info)
-    print(interaction)
-    print(user_guess)
-    print("well you made it this far")
+
+    async def win() -> None:
+        await info.winlossmanager.on_win()
+        await interaction.response.send_message("Crikey! You're a winner!", ephemeral=True)
+
+    async def lose() -> None:
+        await info.winlossmanager.on_loss()
+        await interaction.response.send_message("Guess again! Remember to use units like kg!", ephemeral=True)
+
+    guess_weight = UREG.Quantity(user_guess)
+
+    if guess_weight.dimensionless:
+        await lose()
+        return
+
+    animal_weight_range = info.animal_info.get("weight_ranges")
+
+    preferred_units = animal_weight_range[0].units
+    guess_weight.ito(preferred_units)
+    if len(animal_weight_range) > 1 and animal_weight_range[0].units != animal_weight_range[1].units:
+        animal_weight_range.pop()
+
+    if len(animal_weight_range) == 1:
+        if guess_weight.magnitude <= animal_weight_range[0].magnitude:
+            await win()
+        else:
+            await lose()
+    elif (
+        guess_weight.magnitude >= animal_weight_range[0].magnitude
+        and guess_weight.magnitude <= animal_weight_range[1].magnitude
+    ):
+        await win()
+    else:
+        await lose()
 
 
 class LinkListButton(discord.ui.Button):

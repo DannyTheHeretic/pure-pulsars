@@ -17,7 +17,7 @@ from typing import ClassVar
 import aiohttp
 import pywikibot
 import pywikibot.page
-from discord import Embed, User
+from discord import Colour, Embed, User
 from pywikibot import Page
 
 from database.database_core import DATA, NullUserError
@@ -66,6 +66,34 @@ def make_embed(article: Page) -> Embed:
         except AttributeError:
             url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
     embed.set_image(url=url)
+    return embed
+
+
+def make_img_embed(article: Page, error_message: str = "Sorry no image found") -> Embed:
+    """Return a Discord Image type Embed.
+
+    Args:
+    ----
+    article (Page): The article to create the embed for.
+    error_message (str): The error message if no picture is found.
+
+    Returns:
+    -------
+    Embed: The embed.
+
+    Raises:
+    ------
+    AttributeError: If the image url cannot be found.
+
+    """
+    embed = Embed(colour=Colour.blue(), type="image")
+    img_data = article.page_image()
+    try:
+        img_url = img_data.get_file_url()
+    except AttributeError:
+        img_url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
+        embed.description = error_message
+    embed.set_image(url=img_url)
     return embed
 
 
@@ -155,7 +183,7 @@ async def rand_wiki() -> Page:
     return await ArticleGenerator().fetch_article()
 
 
-async def loss_update(guild: int, user: User, score: int) -> None:
+async def loss_update(guild: int, user: User) -> None:
     """Update the user in the database.
 
     Args:
@@ -195,7 +223,7 @@ async def loss_update(guild: int, user: User, score: int) -> None:
                 name=user.global_name,
                 times_played=1,
                 failure=1,
-                score=score,
+                score=0,
                 last_played=datetime.now(UTC).timestamp(),
             ),
         )
@@ -282,7 +310,7 @@ def get_all_categories_from_article(article: Page) -> list[str]:
     return ArticleGenerator.get_all_categories_from_article(article)
 
 
-def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
+async def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
     """Get a list of articles with the given categories.
 
     Args:
@@ -297,7 +325,7 @@ def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> 
     """
     generator = ArticleGenerator(categories=categories)
 
-    return [generator.fetch_article() for _ in range(number)]
+    return [await generator.fetch_article() for _ in range(number)]
 
 
 class ArticleGeneratorError(Exception):
