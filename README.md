@@ -7,7 +7,7 @@
 </figure>
 
 <br>
-`Wiki-Wabbit` is a discord bot that brings the fun of binging Wikipedia articles to your dicord server!
+`Wiki-Wabbit` is a discord bot that brings the fun of bingeing Wikipedia articles to your dicord server!
 
 # Features
 
