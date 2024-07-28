@@ -11,29 +11,16 @@
 
 # Features
 
-|-----------------|----------------------------------------------------------------------------|
 | Command         | Description                                                                |
 |-----------------|----------------------------------------------------------------------------|
-| `/wiki-guesser` | Starts a game of wiki-guesser!                                             |
-|                 | Try and find what wikipedia article you're in.                             |
-|-----------------|----------------------------------------------------------------------------|
+| `/wiki-guesser` | Starts a game of wiki-guesser! Try and find what wikipedia article you're in. |
 | `/wiki-random`  | Get a random wikipedia article.                                            |
-|-----------------|----------------------------------------------------------------------------|
 | `/leaderboard`  | Returns your guild's leaderboard.                                          |
-|-----------------|----------------------------------------------------------------------------|
 | `/user-info`    | Returns your stats.                                                        |
-|-----------------|----------------------------------------------------------------------------|
-| `/wiki-animal`  | Starts a game of wiki-animal!                                              |
-|                 | Try and guess the animal's mass!                                           |
-|-----------------|----------------------------------------------------------------------------|
+| `/wiki-animal`  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
 | `/wiki-search`  | Get a Wikipedia article that you searched for.                             |
-|-----------------|----------------------------------------------------------------------------|
 | `/reset-scores` | Reset scores of all users in this guild for this guild.                    |
-|-----------------|----------------------------------------------------------------------------|
 | `/never`        | Never use this command! :surprised:                                        |
-|-----------------|----------------------------------------------------------------------------|
-| `/challenge`    | Challenge someone to a game of wikiguesser!                                |
-|-----------------|----------------------------------------------------------------------------|
 
 
 # Technical Points
