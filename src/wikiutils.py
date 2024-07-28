@@ -183,7 +183,7 @@ async def rand_wiki() -> Page:
     return await ArticleGenerator().fetch_article()
 
 
-async def loss_update(guild: int, user: User, score: int) -> None:
+async def loss_update(guild: int, user: User) -> None:
     """Update the user in the database.
 
     Args:
@@ -223,7 +223,7 @@ async def loss_update(guild: int, user: User, score: int) -> None:
                 name=user.global_name,
                 times_played=1,
                 failure=1,
-                score=score,
+                score=0,
                 last_played=datetime.now(UTC).timestamp(),
             ),
         )

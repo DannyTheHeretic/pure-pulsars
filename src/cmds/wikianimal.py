@@ -6,10 +6,9 @@ import aiohttp
 import discord
 from discord import app_commands
 from pint import UnitRegistry
-from pywikibot import Page
 
 from cmds import wikiguesser_class
-from cmds.wikiguesser_class import GameType, _Button
+from cmds.wikiguesser_class import GameType, GiveUpButton, _Button
 from wikiutils import get_articles_with_categories, make_embed, make_img_embed
 
 UREG = UnitRegistry()
@@ -42,57 +41,6 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
         """Clean up on loss."""
         interaction: discord.Interaction = self.lossargs["interaction"]
         await interaction.followup.send("Sorry, try again.", ephemeral=True)
-
-
-class GiveUpButton(discord.ui.Button):
-    """Button for exiting/"giving up" on game."""
-
-    # TODO(Gobleizer): Switch to a wikiguesser_class version of GiveUpButton
-    _end_message: str = "Thank you for trying!"
-
-    def __init__(self, *, info: _Button, article: Page, view: discord.ui.View) -> None:
-        super().__init__(
-            style=info.style,
-            label=info.label,
-            disabled=info.disabled,
-            custom_id=info.custom_id,
-            url=info.url,
-            emoji=info.emoji,
-            row=info.row,
-            sku_id=info.sku_id,
-        )
-
-        # TODO(teald): This may be better handled with a GameState class, or
-        # something that can be more easily accessed/passed around.
-        self.article = article
-        self._view = view
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        """Exit the game."""
-        # TODO(teald): Ensure the score is saved properly.
-        logging.warning("Score saving is not yet implemented for exiting the game.")
-
-        # Exit the game.
-        logging.info("GiveUpButton handling exit for %s.", interaction)
-
-        msg = self._end_message
-        article = self.article
-        embed = make_embed(article)
-        embed.set_footer(text=msg)
-        await interaction.response.send_message(embed=embed)
-        await self.clean_view(view=self._view)
-        await interaction.message.edit(content=interaction.message.content, view=self._view)
-
-    @staticmethod
-    async def clean_view(*, view: discord.ui.View) -> None:
-        """Clean a view of interactible things (e.g., buttons).
-
-        This method is only static because it's likely useful elsewhere.
-        """
-        # TODO(teald): Probably better as a helper function.
-        logging.debug("Clearing child objects: %s", list(view.children))
-
-        view.clear_items()
 
 
 async def find_animal_weight(animal_name: str) -> list[str]:
@@ -177,8 +125,7 @@ def main(tree: app_commands.CommandTree) -> None:
             )
 
             give_up_button = GiveUpButton(
-                info=_Button(label="Give up", style=discord.ButtonStyle.danger),
-                article=article,
+                info=_Button(label="Give up", style=discord.ButtonStyle.danger, article=article),
                 view=hint_view,
             )
 
