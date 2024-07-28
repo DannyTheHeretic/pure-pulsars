@@ -52,7 +52,8 @@ def main(tree: app_commands.CommandTree) -> None:
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
         """Run the wiki-guesser command.
 
-        This command will start a game of wiki-guesser, where you have to guess the wikipedia article you are in.
+        This command will start a game of wiki-guesser, where you have to guess
+        the wikipedia article you are in.
 
         Args:
         ----
