@@ -1,53 +1,36 @@
 <!-- Banner -->
-<figure style="margin: auto; max-height: 200px; padding: 10px 5px 10px 5px;">
+<figure style="margin: auto; max-height: 200px; padding: 10px 5px 20px 5px;">
    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="webpage/public/images/banner/banner_1_no_background_dark_mode.png">
-      <img src="webpage/public/images/banner/banner_1_no_background.png" align="center">
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner_1_no_background_dark_mode.png">
+      <img src="docs/assets/banner_1_no_background.png" align="center">
    </picture>
 </figure>
 
+<br>
+`Wiki-Wabbit` is a discord bot that brings the fun of bingeing Wikipedia articles to your dicord server!
+
 # Features
 
-+ (✔️) Guess based on a short censored exerpt the topic of a wikipedia article.
-   + Can show related articles, show more links within the article?
-+ (✔️) Get random featured page from the last 8 years.
-+ (⌨️)Rabbit hole stuff
-+ (⌨️) Database w/ global & server-wide leaderboards
-+ Pop quizzes(?)
+| Command         | Description                                                                |
+|-----------------|----------------------------------------------------------------------------|
+| `/wiki-guesser` | Starts a game of wiki-guesser! Try and find what wikipedia article you're in. |
+| `/wiki-random`  | Get a random wikipedia article.                                            |
+| `/wiki-animal`  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
+| `/rabbit-hole`  | Dive into wikipedia with AI-guided random exploration!                     |
+| `/wiki-search`  | Get a Wikipedia article that you searched for.                             |
+| `/leaderboard`  | Returns your guild's leaderboard.                                          |
+| `/user-info`    | Returns your stats.                                                        |
+| `/reset-scores` | Reset scores of all users in this guild for this guild.                    |
+| `/never`        | Never use this command! :surprised:                                        |
+| `/sync`         | Sync the command tree.                                                     |
+| `/help`         | Display a message with much of the same info as this table has.            |
 
-# TODO
 
-- [X] Broad project details
-   - [X] Name?
-      - [X] `WikiWabbit`
-      - [ ] `rabbit hole 🐇`
-      - [ ] Wikiguesser
-   - [X] Logo/icon?
-      - [X] The One Pinned In General
-- [ ] Plan for project
-   - [ ] What are the core backend components/interactions we want a user to have?
-      - [ ] What of these are handled entirely by `discord.py`?
-      - [ ] Which require logic on our end?
-      - [x] What dependencies can fill in the gaps/make our live easier?
-         - [x] Wikipedia API library
-         - [x] firebase.io (scores/etc)
-         - [x] `python-dotenv` (for secrets)
-   - [ ] What is the average "experience"
-      - [ ] i.e., from wanting to start a session with the bot to finishing the
-            session, what does each step look like, ideally?
-      - [ ] What non-code components might enhance the expecience? (e.g.,
-            images, graphics)
-      - [ ] Are there any important special cases?
-         - [x] Help & app info
-- [ ] Coding/etc.
-   - [ ] Do we want to review each other's code?
-      - [ ] Do we want to lock the main branch at some point so it's ~stable?
-            If so, when?
-   - [ ] Would anyone prefer to pair-program (i.e., code together with another
-         person through VSCode or the github vscode thing)?
-   - [ ] Are we good with the linting rules in the template? Do we want
-         anything else?
-- [ ] Database
-   - [ ] What interactions should admins have with server stats (Should we make commands?)
-     - [ ] Remove user score
-     - [ ] Reset scores
+# Technical Points
+
+<!-- Any interesting technical points you'd like to include go below here. -->
+
+`Wiki-Wabbit` uses `pywikibot` and the Wikipedia REST API. Alongside that, it also makes use of:
+
++ Google's Gemini API
++ Firebase

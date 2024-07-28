@@ -1,3 +1,5 @@
+"""Class(es) for managing wiki-guesser logic."""
+
 import logging
 import secrets
 from abc import ABC, abstractmethod
@@ -5,6 +7,7 @@ from typing import NamedTuple
 
 import discord
 from discord import ButtonStyle, Enum
+from discord.errors import NotFound
 from discord.utils import MISSING
 from pywikibot import Page
 from pywikibot.exceptions import InvalidTitleError
@@ -31,6 +34,14 @@ class WinLossManagement(ABC):
     """Class that contains abstract methods that define what happens upon winning and what happens upon losing."""
 
     def __init__(self, winargs: dict, lossargs: dict) -> None:
+        """Initialize the WinLossManagement class.
+
+        Args:
+        ----
+        winargs (dict): Arguments for winning.
+        lossargs (dict): Arguments for losing.
+
+        """
         super().__init__()
         self.winargs = winargs
         self.lossargs = lossargs
@@ -45,6 +56,8 @@ class WinLossManagement(ABC):
 
 
 class _Button(NamedTuple):
+    """NamedTuple for button information."""
+
     style: ButtonStyle = ButtonStyle.secondary
     label: str | None = None
     disabled: bool = False
@@ -71,6 +84,14 @@ class GiveUpButton(discord.ui.Button):
     _end_message: str = "Thank you for trying!"
 
     def __init__(self, *, info: _Button, view: discord.ui.View) -> None:
+        """Initialize the GiveUpButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+        view (discord.ui.View): The view to clean up.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -82,18 +103,12 @@ class GiveUpButton(discord.ui.Button):
             sku_id=info.sku_id,
         )
 
-        # TODO(teald): This may be better handled with a GameState class, or
-        # something that can be more easily accessed/passed around.
         self.ranked = info.ranked
         self.article = info.article
         self._view = view
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Exit the game."""
-        # TODO(teald): Ensure the score is saved properly.
-        logging.warning("Score saving is not yet implemented for exiting the game.")
-
-        # Exit the game.
         logging.info("GiveUpButton handling exit for %s.", interaction)
         msg = self._end_message
         article = self.article
@@ -105,7 +120,7 @@ class GiveUpButton(discord.ui.Button):
             await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
             await self.clean_view(view=self._view)
             await interaction.message.edit(content=interaction.message.content, view=self._view)
-        except discord.errors.NotFound:
+        except NotFound:
             logging.info("Its okay, no worries")
 
     @staticmethod
@@ -114,7 +129,6 @@ class GiveUpButton(discord.ui.Button):
 
         This method is only static because it's likely useful elsewhere.
         """
-        # TODO(teald): Probably better as a helper function.
         logging.debug("Clearing child objects: %s", list(view.children))
 
         view.clear_items()
@@ -129,6 +143,14 @@ class ExcerptButton(discord.ui.Button):
         info: _Button,
         summary: str,
     ) -> None:
+        """Initialize the ExcerptButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+        summary (str): The summary to reveal.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -147,25 +169,35 @@ class ExcerptButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Reveal more of the summary."""
-        await interaction.response.defer()
+        try:
+            await interaction.response.defer()
 
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
-        self.ind += 1
-        self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
+            if interaction.user not in self.owners:
+                await interaction.response.send_message("You may not interact with this", ephemeral=True)
+                return
+            self.ind += 1
+            self.score[0] -= (len("".join(self.summary[: self.ind])) - len("".join(self.summary[: self.ind - 1]))) // 2
 
-        if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
-            self.view.remove_item(self)
-        await interaction.edit_original_response(
-            content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
-        )
+            if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
+                self.view.remove_item(self)
+            await interaction.edit_original_response(
+                content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
+            )
+        except NotFound:
+            logging.info("Its okay, no worries")
 
 
 class GuessButton(discord.ui.Button):
     """Button to open guess modal."""
 
     def __init__(self, *, info: _Button) -> None:
+        """Initialize the GuessButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -186,15 +218,18 @@ class GuessButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Open guess modal."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
-        self.guess_modal = GuessInput(
-            title="Guess!",
-            info=self.info,
-        )
-        self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
-        await interaction.response.send_modal(self.guess_modal)
+        try:
+            if interaction.user not in self.owners:
+                await interaction.response.send_message("You may not interact with this", ephemeral=True)
+                return
+            self.guess_modal = GuessInput(
+                title="Guess!",
+                info=self.info,
+            )
+            self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
+            await interaction.response.send_modal(self.guess_modal)
+        except NotFound:
+            logging.info("Its okay, no worries")
 
 
 class GuessInput(discord.ui.Modal):
@@ -208,6 +243,19 @@ class GuessInput(discord.ui.Modal):
         custom_id: str = MISSING,
         info: _Button,
     ) -> None:
+        """Initialize the GuessInput class.
+
+        This class manages displaying a modal for guessing the article, and
+        retrieving input from the user.
+
+        Args:
+        ----
+        title (str): The title of the modal.
+        timeout (float | None): The time until the modal times out.
+        custom_id (str): The custom ID of the modal.
+        info (_Button): Information about the button.
+
+        """
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
         self.info = info
         self.ranked = info.ranked
@@ -220,19 +268,30 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         user_input = self.children[0].value
-        print("user input ", user_input)
-        print("info ", self.info)
-        print("game_type wikiguesser", GameType.wikiguesser)
-        print(self.game_type == GameType.wikiguesser)
-        print(self.game_type == GameType.wikianimal)
-        if self.game_type == GameType.wikiguesser:
-            await wikiguesser_on_submit(self.info, interaction, user_input)
-        elif self.game_type == GameType.wikianimal:
-            await wikianimal_on_submit(self.info, interaction, user_input)
+        logging.info("user input %s", user_input)
+        logging.info("info %s", self.info)
+        logging.info("game_type wikiguesser %s", GameType.wikiguesser)
+        logging.info(self.game_type == GameType.wikiguesser)
+        logging.info(self.game_type == GameType.wikianimal)
+        try:
+            if self.game_type == GameType.wikiguesser:
+                await wikiguesser_on_submit(self.info, interaction, user_input)
+            elif self.game_type == GameType.wikianimal:
+                await wikianimal_on_submit(self.info, interaction, user_input)
+        except NotFound:
+            logging.info("Its okay, no worries")
 
 
 async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
-    """Guess the article."""
+    """Guess the article.
+
+    Args:
+    ----
+    info (_Button): Information about the button.
+    interaction (discord.Interaction): The interaction object.
+    user_guess (str): The user's guess.
+
+    """
     await interaction.response.defer()
     page = await search_wikipedia(user_guess)
     try:
@@ -258,7 +317,15 @@ async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction,
 
 
 async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
-    """."""
+    """Handle the user's guess for the animal game.
+
+    Args:
+    ----
+    info (_Button): Information about the button.
+    interaction (discord.Interaction): The interaction object.
+    user_guess (str): The user's guess.
+
+    """
     print(info)
     print(interaction)
     print(user_guess)
@@ -269,6 +336,13 @@ class LinkListButton(discord.ui.Button):
     """Button for showing more links from the list."""
 
     def __init__(self, *, info: _Button) -> None:
+        """Initialize the LinkListButton class.
+
+        Args:
+        ----
+        info (_Button): Information about the button.
+
+        """
         super().__init__(
             style=info.style,
             label=info.label,
@@ -287,32 +361,35 @@ class LinkListButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """Show 10 diffrent links."""
-        if interaction.user not in self.owners:
-            await interaction.response.send_message("You may not interact with this", ephemeral=True)
-            return
+        try:
+            if interaction.user not in self.owners:
+                await interaction.response.send_message("You may not interact with this", ephemeral=True)
+                return
 
-        if not self.links:
-            self.view.remove_item(self)
-            await interaction.message.edit(view=self.view)
-            await interaction.response.send_message("No more links!", ephemeral=True)
-            return
+            if not self.links:
+                self.view.remove_item(self)
+                await interaction.message.edit(view=self.view)
+                await interaction.response.send_message("No more links!", ephemeral=True)
+                return
 
-        selected_links = []
-        self.score[0] -= 10
-        for _ in range(10):
-            selected_links.append(self.links.pop(secrets.randbelow(len(self.links))))
-            if len(self.links) == 1:
-                selected_links.append(self.links.pop(0))
-                break
+            selected_links = []
+            self.score[0] -= 10
+            for _ in range(10):
+                selected_links.append(self.links.pop(secrets.randbelow(len(self.links))))
+                if len(self.links) == 1:
+                    selected_links.append(self.links.pop(0))
+                    break
 
-        logging.info("Private: %s", self.private)
-        await interaction.response.send_message(
-            content=f"{self.message}\n```{"\n".join(selected_links)}```",
-            view=self.view,
-            delete_after=180,
-            ephemeral=self.private,
-        )
-        if not interaction.message.content:
-            await interaction.message.delete()
-            return
-        await interaction.message.edit(view=None)
+            logging.info("Private: %s", self.private)
+            await interaction.response.send_message(
+                content=f"{self.message}\n```{"\n".join(selected_links)}```",
+                view=self.view,
+                delete_after=180,
+                ephemeral=self.private,
+            )
+            if not interaction.message.content:
+                await interaction.message.delete()
+                return
+            await interaction.message.edit(view=None)
+        except NotFound:
+            logging.info("Its okay, no worries")

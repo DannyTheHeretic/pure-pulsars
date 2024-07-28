@@ -1,7 +1,11 @@
+"""Wiki Guesser Command."""
+
 import logging
 
 import discord
 from discord import app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import _Button, _Ranked
@@ -48,6 +52,17 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     @app_commands.describe(ranked="Do you want to play ranked?")
     async def wiki(interaction: discord.Interaction, ranked: _Ranked = _Ranked.NO) -> None:
+        """Run the wiki-guesser command.
+
+        This command will start a game of wiki-guesser, where you have to guess
+        the wikipedia article you are in.
+
+        Args:
+        ----
+        interaction (discord.Interaction): The interaction object.
+        ranked (_Ranked, optional): Whether the game is ranked or not. Defaults to _Ranked.NO.
+
+        """
         try:
             ranked: bool = bool(ranked.value)
             owners = [interaction.user] if ranked else [*interaction.guild.members]
@@ -139,5 +154,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
             await interaction.followup.send(view=view, wait=True, ephemeral=ranked)
             await interaction.delete_original_response()
-        except discord.app_commands.errors.CommandInvokeError as e:
+        except NotFound as e:
+            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
             logging.critical("Exception %s", e)

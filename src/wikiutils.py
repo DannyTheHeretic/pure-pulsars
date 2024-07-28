@@ -1,13 +1,8 @@
 """Utilities for interacting with Wikipedia.
 
-Todo:
-----
-- [ ] Add a function to get all valid categories.
-- [ ] Create a generator/interface for fetching articles iven some contraints
-    - [x] Works as `rand_wiki` without any constraints
-    - [ ] Works as `rand_wiki` with a list of allowed titles
-    - [ ] Works as `rand_wiki` with a list of allowed categories
-
+This module contains some helper functions for interacitng with and fetching
+data from Wikipedia. It also contains a class that can be used to generate
+articles with a specific category or title
 """
 
 import functools
@@ -22,7 +17,7 @@ from typing import ClassVar
 import aiohttp
 import pywikibot
 import pywikibot.page
-from discord import Colour, Embed, User
+from discord import Embed, User
 from pywikibot import Page
 
 from database.database_core import DATA, NullUserError
@@ -33,40 +28,65 @@ site = pywikibot.Site("en", "wikipedia")
 
 
 def rand_date() -> date:
-    """Take the current time returning the timetuple."""
+    """Take the current time returning the timetuple.
+
+    Pulls a random date between 8 years ago and now.
+    """
     now = int(datetime.now(tz=UTC).timestamp() // 1)
+
+    # Picking a random date between 8 years and now.
     y = int((now - 252482400) - now % 31557600 // 1)
     return datetime.fromtimestamp(timestamp=now - secrets.randbelow(now - y), tz=UTC)
 
 
 def make_embed(article: Page) -> Embed:
-    """Return a Discord Embed."""
+    """Return a Discord Embed.
+
+    Args:
+    ----
+    article (Page): The article to create the embed for.
+
+    Returns:
+    -------
+    Embed: The embed.
+
+    Raises:
+    ------
+    AttributeError: If the image url cannot be found.
+
+    """
     embed = Embed(title=article.title())
     embed.description = f"{article.extract(chars=400)}...([read more]({article.full_url()}))"
     url = article.page_image()
     try:
         url = url.latest_file_info.url
     except AttributeError:
-        url = None
+        try:
+            url = url.oldest_file_info.url
+        except AttributeError:
+            url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
     embed.set_image(url=url)
     return embed
 
 
-def make_img_embed(article: Page, error_message: str = "Sorry no image found") -> Embed:
-    """Return an embed with just an image."""
-    embed = Embed(colour=Colour.blue(), type="image")
-    img_data = article.page_image()
-    try:
-        img_url = img_data.get_file_url()
-    except AttributeError:
-        img_url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
-        embed.description = error_message
-    embed.set_image(url=img_url)
-    return embed
-
-
 def get_best_result(results: tuple[Page], query: str) -> Page | None:
-    """Return the best result from a list of results."""
+    """Return the best result from a list of results.
+
+    Args:
+    ----
+    results (tuple[Page]): A list of results.
+    query (str): The query to search for.
+
+    Returns:
+    -------
+    Page: The best result. None if no results are found.
+
+    Notes:
+    -----
+    Does not implement an optimal search algorithm, but works fine for the
+    scope of the project.
+
+    """
     # Check for exact match in the title
     for result in results:
         if query.casefold().strip() == result.title().casefold().strip():
@@ -132,27 +152,19 @@ async def search_wikipedia_generator(query: str, max_number: int = 10) -> AsyncG
 
 async def rand_wiki() -> Page:
     """Return a random popular wikipedia article."""
-    date = rand_date()
-    date = f"{date.year}/{date.month:02}/{date.day:02}"
-    url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
-    json = None
-    async with aiohttp.ClientSession() as session, session.get(url) as response:
-        json = await response.json()
-    try:
-        articles = json["items"][0]["articles"]
-        random.shuffle(articles)
-        title = articles[0]["article"]
-        page = Page(site, title)
-        if page.isRedirectPage() or not page.exists():
-            return await rand_wiki()
-    except KeyError as e:
-        logging.critical("Oops, %s", e)
-        return await rand_wiki()
-    return page
+    return await ArticleGenerator().fetch_article()
 
 
-async def loss_update(guild: int, user: User) -> None:
-    """Update the user in the database."""
+async def loss_update(guild: int, user: User, score: int) -> None:
+    """Update the user in the database.
+
+    Args:
+    ----
+    guild (int): The guild id.
+    user (User): The user to update.
+    score (int): The score to update.
+
+    """
     uid = user.id
     try:
         db_ref_user = await DATA.get_user(guild, uid)
@@ -162,33 +174,49 @@ async def loss_update(guild: int, user: User) -> None:
             key="times_played",
             value=db_ref_user["times_played"] + 1,
         )
+
         await DATA.update_value_for_user(
             guild_id=guild,
             user_id=uid,
             key="failure",
             value=db_ref_user["failure"] + 1,
         )
+
         await DATA.update_value_for_user(
             guild_id=guild,
             user_id=uid,
             key="last_played",
             value=datetime.now(UTC).timestamp(),
         )
+
     except NullUserError:
         new_user = UserController(
             info=_User(
                 name=user.global_name,
                 times_played=1,
                 failure=1,
-                score=0,
+                score=score,
                 last_played=datetime.now(UTC).timestamp(),
-            )
+            ),
         )
         await DATA.add_user(uid, new_user, guild)
 
 
 async def win_update(guild: int, user: User, score: int) -> None:
-    """Update the user in the database."""
+    """Update the user in the database.
+
+    Args:
+    ----
+    guild (int): The guild id.
+    user (User): The user to update.
+    score (int): The score to update.
+
+    Notes:
+    -----
+    This interfaces directly with the database connection provided by database_core.py.
+    For more information on the functions used here, see database_core.py.
+
+    """
     uid = user.id
     try:
         db_ref_user = await DATA.get_user(guild, uid)
@@ -198,24 +226,28 @@ async def win_update(guild: int, user: User, score: int) -> None:
             key="times_played",
             value=db_ref_user["times_played"] + 1,
         )
+
         await DATA.update_value_for_user(
             guild_id=guild,
             user_id=uid,
             key="score",
             value=db_ref_user["score"] + score,
         )
+
         await DATA.update_value_for_user(
             guild_id=guild,
             user_id=uid,
             key="last_played",
             value=datetime.now(UTC).timestamp(),
         )
+
         await DATA.update_value_for_user(
             guild_id=guild,
             user_id=uid,
             key="wins",
             value=db_ref_user["wins"] + 1,
         )
+
     except NullUserError:
         new_user = UserController(
             info=_User(
@@ -224,14 +256,30 @@ async def win_update(guild: int, user: User, score: int) -> None:
                 wins=1,
                 score=score,
                 last_played=datetime.now(UTC).timestamp(),
-            )
+            ),
         )
+
         await DATA.add_user(uid, new_user, guild)
 
 
 def get_all_categories_from_article(article: Page) -> list[str]:
-    """Return all categories from an article."""
-    return [category.title().replace("Category:", "") for category in article.categories()]
+    """Return all categories from an article.
+
+    Args:
+    ----
+    article (Page): The article to get the categories from.
+
+    Returns:
+    -------
+    list[str]: A list of categories.
+
+    Notes:
+    -----
+    This is a convenience function for getting all categories from an article.
+    For implementation, see ``ArticleGenerator.get_all_categories_from_article``.
+
+    """
+    return ArticleGenerator.get_all_categories_from_article(article)
 
 
 async def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
@@ -257,7 +305,20 @@ class ArticleGeneratorError(Exception):
 
 
 class ArticleGenerator:
-    """Generates articles from Wikipedia."""
+    """Generates articles from Wikipedia.
+
+    This class is a generator that will return articles based on the given
+    constraints. It can be used to generate articles based on categories or
+    titles. It can also be used to generate random articles.
+
+    Attributes
+    ----------
+    categories (tuple[str]): A tuple of categories to search for.
+    titles (list[str]): A list of titles to search for.
+    _current_article (Page): The current article.
+    _generated_articles (set[Page]): A set of generated articles.
+
+    """
 
     _article_limit: ClassVar[int] = 1_000
 
@@ -294,7 +355,6 @@ class ArticleGenerator:
         try:
             return await self.fetch_article()
 
-        # TODO(teald): This can definitely be handled better.
         except ArticleGeneratorError as err:
             raise StopAsyncIteration from err
 
@@ -319,7 +379,6 @@ class ArticleGenerator:
 
     async def fetch_valid_article(self) -> Page:
         """Return a valid Page based on the current constraints."""
-        # TODO(teald): Refactor below.
         articles = await self._articles_from_titles() if self.titles else []
 
         # Filter articles that have already been generated.
@@ -357,10 +416,13 @@ class ArticleGenerator:
         category_pages = {category: set(pywikibot.Category(site, category).articles()) for category in self.categories}
 
         # If there are mutlitple categories, get the intersection of the articles.
-        articles = functools.reduce(set.intersection, category_pages.values())
+        articles = functools.reduce(set.union, category_pages.values())
+
+        # For each of these articles, check if they have all the categories.
+        articles = [article for article in articles if self.article_has_categories(article)]
 
         try:
-            return list(articles)
+            return articles
 
         except IndexError as err:
             message = "No articles found in the categories."
@@ -368,7 +430,6 @@ class ArticleGenerator:
 
     async def _articles_from_titles(self) -> list[Page]:
         """Return an article from the list of titles."""
-        # TODO(teald): Refactor this function.
         # If categories are provided, do a broader search.
         if self.categories:
             title_articles: dict[str, set[Page]] = defaultdict(set)
@@ -410,14 +471,35 @@ class ArticleGenerator:
 
         return articles
 
-    async def random_article(self) -> Page:
-        """Return a random article."""
-        # TODO(teald): Bring rand_wiki into this class.
-        return await rand_wiki()
-
     def article_has_categories(self, article: Page) -> bool:
         """Return True if the article has all the categories."""
         article_categories = get_all_categories_from_article(article)
         article_categories = {category.casefold() for category in article_categories}
 
         return all(category.casefold() in article_categories for category in self.categories)
+
+    @staticmethod
+    async def random_article() -> Page:
+        """Return a random article."""
+        date = rand_date()
+        date = f"{date.year}/{date.month:02}/{date.day:02}"
+        url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date}"
+        json = None
+        async with aiohttp.ClientSession() as session, session.get(url) as response:
+            json = await response.json()
+        try:
+            articles = json["items"][0]["articles"]
+            random.shuffle(articles)
+            title = articles[0]["article"]
+            page = Page(site, title)
+            if page.isRedirectPage() or not page.exists():
+                return await rand_wiki()
+        except KeyError as e:
+            logging.critical("Oops, %s", e)
+            return await rand_wiki()
+        return page
+
+    @staticmethod
+    def get_all_categories_from_article(article: Page) -> list[str]:
+        """Return all categories from an article."""
+        return [category.title().replace("Category:", "") for category in article.categories()]

@@ -1,9 +1,13 @@
+"""User info command for the Wiki Guesser game."""
+
 import logging
 from datetime import UTC, datetime
 
 import discord
 import humanize
 from discord import app_commands
+from discord.app_commands.errors import CommandInvokeError
+from discord.errors import NotFound
 
 from database.database_core import DATA, NullUserError
 
@@ -19,6 +23,18 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     @app_commands.describe(user="Who are you asking about, leave blank for self?")
     async def user_info(interaction: discord.Interaction, user: discord.User = None) -> None:
+        """Get game info for a specific user from the scores database.
+
+        Args:
+        ----
+        interaction (discord.Interaction): The interaction object.
+        user (discord.User): The user to get the game info for.
+
+        Notes:
+        -----
+        If no user is provided, the command will default to the user who invoked the command.
+
+        """
         try:
             await interaction.response.defer(thinking=True, ephemeral=True)
             embed = discord.embeds.Embed()
@@ -60,5 +76,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 return
 
             await interaction.followup.send(embed=embed, ephemeral=True)
-        except discord.app_commands.errors.CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+        except NotFound as e:
+            logging.critical(e)
+        except CommandInvokeError as e:
+            logging.critical(e)
