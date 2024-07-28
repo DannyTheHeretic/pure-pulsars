@@ -38,3 +38,6 @@ async def test_get_all_categories_from_article(sample_astronomy_articles: list[p
         categories = get_all_categories_from_article(article)
 
         assert "Astronomy" in categories
+
+        # All example articles should alsohave any single other category.
+        assert len(categories) > 1
