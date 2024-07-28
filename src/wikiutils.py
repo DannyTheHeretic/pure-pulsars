@@ -47,10 +47,7 @@ def make_embed(article: Page) -> Embed:
     try:
         url = url.latest_file_info.url
     except AttributeError:
-        try:
-            url = url.oldest_file_info.url
-        except AttributeError:
-            url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
+        url = None
     embed.set_image(url=url)
     return embed
 

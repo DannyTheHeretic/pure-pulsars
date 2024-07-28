@@ -7,6 +7,7 @@ import discord
 from discord import ButtonStyle, Enum
 from discord.utils import MISSING
 from pywikibot import Page
+from pywikibot.exceptions import InvalidTitleError
 
 from wikiutils import loss_update, make_embed, search_wikipedia
 
@@ -149,7 +150,7 @@ class ExcerptButton(discord.ui.Button):
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
             self.view.remove_item(self)
         await interaction.edit_original_response(
-            content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view
+            content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
         )
 
 
@@ -214,17 +215,24 @@ class GuessInput(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
         await interaction.response.defer()
-        page = await search_wikipedia(self.children[0].value)
-        if page.title() == self.article.title():
-            await self.winlossmanager.on_win()
+        try:
+            page = await search_wikipedia(self.children[0].value)
+            if page.title() == self.article.title():
+                await self.winlossmanager.on_win()
+                await interaction.followup.send(
+                    "Good job", ephemeral=True
+                )  # * IMPORTANT, you must respond to the interaction for the modal to close
+                # * or else it will just say something went wrong
+                return
+        except InvalidTitleError:
+            await interaction.followup.send(content="Sorry, the article title was not valid.")
+        except AttributeError:
             await interaction.followup.send(
-                "Good job", ephemeral=True
-            )  # * IMPORTANT, you must respond to the interaction for the modal to close
-            # * or else it will just say something went wrong
-            return
+                content="Sorry, an error with that article occured, please try a different one."
+            )
         await self.winlossmanager.on_loss()
         await interaction.followup.send(
-            "bad job", ephemeral=True
+            "Sorry, You got it wrong.", ephemeral=True
         )  # * IMPORTANT, you must respond to the interaction for the modal to close
         # * or else it will just say something went wrong
         self.score[0] -= 5
@@ -256,15 +264,20 @@ class LinkListButton(discord.ui.Button):
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
 
+        if not self.links:
+            self.view.remove_item(self)
+            await interaction.message.edit(view=self.view)
+            await interaction.response.send_message("No more links!", ephemeral=True)
+            return
+
         selected_links = []
         self.score[0] -= 10
         for _ in range(10):
-            selected_links.append(self.links.pop(secrets.randbelow(len(self.links) - 1)))
+            selected_links.append(self.links.pop(secrets.randbelow(len(self.links))))
             if len(self.links) == 1:
                 selected_links.append(self.links.pop(0))
                 break
-        if selected_links == []:
-            await interaction.response.send_message("No more links!")
+
         logging.info("Private: %s", self.private)
         await interaction.response.send_message(
             content=f"{self.message}\n```{"\n".join(selected_links)}```",
@@ -272,5 +285,7 @@ class LinkListButton(discord.ui.Button):
             delete_after=180,
             ephemeral=self.private,
         )
-        if len(self.links) == 0:
-            self.view.remove_item(self)
+        if not interaction.message.content:
+            await interaction.message.delete()
+            return
+        await interaction.message.edit(view=None)
