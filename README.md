@@ -15,12 +15,15 @@
 |-----------------|----------------------------------------------------------------------------|
 | `/wiki-guesser` | Starts a game of wiki-guesser! Try and find what wikipedia article you're in. |
 | `/wiki-random`  | Get a random wikipedia article.                                            |
+| `/wiki-animal`  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
+| `/rabbit-hole`  | Dive into wikipedia with AI-guided random exploration!                     |
+| `/wiki-search`  | Get a Wikipedia article that you searched for.                             |
 | `/leaderboard`  | Returns your guild's leaderboard.                                          |
 | `/user-info`    | Returns your stats.                                                        |
-| `/wiki-animal`  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
-| `/wiki-search`  | Get a Wikipedia article that you searched for.                             |
 | `/reset-scores` | Reset scores of all users in this guild for this guild.                    |
 | `/never`        | Never use this command! :surprised:                                        |
+| `/sync`         | Sync the command tree.                                                     |
+| `/help`         | Display a message with much of the same info as this table has.            |
 
 
 # Technical Points
