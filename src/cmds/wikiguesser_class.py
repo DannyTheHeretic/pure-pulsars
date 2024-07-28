@@ -55,6 +55,8 @@ class WinLossManagement(ABC):
 
 
 class _Button(NamedTuple):
+    """NamedTuple for button information."""
+
     style: ButtonStyle = ButtonStyle.secondary
     label: str | None = None
     disabled: bool = False
