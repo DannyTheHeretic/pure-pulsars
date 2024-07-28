@@ -1,3 +1,5 @@
+"""Wiki search command."""
+
 import logging
 
 import discord
@@ -16,6 +18,14 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     @app_commands.describe(query="What are you asking it?")
     async def wiki(interaction: discord.Interaction, query: str) -> None:
+        """Search wikipedia for an article using a query.
+
+        Args:
+        ----
+        interaction (discord.Interaction): The interaction object.
+        query (str): The query to search wikipedia for.
+
+        """
         try:
             await interaction.response.send_message(content="Finding your really cool article...")
             embed = make_embed(article=await search_wikipedia(query))
