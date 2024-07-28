@@ -2,8 +2,8 @@ import logging
 import os
 import re
 
+import aiohttp
 import discord
-import requests
 from discord import app_commands
 from pint import UnitRegistry
 from pywikibot import Page
@@ -12,7 +12,7 @@ from cmds import wikiguesser_class
 from cmds.wikiguesser_class import GameType, _Button
 from wikiutils import get_articles_with_categories, make_embed, make_img_embed
 
-ureg = UnitRegistry()
+UREG = UnitRegistry()
 
 WEIGHT_PATTERN = re.compile(r"(\d+ ?(?:kg|tons|lbs|oz|g|pounds|grams))")
 
@@ -95,49 +95,45 @@ class GiveUpButton(discord.ui.Button):
         view.clear_items()
 
 
-def find_animal_weight(animal_name: str) -> list[str]:
+async def find_animal_weight(animal_name: str) -> list[str]:
     """Determine animal's weight ranges based on article text."""
     api_url = f"https://api.api-ninjas.com/v1/animals?name={animal_name}"
-    response = requests.get(api_url, headers={"X-Api-Key": os.environ["NINJA_API_KEY"]}, timeout=20)
-    if response.status_code == requests.codes.ok:
-        print(response.text)
-    else:
-        print("Error:", response.status_code, response.text)
-    animal_data = response.json()
-    print(animal_data)
+    async with (
+        aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as session,
+        session.get(api_url, headers={"X-Api-Key": os.environ["NINJA_API_KEY"]}) as response,
+    ):
+        if not response.ok:
+            logging.error("Error requesting animal data: %s", response.status)
+            raise IncompatibleAnimalError
+        animal_data = await response.json()
     if animal_data:
         weight_str = animal_data[0].get("characteristics").get("weight")
     else:
         raise IncompatibleAnimalError
+    if weight_str is None:
+        raise IncompatibleAnimalError
     weight_str = weight_str.replace(",", "")
-    print("weight str: ", weight_str)
     weight_phrases = re.findall(WEIGHT_PATTERN, weight_str)
     if weight_phrases:
-        print("weight phrases ", weight_phrases)
-        weight_ranges = [ureg.Quantity(weight) for weight in weight_phrases]
-        print("weight whatever ", weight_ranges)
+        weight_ranges = [UREG.Quantity(weight) for weight in weight_phrases]
         if len(weight_ranges) % 2 == 0:
             return [weight_ranges[0], weight_ranges[1]]
         return [weight_ranges[0]]
     raise IncompatibleAnimalError
 
 
-async def find_new_animal() -> dict:
+async def find_new_animal(interaction: discord.Interaction) -> dict:
     """Return random animal's information."""
     try:
-        articles = await get_articles_with_categories(["Mammals of the United States", "Mammals of Canada"], 1)
-        print(articles)
+        articles = await get_articles_with_categories(["Mammals of the United States"], 1)
+        await interaction.followup.send("Still chasing animals...")
         article = articles[0]
-        print(article)
-        # investiaget how to go from talk page to regular page
-        # alterantive use mammals of us, canada, east asia
         animal_name = article.title().split(" ")[-1]
-        print("short name: ", animal_name)
         logging.info("The current wikianimal is %s", animal_name)
-        weight_range = find_animal_weight(animal_name)
+        weight_ranges = await find_animal_weight(animal_name)
     except IncompatibleAnimalError:
-        return await find_new_animal()
-    return {"name": animal_name, "article": article, "weight_ranges": weight_range}
+        return await find_new_animal(interaction)
+    return {"name": animal_name, "article": article, "weight_ranges": weight_ranges}
 
 
 def main(tree: app_commands.CommandTree) -> None:
@@ -148,6 +144,7 @@ def main(tree: app_commands.CommandTree) -> None:
         description="Starts a game of wiki-animal! Try and guess the animal's mass!",
     )
     async def wiki(interaction: discord.Interaction) -> None:
+        logging.info("Catching animal, wikipedia is slow, please standby.")
         try:
             ranked = False
             owners = [*interaction.guild.members]
@@ -156,7 +153,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 content="Starting a game of Wiki Animal, one moment while we catch your animal."
             )
 
-            animal_info = await find_new_animal()
+            animal_info = await find_new_animal(interaction)
 
             article = animal_info.get("article")
             hint_view = discord.ui.View()
@@ -175,6 +172,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     game_type=GameType.wikianimal,
                     owners=owners,
                     winlossmanager=WinLossFunctions(args, args),
+                    animal_info=animal_info,
                 )
             )
 
