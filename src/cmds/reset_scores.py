@@ -5,7 +5,7 @@ from database.database_core import DATA
 
 
 def main(tree: app_commands.CommandTree) -> None:
-    """Create Wiki Guesser command."""
+    """Create Wiki Guesser reset-scores command."""
 
     @tree.command(
         name="reset-scores",

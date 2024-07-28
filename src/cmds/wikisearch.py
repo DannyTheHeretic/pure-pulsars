@@ -8,7 +8,7 @@ from wikiutils import make_embed, search_wikipedia
 
 
 def main(tree: app_commands.CommandTree) -> None:
-    """Create Wiki Guesser command."""
+    """Create wiki search command."""
 
     @tree.command(
         name="wiki-search",

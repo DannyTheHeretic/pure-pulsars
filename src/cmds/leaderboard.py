@@ -14,7 +14,7 @@ class _GloSer(Enum):
 
 
 def main(tree: app_commands.CommandTree) -> None:
-    """Create Wiki Guesser command."""
+    """Create leaderboard command."""
 
     def _sort_leaders(e: dict) -> int:
         return e["score"]

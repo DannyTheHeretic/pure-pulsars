@@ -7,7 +7,7 @@ from wikiutils import make_embed, rand_wiki
 
 
 def main(tree: app_commands.CommandTree) -> None:
-    """Create Wiki Guesser command."""
+    """Create random command."""
 
     @tree.command(
         name="wiki-random",

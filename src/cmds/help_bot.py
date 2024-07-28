@@ -5,7 +5,7 @@ from discord import app_commands
 
 
 def main(tree: app_commands.CommandTree) -> None:
-    """Create a wikiguesser command."""
+    """Create a help command."""
 
     @tree.command(
         name="help",
