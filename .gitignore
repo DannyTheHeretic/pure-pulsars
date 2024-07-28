@@ -109,3 +109,6 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# Other
+*throttle.ctrl*

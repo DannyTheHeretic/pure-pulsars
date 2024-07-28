@@ -13,6 +13,7 @@ from cmds import (
     help_bot,
     leaderboard,
     never,
+    rabbit_hole,
     reset_scores,
     sync,
     user_info,
@@ -43,6 +44,7 @@ async def _first_run(client: commands.Bot) -> None:
     )
     await client.change_presence(
         status=discord.Status.online,
+
         activity=discord.activity.CustomActivity(
             "📚 reading wikipedia",
             emoji="📚",
@@ -77,6 +79,7 @@ reset_scores.main(client.tree)
 never.main(client.tree)
 challenge.main(client.tree)
 help_bot.main(client.tree)
+rabbit_hole.main(client.tree)
 
 # activates shutdown command if the app is running on the server
 if bool(os.environ.get("SERVER", 0)):
