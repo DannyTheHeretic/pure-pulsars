@@ -14,6 +14,7 @@ import google.generativeai as genai
 from discord import Embed, app_commands
 from discord.app_commands.errors import CommandInvokeError
 from discord.errors import NotFound
+from google.api_core.exceptions import ResourceExhausted
 from pywikibot import Page
 
 from wikiutils import rand_wiki
@@ -103,12 +104,7 @@ async def rabbit_hole_helper(interaction: discord.Interaction, article: Page) ->
         # Generate a summary and return an embed message
         text = article.extract(intro=False)
         response = model.generate_content(text)
-        try:
-            summary = json.loads(response.text)
-        except json.JSONDecodeError:
-            logging.critical("Failed to decode JSON response: %s", response.text)
-            await interaction.followup.send("Failed to generate a summary. Please try again.")
-            return
+        summary = json.loads(response.text)
 
         # Add additional information to the summary
         summary["Title"] = article.title()
@@ -127,6 +123,11 @@ async def rabbit_hole_helper(interaction: discord.Interaction, article: Page) ->
         related_pages = random.sample(tuple(article.linkedPages()), 3)
 
         await interaction.followup.send(embed=embed, view=WikiButtons(related_pages))
+    except json.JSONDecodeError:
+        logging.info("Failed to decode JSON response: %s", response.text)
+        await interaction.followup.send("Failed to generate a summary. Please try again.")
+    except ResourceExhausted:
+        await interaction.followup.send("Your API key is rate limited. Please try again later.")
     except NotFound as e:
         logging.info("Rabbit Hole:\nFunc: rabbit_hole_helper\nException %s", e)
     except CommandInvokeError as e:
@@ -141,13 +142,15 @@ def main(tree: app_commands.CommandTree) -> None:
         description="Dive into wiki-knowledge with Rabbit Hole — information overload through random exploration.",
     )
     async def rabbit_hole(interaction: discord.Interaction) -> None:
-        try:
-            await interaction.response.defer(thinking=True, ephemeral=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
 
-            # Get a random Wikipedia article, generate a summary, and return an embed message
+        try:
+            # Get a random Wikipedia article
             article = await rand_wiki()
-            await rabbit_hole_helper(interaction, article)
         except NotFound as e:
             logging.info("Rabbit Hole:\nFunc: rabbit_hole\nException %s", e)
         except CommandInvokeError as e:
             logging.info("Rabbit Hole:\nFunc: rabbit_hole\nException %s", e)
+
+        # Generate a summary, and return an embed message
+        await rabbit_hole_helper(interaction, article)
