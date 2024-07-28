@@ -92,10 +92,7 @@ async def rabbit_hole_helper(interaction: discord.Interaction, article: Page) ->
         try:
             image_url = image_url.latest_file_info.url
         except AttributeError:
-            try:
-                image_url = image_url.oldest_file_info.url
-            except AttributeError:
-                image_url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
+            image_url = None
         summary["Image"] = image_url
 
         # Create an embed message with the summary
