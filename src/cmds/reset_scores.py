@@ -1,3 +1,5 @@
+"""Reset scores of all users in this guild for this guild."""
+
 import discord
 from discord import app_commands
 
@@ -12,6 +14,19 @@ def main(tree: app_commands.CommandTree) -> None:
         description="Reset scores of all users in this guild for this guild",
     )
     async def reset_scores(interaction: discord.Interaction) -> None:
+        """Reset the scores of all users in a server.
+
+        Args:
+        ----
+        interaction (discord.Interaction): The interaction object.
+
+        Notes:
+        -----
+        This command requires the user to have **MANAGE SERVER** (or 'manage_guild') permissions.
+
+        This command will reset the scores of all users in the server to 0.
+
+        """
         await interaction.response.defer(thinking=True)
         if interaction.channel.permissions_for(interaction.user).manage_guild:
             data = await DATA.get_server(interaction.guild_id)
