@@ -10,8 +10,8 @@ def main(tree: app_commands.CommandTree) -> None:
     """Create a wikiguesser command."""
 
     @tree.command(
-        name="deathmatch",
-        description="Multiplayer wikiguesser but whoever loses gets shot",
+        name="never",
+        description="Who knows what this does.",
     )
     async def never_gonna_give_you_up(interaction: discord.Interaction, user: discord.User) -> None:
         await interaction.response.send_message(

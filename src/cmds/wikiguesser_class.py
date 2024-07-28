@@ -7,11 +7,19 @@ import discord
 from discord import ButtonStyle, Enum
 from discord.utils import MISSING
 from pywikibot import Page
+from pywikibot.exceptions import InvalidTitleError
 
 from wikiutils import loss_update, make_embed, search_wikipedia
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
+
+
+class GameType(Enum):
+    """Possible games to be played."""
+
+    wikiguesser = 0
+    wikianimal = 1
 
 
 class _Ranked(Enum):
@@ -54,6 +62,7 @@ class _Button(NamedTuple):
     ranked: bool = False
     article: Page = None
     user: int = 0
+    game_type: GameType = GameType.wikiguesser
 
 
 class GiveUpButton(discord.ui.Button):
@@ -90,7 +99,8 @@ class GiveUpButton(discord.ui.Button):
         article = self.article
         embed = make_embed(article)
         embed.set_footer(text=msg)
-        await loss_update()
+        for i in [interaction.guild_id, 0]:
+            await loss_update(i, user=interaction.user)
         try:
             await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
             await self.clean_view(view=self._view)
@@ -148,7 +158,7 @@ class ExcerptButton(discord.ui.Button):
         if self.summary[: self.ind] == self.summary or len(".".join(self.summary[: self.ind + 1])) > MAX_LEN:
             self.view.remove_item(self)
         await interaction.edit_original_response(
-            content=f"Excerpt: {". ".join(self.summary[:self.ind])}.", view=self.view
+            content=f"Excerpt: {".".join(self.summary[:self.ind])}.", view=self.view
         )
 
 
@@ -166,6 +176,7 @@ class GuessButton(discord.ui.Button):
             row=info.row,
             sku_id=info.sku_id,
         )
+        self.info = info
         self.ranked = info.ranked
         self.article = info.article
         self.score = info.score
@@ -180,13 +191,7 @@ class GuessButton(discord.ui.Button):
             return
         self.guess_modal = GuessInput(
             title="Guess!",
-            info=_Button(
-                ranked=self.ranked,
-                article=self.article,
-                score=self.score,
-                user=self.user,
-                winlossmanager=self.winlossmanager,
-            ),
+            info=self.info,
         )
         self.guess_modal.add_item(discord.ui.TextInput(label="Your guess", placeholder="Enter your guess here..."))
         await interaction.response.send_modal(self.guess_modal)
@@ -204,29 +209,60 @@ class GuessInput(discord.ui.Modal):
         info: _Button,
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
+        self.info = info
         self.ranked = info.ranked
         self.score = info.score
         self.user = info.user
         self.article = info.article
+        self.game_type = info.game_type
         self.winlossmanager = info.winlossmanager
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """Guess the article."""
-        await interaction.response.defer()
-        page = await search_wikipedia(self.children[0].value)
-        if page.title() == self.article.title():
-            await self.winlossmanager.on_win()
+        user_input = self.children[0].value
+        print("user input ", user_input)
+        print("info ", self.info)
+        print("game_type wikiguesser", GameType.wikiguesser)
+        print(self.game_type == GameType.wikiguesser)
+        print(self.game_type == GameType.wikianimal)
+        if self.game_type == GameType.wikiguesser:
+            await wikiguesser_on_submit(self.info, interaction, user_input)
+        elif self.game_type == GameType.wikianimal:
+            await wikianimal_on_submit(self.info, interaction, user_input)
+
+
+async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
+    """Guess the article."""
+    await interaction.response.defer()
+    page = await search_wikipedia(user_guess)
+    try:
+        if page.title() == info.article.title():
+            await info.winlossmanager.on_win()
             await interaction.followup.send(
                 "Good job", ephemeral=True
             )  # * IMPORTANT, you must respond to the interaction for the modal to close
             # * or else it will just say something went wrong
             return
-        await self.winlossmanager.on_loss()
+    except InvalidTitleError:
+        await interaction.followup.send(content="Sorry, the article title was not valid.")
+    except AttributeError:
         await interaction.followup.send(
-            "bad job", ephemeral=True
-        )  # * IMPORTANT, you must respond to the interaction for the modal to close
-        # * or else it will just say something went wrong
-        self.score[0] -= 5
+            content="Sorry, an error with that article occured, please try a different one."
+        )
+    await info.winlossmanager.on_loss()
+    await interaction.followup.send(
+        "bad job", ephemeral=True
+    )  # * IMPORTANT, you must respond to the interaction for the modal to close
+    # * or else it will just say something went wrong
+    info.score[0] -= 5
+
+
+async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, user_guess: str) -> None:
+    """."""
+    print(info)
+    print(interaction)
+    print(user_guess)
+    print("well you made it this far")
 
 
 class LinkListButton(discord.ui.Button):
@@ -255,15 +291,20 @@ class LinkListButton(discord.ui.Button):
             await interaction.response.send_message("You may not interact with this", ephemeral=True)
             return
 
+        if not self.links:
+            self.view.remove_item(self)
+            await interaction.message.edit(view=self.view)
+            await interaction.response.send_message("No more links!", ephemeral=True)
+            return
+
         selected_links = []
         self.score[0] -= 10
         for _ in range(10):
-            selected_links.append(self.links.pop(secrets.randbelow(len(self.links) - 1)))
+            selected_links.append(self.links.pop(secrets.randbelow(len(self.links))))
             if len(self.links) == 1:
                 selected_links.append(self.links.pop(0))
                 break
-        if selected_links == []:
-            await interaction.response.send_message("No more links!")
+
         logging.info("Private: %s", self.private)
         await interaction.response.send_message(
             content=f"{self.message}\n```{"\n".join(selected_links)}```",
@@ -271,5 +312,7 @@ class LinkListButton(discord.ui.Button):
             delete_after=180,
             ephemeral=self.private,
         )
-        if len(self.links) == 0:
-            self.view.remove_item(self)
+        if not interaction.message.content:
+            await interaction.message.delete()
+            return
+        await interaction.message.edit(view=None)

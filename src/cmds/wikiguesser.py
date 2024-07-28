@@ -9,6 +9,7 @@ from wikiutils import make_embed, rand_wiki, win_update
 
 ACCURACY_THRESHOLD = 0.8
 MAX_LEN = 1990
+LEN_OF_STR = 10
 
 
 class WinLossFunctions(wikiguesser_class.WinLossManagement):
@@ -76,7 +77,7 @@ def main(tree: app_commands.CommandTree) -> None:
                 excerpt = excerpt.replace(i, "~~CENSORED~~")
                 excerpt = excerpt.replace(i.lower(), "~~CENSORED~~")
 
-            sentances = excerpt.split(". ")
+            sentances = [i for i in excerpt.strip("\n").split(".") if i]
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
             excerpt_view = discord.ui.View()
             guess_button = wikiguesser_class.GuessButton(

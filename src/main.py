@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import discord
 from discord import app_commands
@@ -16,6 +17,7 @@ from cmds import (
     reset_scores,
     sync,
     user_info,
+    wikianimal,
     wikiguesser,
     wikirandom,
     wikisearch,
@@ -35,9 +37,18 @@ async def _first_run(client: commands.Bot) -> None:
     has_ran = True
     await client.tree.sync()
     logging.info("The sync has been ran: %s", has_ran)
+    await client.user.edit(
+        username="WikiWabbit",
+        avatar=Path.open("./imgs/logo.png", "rb").read(),
+        banner=Path.open("./imgs/banner.png", "rb").read(),
+    )
     await client.change_presence(
         status=discord.Status.online,
-        activity=discord.activity.CustomActivity("📚 reading wikipedia", emoji="📚"),
+
+        activity=discord.activity.CustomActivity(
+            "📚 reading wikipedia",
+            emoji="📚",
+        ),
     )
 
 
@@ -63,6 +74,7 @@ wikirandom.main(client.tree)
 leaderboard.main(client.tree)
 user_info.main(client.tree)
 wikisearch.main(client.tree)
+wikianimal.main(client.tree)
 reset_scores.main(client.tree)
 never.main(client.tree)
 challenge.main(client.tree)
