@@ -17,7 +17,7 @@ from typing import ClassVar
 import aiohttp
 import pywikibot
 import pywikibot.page
-from discord import Colour, Embed, User
+from discord import Embed, User
 from pywikibot import Page
 
 from src.database.database_core import DATA, NullUserError
@@ -61,21 +61,11 @@ def make_embed(article: Page) -> Embed:
     try:
         url = url.latest_file_info.url
     except AttributeError:
-        url = None
+        try:
+            url = url.oldest_file_info.url
+        except AttributeError:
+            url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
     embed.set_image(url=url)
-    return embed
-
-
-def make_img_embed(article: Page, error_message: str = "Sorry no image found") -> Embed:
-    """Return an embed with just an image."""
-    embed = Embed(colour=Colour.blue(), type="image")
-    img_data = article.page_image()
-    try:
-        img_url = img_data.get_file_url()
-    except AttributeError:
-        img_url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
-        embed.description = error_message
-    embed.set_image(url=img_url)
     return embed
 
 
@@ -205,7 +195,7 @@ async def loss_update(guild: int, user: User, score: int) -> None:
                 name=user.global_name,
                 times_played=1,
                 failure=1,
-                score=0,
+                score=score,
                 last_played=datetime.now(UTC).timestamp(),
             ),
         )
@@ -352,7 +342,6 @@ class ArticleGenerator:
         try:
             return await self.fetch_article()
 
-        # TODO(teald): This can definitely be handled better.
         except ArticleGeneratorError as err:
             raise StopAsyncIteration from err
 
@@ -428,7 +417,6 @@ class ArticleGenerator:
 
     async def _articles_from_titles(self) -> list[Page]:
         """Return an article from the list of titles."""
-        # TODO(teald): Refactor this function.
         # If categories are provided, do a broader search.
         if self.categories:
             title_articles: dict[str, set[Page]] = defaultdict(set)
