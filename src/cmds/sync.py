@@ -1,3 +1,5 @@
+"""Sync the command tree for the bot."""
+
 import logging
 
 import discord
@@ -15,7 +17,10 @@ def main(bot: app_commands.CommandTree) -> None:
     @commands.guild_only()
     @commands.is_owner()
     async def sync(inter: discord.Interaction) -> None:
-        """Command to sync the tree."""
+        """Command to sync the tree.
+
+        It will sync the command tree to the guild it is called in.
+        """
         try:
             guild = inter.guild
             try:
