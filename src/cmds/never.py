@@ -29,7 +29,7 @@ def main(tree: app_commands.CommandTree) -> None:
         )
         article = await search_wikipedia("Rickrolling")
         await asyncio.sleep(1)
-        embed = make_embed(article)
+        embed = await make_embed(article)
         embed.description = (
             f"{article.extract(chars=400)}...([read more](https://www.youtube.com/watch?v=dQw4w9WgXcQ))"
         )

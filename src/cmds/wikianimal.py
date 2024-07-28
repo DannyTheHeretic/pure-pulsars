@@ -33,7 +33,7 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
         """Clean up on win."""
         interaction: discord.Interaction = self.winargs["interaction"]
         article = self.winargs["article"]
-        embed = make_embed(article)
+        embed = await make_embed(article)
         msg = f"Congratulations {interaction.user.mention}! You guessed correctly!"
         await interaction.followup.send(content=msg, embed=embed)
 

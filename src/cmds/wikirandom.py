@@ -25,7 +25,7 @@ def main(tree: app_commands.CommandTree) -> None:
         try:
             await interaction.response.send_message(content="Finding a really cool article...")
             article = await rand_wiki()
-            embed = make_embed(article=article)
+            embed = await make_embed(article=article)
             await interaction.followup.send(embed=embed)
             await interaction.delete_original_response()
         except NotFound as e:

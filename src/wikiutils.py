@@ -39,7 +39,7 @@ def rand_date() -> date:
     return datetime.fromtimestamp(timestamp=now - secrets.randbelow(now - y), tz=UTC)
 
 
-def make_embed(article: Page) -> Embed:
+async def make_embed(article: Page) -> Embed:
     """Return a Discord Embed.
 
     Args:

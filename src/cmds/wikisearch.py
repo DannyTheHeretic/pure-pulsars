@@ -30,7 +30,7 @@ def main(tree: app_commands.CommandTree) -> None:
         """
         try:
             await interaction.response.send_message(content="Finding your really cool article...")
-            embed = make_embed(article=await search_wikipedia(query))
+            embed = await make_embed(article=await search_wikipedia(query))
             await interaction.followup.send(embed=embed)
             await interaction.delete_original_response()
         except InvalidTitleError:
