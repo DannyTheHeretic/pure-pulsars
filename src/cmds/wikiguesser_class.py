@@ -79,6 +79,7 @@ class _Button(NamedTuple):
     user: int = 0
     game_type: GameType = GameType.wikiguesser
     animal_info: dict | None = None
+    view: discord.ui.View | None = None
 
 
 class GiveUpButton(discord.ui.Button):
@@ -331,12 +332,17 @@ async def wikianimal_on_submit(info: _Button, interaction: discord.Interaction, 
     """
 
     async def win() -> None:
-        await info.winlossmanager.on_win()
+        article = info.article
+        embed = make_embed(article)
+        msg = f"Congratulations {interaction.user.mention}! You guessed correctly!"
         await interaction.response.send_message("Crikey! You're a winner!", ephemeral=True)
+        await interaction.followup.send(content=msg, embed=embed)
+        info.view.clear_items()
+        await interaction.message.edit(view=info.view)
 
     async def lose() -> None:
-        await info.winlossmanager.on_loss()
         await interaction.response.send_message("Guess again! Remember to use units like kg!", ephemeral=True)
+        await interaction.followup.send("Sorry, try again.", ephemeral=True)
 
     guess_weight = UREG.Quantity(user_guess)
 
