@@ -4,6 +4,7 @@ import logging
 
 import discord
 from discord import Enum, app_commands
+from discord.app_commands.errors import CommandInvokeError
 
 from database.database_core import DATA
 
@@ -56,5 +57,5 @@ def main(tree: app_commands.CommandTree) -> None:
             )
 
             await interaction.followup.send(embed=embed)
-        except discord.app_commands.errors.CommandInvokeError as e:
-            logging.critical("Exception %s", e)
+        except CommandInvokeError as e:
+            logging.critical("Leaderboard had an issue: \nLine: 61 \nException: %s", e)

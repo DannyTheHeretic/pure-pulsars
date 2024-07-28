@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 
 # Imports the commands
 from cmds import (
-    challenge,
     help_bot,
     leaderboard,
     never,
@@ -75,7 +74,6 @@ wikisearch.main(client.tree)
 wikianimal.main(client.tree)
 reset_scores.main(client.tree)
 never.main(client.tree)
-challenge.main(client.tree)
 help_bot.main(client.tree)
 rabbit_hole.main(client.tree)
 
@@ -84,6 +82,8 @@ if bool(os.environ.get("SERVER", 0)):
     from cmds import shutdown
 
     shutdown.main(client.tree)
+
+logging.getLogger("discord.gateway").setLevel(logging.CRITICAL)
 
 # runs the client
 client.run(

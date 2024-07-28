@@ -280,26 +280,8 @@ class GuessInput(discord.ui.Modal):
         logging.info(self.game_type == GameType.wikianimal)
         try:
             if self.game_type == GameType.wikiguesser:
-                from cmds import wikiguesser as _
-
-                args = {
-                    "interaction": interaction,
-                    "ranked": self.info.ranked,
-                    "article": self.info.article,
-                    "scores": self.info.score,
-                }
-                self.info.winlossmanager = _.WinLossFunctions(args, args)
                 await wikiguesser_on_submit(self.info, interaction, user_input)
             elif self.game_type == GameType.wikianimal:
-                from cmds import wikianimal as _
-
-                args = {
-                    "interaction": interaction,
-                    "ranked": self.info.ranked,
-                    "article": self.info.article,
-                    "scores": self.info.score,
-                }
-                self.info.winlossmanager = _.WinLossFunctions(args, args)
                 await wikianimal_on_submit(self.info, interaction, user_input)
         except NotFound:
             logging.info("Its okay, no worries")
@@ -319,13 +301,19 @@ async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction,
     page = await search_wikipedia(user_guess)
     try:
         if page.title() == info.article.title():
-            await info.winlossmanager.on_win()
+            await info.winlossmanager.on_win(interaction=interaction)
+            info.view.clear_items()
+            await interaction.message.edit(view=info.view)
             return
     except InvalidTitleError:
-        await interaction.followup.send(content="Sorry, the article title was not valid.")
+        await interaction.followup.send(
+            content="Sorry, the article title was not valid.",
+            ephemeral=True,
+        )
     except AttributeError:
         await interaction.followup.send(
-            content="Sorry, an error with that article occured, please try a different one."
+            content="Sorry, an error with that article occured, please try a different one.",
+            ephemeral=True,
         )
     await info.winlossmanager.on_loss()
     info.score[0] -= 5

@@ -9,7 +9,7 @@ def main(tree: app_commands.CommandTree) -> None:
 
     @tree.command(
         name="help",
-        description="Responds with Help",
+        description="Responds with help",
     )
     async def help_me(interaction: discord.Interaction) -> None:
         """Display help text from commands available in the bot comamnd tree."""

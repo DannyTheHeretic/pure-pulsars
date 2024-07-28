@@ -23,8 +23,8 @@ from pywikibot import Page
 from database.database_core import DATA, NullUserError
 from database.user import UserController, _User
 
-ua = "WikiWabbit/0.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
-site = pywikibot.Site("en", "wikipedia")
+ua = "WikiWabbit/1.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
+site = pywikibot.Site("en", "wikipedia", user=ua)
 
 
 def rand_date() -> date:
@@ -61,10 +61,7 @@ async def make_embed(article: Page) -> Embed:
     try:
         url = url.latest_file_info.url
     except AttributeError:
-        try:
-            url = url.oldest_file_info.url
-        except AttributeError:
-            url = "https://wikimedia.org/static/images/project-logos/enwiki-2x.png"
+        url = None
     embed.set_image(url=url)
     return embed
 
@@ -523,7 +520,7 @@ class ArticleGenerator:
             if page.isRedirectPage() or not page.exists():
                 return await rand_wiki()
         except KeyError as e:
-            logging.critical("Oops, %s", e)
+            logging.critical("Line 523, Exception: %s", e)
             return await rand_wiki()
         return page
 

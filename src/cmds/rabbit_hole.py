@@ -98,7 +98,7 @@ class WikiButtons(discord.ui.View):
 
 
 async def rabbit_hole_helper(interaction: discord.Interaction, article: Page) -> None:
-    """Helper function for the rabbit hole command."""  # noqa: D401
+    """Functions to help the rabbit hole."""
     try:
         # Generate a summary and return an embed message
         text = article.extract(intro=False)

@@ -22,9 +22,8 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
     def __init__(self, winargs: dict, lossargs: dict) -> None:
         super().__init__(winargs, lossargs)
 
-    async def on_win(self) -> None:
+    async def on_win(self, interaction: discord.Interaction) -> None:
         """Clean up on win."""
-        interaction: discord.Interaction = self.winargs["interaction"]
         ranked: bool = self.winargs["ranked"]
         scores: list[int] = self.winargs["scores"]
         article = self.winargs["article"]
@@ -103,6 +102,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     article=article,
                     score=score,
                     user=interaction.user.id,
+                    view=excerpt_view,
                     winlossmanager=WinLossFunctions(args, args),
                 ),
             )
@@ -112,6 +112,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     style=discord.ButtonStyle.primary,
                     owners=owners,
                     private=ranked,
+                    view=excerpt_view,
                     score=score,
                 ),
                 summary=sentances,
@@ -122,6 +123,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     label="Give up",
                     style=discord.ButtonStyle.danger,
                     article=article,
+                    view=excerpt_view,
                 ),
                 view=excerpt_view,
             )
@@ -146,6 +148,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     owners=owners,
                     private=ranked,
                     score=score,
+                    view=view,
                 ),
             )
 
