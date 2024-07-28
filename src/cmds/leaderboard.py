@@ -1,3 +1,5 @@
+"""Leaderboard command and logic for the Wiki Guesser game."""
+
 import logging
 
 import discord
@@ -23,6 +25,20 @@ def main(tree: app_commands.CommandTree) -> None:
     )
     @app_commands.describe(globe="Do you want the global leaderboard?")
     async def leaderboard(interaction: discord.Interaction, globe: _GloSer = _GloSer.No) -> None:
+        """Display the leaderboard for the server or the entire world.
+
+        Args:
+        ----
+        interaction (discord.Interaction): The interaction object.
+        globe (_GloSer): Whether to show the global leaderboard or not.
+
+        Notes:
+        -----
+        Another command, ``/reset-scores``, can be used to  reset the scores of
+        all users in a server.
+        :w
+
+        """
         try:
             ser_id = interaction.guild_id if bool(globe.value) else 0
             await interaction.response.defer(thinking=True)
