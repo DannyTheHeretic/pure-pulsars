@@ -43,7 +43,7 @@ Do not format the message with ```json```, as it is not neccessary. Return the J
 """
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-pro", system_instruction=sys_ins)
+model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=sys_ins)
 
 
 def make_embed(summary: dict) -> Embed:
