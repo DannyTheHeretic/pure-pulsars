@@ -1,3 +1,5 @@
+"""Wiki Random Command."""
+
 import logging
 
 import discord
@@ -14,6 +16,10 @@ def main(tree: app_commands.CommandTree) -> None:
         description="get a random wikipedia article",
     )
     async def wiki(interaction: discord.Interaction) -> None:
+        """Run the wiki-random command.
+
+        This command will get a random wikipedia article and send it to the user.
+        """
         try:
             await interaction.response.send_message(content="Finding a really cool article...")
             article = await rand_wiki()
