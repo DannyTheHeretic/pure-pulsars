@@ -203,7 +203,20 @@ async def loss_update(guild: int, user: User, score: int) -> None:
 
 
 async def win_update(guild: int, user: User, score: int) -> None:
-    """Update the user in the database."""
+    """Update the user in the database.
+
+    Args:
+    ----
+    guild (int): The guild id.
+    user (User): The user to update.
+    score (int): The score to update.
+
+    Notes:
+    -----
+    This interfaces directly with the database connection provided by database_core.py.
+    For more information on the functions used here, see database_core.py.
+
+    """
     uid = user.id
     try:
         db_ref_user = await DATA.get_user(guild, uid)
