@@ -20,8 +20,8 @@ import pywikibot.page
 from discord import Embed, User
 from pywikibot import Page
 
-from src.database.database_core import DATA, NullUserError
-from src.database.user import UserController, _User
+from database.database_core import DATA, NullUserError
+from database.user import UserController, _User
 
 ua = "WikiWabbit/0.1.0 (https://pure-pulsars.web.app/; dannytheheretic@proton.me)"
 site = pywikibot.Site("en", "wikipedia")
