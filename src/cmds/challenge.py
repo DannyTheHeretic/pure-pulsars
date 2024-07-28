@@ -1,3 +1,14 @@
+"""Challenge command for the Wiki Guesser game.
+
+This command allows users to challenge other users to a game of Wiki Guesser.
+
+
+CODE JAM NOTE:
+-------------
+It has not been implemented yet, and may not be implemented by the end of the
+game jam. The code is here for future reference.
+"""
+
 import asyncio
 import logging
 
@@ -6,7 +17,7 @@ from discord import app_commands
 
 
 def main(tree: app_commands.CommandTree) -> None:
-    """Command to challenge people."""
+    """Command to challenge people to a game of wiki-guesser."""
 
     @tree.command(name="challenge", description="Challenge someone to a game of wikiguesser!")
     async def challenge(interaction: discord.Interaction, user: discord.User, points_to_win: int) -> None:
@@ -26,7 +37,6 @@ def main(tree: app_commands.CommandTree) -> None:
         await thread.add_user(interaction.user)
         await countdown(interaction=interaction)
         await thread.send("YOOOOOOOOOOOOOOOO")
-        # CODE GOES HERE
 
         await thread.delete()
 
