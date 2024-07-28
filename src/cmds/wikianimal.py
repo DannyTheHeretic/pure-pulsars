@@ -9,7 +9,7 @@ from pint import UnitRegistry
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import GameType, GiveUpButton, _Button
-from wikiutils import get_articles_with_categories, make_embed, make_img_embed
+from wikiutils import get_articles_with_categories, make_img_embed
 
 UREG = UnitRegistry()
 
@@ -31,16 +31,9 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
 
     async def on_win(self) -> None:
         """Clean up on win."""
-        interaction: discord.Interaction = self.winargs["interaction"]
-        article = self.winargs["article"]
-        embed = await make_embed(article)
-        msg = f"Congratulations {interaction.user.mention}! You guessed correctly!"
-        await interaction.followup.send(content=msg, embed=embed)
 
     async def on_loss(self) -> None:
         """Clean up on loss."""
-        interaction: discord.Interaction = self.lossargs["interaction"]
-        await interaction.followup.send("Sorry, try again.", ephemeral=True)
 
 
 async def find_animal_weight(animal_name: str) -> list[str]:
@@ -121,6 +114,7 @@ def main(tree: app_commands.CommandTree) -> None:
                     owners=owners,
                     winlossmanager=WinLossFunctions(args, args),
                     animal_info=animal_info,
+                    view=hint_view,
                 )
             )
 
