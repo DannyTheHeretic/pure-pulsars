@@ -234,7 +234,7 @@ def get_all_categories_from_article(article: Page) -> list[str]:
     return [category.title().replace("Category:", "") for category in article.categories()]
 
 
-def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
+async def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> list[Page]:
     """Get a list of articles with the given categories.
 
     Args:
@@ -249,7 +249,7 @@ def get_articles_with_categories(categories: Sequence[str], number: int = 1) -> 
     """
     generator = ArticleGenerator(categories=categories)
 
-    return [generator.fetch_article() for _ in range(number)]
+    return [await generator.fetch_article() for _ in range(number)]
 
 
 class ArticleGeneratorError(Exception):

@@ -1,15 +1,27 @@
 import logging
+import os
+import re
 
 import discord
+import requests
 from discord import app_commands
 from pint import UnitRegistry
 from pywikibot import Page
 
 from cmds import wikiguesser_class
 from cmds.wikiguesser_class import GameType, _Button
-from wikiutils import make_embed, make_img_embed, rand_wiki
+from wikiutils import get_articles_with_categories, make_embed, make_img_embed
 
 ureg = UnitRegistry()
+
+WEIGHT_PATTERN = re.compile(r"(\d+ ?(?:kg|tons|lbs|oz|g|pounds|grams))")
+
+
+class IncompatibleAnimalError(Exception):
+    """Error to be thrown if wikipedia animal and/or animal api fail to provide a valid weight range."""
+
+    def __init__(self) -> None:
+        super().__init__("No valid animal weights")
 
 
 class WinLossFunctions(wikiguesser_class.WinLossManagement):
@@ -18,16 +30,18 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
     def __init__(self, winargs: dict, lossargs: dict) -> None:
         super().__init__(winargs, lossargs)
 
-    async def _on_win(self) -> None:
+    async def on_win(self) -> None:
+        """Clean up on win."""
         interaction: discord.Interaction = self.winargs["interaction"]
         article = self.winargs["article"]
         embed = make_embed(article)
         msg = f"Congratulations {interaction.user.mention}! You guessed correctly!"
         await interaction.followup.send(content=msg, embed=embed)
 
-    async def _on_loss(self) -> None:
+    async def on_loss(self) -> None:
+        """Clean up on loss."""
         interaction: discord.Interaction = self.lossargs["interaction"]
-        await interaction.followup.send("Guess higher or lower.", ephemeral=True)
+        await interaction.followup.send("Sorry, try again.", ephemeral=True)
 
 
 class GiveUpButton(discord.ui.Button):
@@ -81,11 +95,49 @@ class GiveUpButton(discord.ui.Button):
         view.clear_items()
 
 
-def find_animal_weight(article: Page) -> tuple[str, ...]:
-    """Determine animal's weight ranges based on article text"""
-    # TODO(Gobleizer): scrape article for weight data
-    print("find animal weight")
-    return ("1lb", "3lb", "20 kg", "40 kilos")
+def find_animal_weight(animal_name: str) -> list[str]:
+    """Determine animal's weight ranges based on article text."""
+    api_url = f"https://api.api-ninjas.com/v1/animals?name={animal_name}"
+    response = requests.get(api_url, headers={"X-Api-Key": os.environ["NINJA_API_KEY"]}, timeout=20)
+    if response.status_code == requests.codes.ok:
+        print(response.text)
+    else:
+        print("Error:", response.status_code, response.text)
+    animal_data = response.json()
+    print(animal_data)
+    if animal_data:
+        weight_str = animal_data[0].get("characteristics").get("weight")
+    else:
+        raise IncompatibleAnimalError
+    weight_str = weight_str.replace(",", "")
+    print("weight str: ", weight_str)
+    weight_phrases = re.findall(WEIGHT_PATTERN, weight_str)
+    if weight_phrases:
+        print("weight phrases ", weight_phrases)
+        weight_ranges = [ureg.Quantity(weight) for weight in weight_phrases]
+        print("weight whatever ", weight_ranges)
+        if len(weight_ranges) % 2 == 0:
+            return [weight_ranges[0], weight_ranges[1]]
+        return [weight_ranges[0]]
+    raise IncompatibleAnimalError
+
+
+async def find_new_animal() -> dict:
+    """Return random animal's information."""
+    try:
+        articles = await get_articles_with_categories(["Mammals of the United States", "Mammals of Canada"], 1)
+        print(articles)
+        article = articles[0]
+        print(article)
+        # investiaget how to go from talk page to regular page
+        # alterantive use mammals of us, canada, east asia
+        animal_name = article.title().split(" ")[-1]
+        print("short name: ", animal_name)
+        logging.info("The current wikianimal is %s", animal_name)
+        weight_range = find_animal_weight(animal_name)
+    except IncompatibleAnimalError:
+        return await find_new_animal()
+    return {"name": animal_name, "article": article, "weight_ranges": weight_range}
 
 
 def main(tree: app_commands.CommandTree) -> None:
@@ -100,23 +152,16 @@ def main(tree: app_commands.CommandTree) -> None:
             ranked = False
             owners = [*interaction.guild.members]
             score = [1000]
-            await interaction.response.send_message(content="Starting a game of Wiki Animal")
+            await interaction.response.send_message(
+                content="Starting a game of Wiki Animal, one moment while we catch your animal."
+            )
 
-            # * I was encoutering an warning that happened sometimes that said 'rand_wiki' was never awaited but
-            # * when I ran the command again it didn't appear, so I'm just running this twice if it doesn't work the
-            # * first time
-            try:
-                article = await rand_wiki()
-            except AttributeError as e:
-                logging.critical("Wierd error occured %s", e)
-                article = await rand_wiki()
-            logging.info("The current wikiguesser title is %s", article.title())
+            animal_info = await find_new_animal()
 
-            weight_ranges = find_animal_weight(article)
-
+            article = animal_info.get("article")
             hint_view = discord.ui.View()
 
-            animal_name = article.title()
+            animal_name = animal_info.get("name")
 
             args = {"interaction": interaction, "ranked": ranked, "article": article, "scores": score}
 
