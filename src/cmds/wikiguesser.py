@@ -28,8 +28,7 @@ class WinLossFunctions(wikiguesser_class.WinLossManagement):
         ranked: bool = self.winargs["ranked"]
         scores: list[int] = self.winargs["scores"]
         article = self.winargs["article"]
-        embed = make_embed(article)
-        # TODO: For Some Reason this doesnt work, it got mad
+        embed = await make_embed(article)
         msg = f"Congratulations {interaction.user.mention}! You figured it out, your score was {scores[0]}!"
         await interaction.followup.send(content=msg, embed=embed)
         if ranked:
@@ -82,7 +81,7 @@ def main(tree: app_commands.CommandTree) -> None:
             except AttributeError as e:
                 logging.critical("Wierd error occured %s", e)
                 article = await rand_wiki()
-            logging.info("The current wikiguesser title is %s", article.title())
+            logging.critical("The current wikiguesser title is %s", article.title())
 
             links = [link.title() for link in article.linkedPages(total=50)]
 

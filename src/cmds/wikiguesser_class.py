@@ -3,7 +3,7 @@
 import logging
 import secrets
 from abc import ABC, abstractmethod
-from typing import NamedTuple
+from dataclasses import dataclass
 
 import discord
 from discord import ButtonStyle, Enum
@@ -57,7 +57,8 @@ class WinLossManagement(ABC):
         """Clean up on loss."""
 
 
-class _Button(NamedTuple):
+@dataclass
+class _Button:
     """NamedTuple for button information."""
 
     style: ButtonStyle = ButtonStyle.secondary
@@ -116,16 +117,17 @@ class GiveUpButton(discord.ui.Button):
         logging.info("GiveUpButton handling exit for %s.", interaction)
         msg = self._end_message
         article = self.article
-        embed = make_embed(article)
+        embed = await make_embed(article)
         embed.set_footer(text=msg)
-        for i in [interaction.guild_id, 0]:
-            await loss_update(i, user=interaction.user)
+        if self.ranked:
+            for i in [interaction.guild_id, 0]:
+                await loss_update(i, user=interaction.user)
         try:
             await interaction.response.send_message(embed=embed, ephemeral=self.ranked)
             await self.clean_view(view=self._view)
             await interaction.message.edit(content=interaction.message.content, view=self._view)
-        except NotFound:
-            logging.info("Its okay, no worries")
+        except NotFound as e:
+            logging.info("Its okay, no worries %s", e)
 
     @staticmethod
     async def clean_view(*, view: discord.ui.View) -> None:
@@ -273,14 +275,31 @@ class GuessInput(discord.ui.Modal):
         """Guess the article."""
         user_input = self.children[0].value
         logging.info("user input %s", user_input)
-        logging.info("info %s", self.info)
         logging.info("game_type wikiguesser %s", GameType.wikiguesser)
         logging.info(self.game_type == GameType.wikiguesser)
         logging.info(self.game_type == GameType.wikianimal)
         try:
             if self.game_type == GameType.wikiguesser:
+                from cmds import wikiguesser as _
+
+                args = {
+                    "interaction": interaction,
+                    "ranked": self.info.ranked,
+                    "article": self.info.article,
+                    "scores": self.info.score,
+                }
+                self.info.winlossmanager = _.WinLossFunctions(args, args)
                 await wikiguesser_on_submit(self.info, interaction, user_input)
             elif self.game_type == GameType.wikianimal:
+                from cmds import wikianimal as _
+
+                args = {
+                    "interaction": interaction,
+                    "ranked": self.info.ranked,
+                    "article": self.info.article,
+                    "scores": self.info.score,
+                }
+                self.info.winlossmanager = _.WinLossFunctions(args, args)
                 await wikianimal_on_submit(self.info, interaction, user_input)
         except NotFound:
             logging.info("Its okay, no worries")
@@ -301,10 +320,6 @@ async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction,
     try:
         if page.title() == info.article.title():
             await info.winlossmanager.on_win()
-            await interaction.followup.send(
-                "Good job", ephemeral=True
-            )  # * IMPORTANT, you must respond to the interaction for the modal to close
-            # * or else it will just say something went wrong
             return
     except InvalidTitleError:
         await interaction.followup.send(content="Sorry, the article title was not valid.")
@@ -313,10 +328,6 @@ async def wikiguesser_on_submit(info: _Button, interaction: discord.Interaction,
             content="Sorry, an error with that article occured, please try a different one."
         )
     await info.winlossmanager.on_loss()
-    await interaction.followup.send(
-        "Guess again! You got this!", ephemeral=True
-    )  # * IMPORTANT, you must respond to the interaction for the modal to close
-    # * or else it will just say something went wrong
     info.score[0] -= 5
 
 

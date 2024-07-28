@@ -2,7 +2,6 @@
 
 import logging
 import os
-from pathlib import Path
 
 import discord
 from discord import app_commands
@@ -28,7 +27,10 @@ from cmds import (
 # loads the enviroment variables and initilazies the discord client
 load_dotenv(".env")
 intents = discord.Intents.all()
-client = discord.Client(intents=intents)
+client = discord.Client(
+    intents=intents,
+    heartbeat_timeout=120.0,
+)
 client.tree = app_commands.CommandTree(client)
 
 has_ran = False
@@ -39,11 +41,6 @@ async def _first_run(client: commands.Bot) -> None:
     has_ran = True
     await client.tree.sync()
     logging.info("The sync has been ran: %s", has_ran)
-    await client.user.edit(
-        username="WikiWabbit",
-        avatar=Path.open("./imgs/logo.png", "rb").read(),
-        banner=Path.open("./imgs/banner.png", "rb").read(),
-    )
     await client.change_presence(
         status=discord.Status.online,
         activity=discord.activity.CustomActivity(
