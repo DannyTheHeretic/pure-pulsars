@@ -77,11 +77,6 @@ never.main(client.tree)
 help_bot.main(client.tree)
 rabbit_hole.main(client.tree)
 
-# activates shutdown command if the app is running on the server
-if bool(os.environ.get("SERVER", 0)):
-    from cmds import shutdown
-
-    shutdown.main(client.tree)
 
 logging.getLogger("discord.gateway").setLevel(logging.CRITICAL)
 logging.getLogger("google").setLevel(logging.ERROR)
