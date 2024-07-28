@@ -44,7 +44,6 @@ async def _first_run(client: commands.Bot) -> None:
     )
     await client.change_presence(
         status=discord.Status.online,
-
         activity=discord.activity.CustomActivity(
             "📚 reading wikipedia",
             emoji="📚",
