@@ -60,6 +60,6 @@ After that go and create a discord application by clicking the `New Application`
 
 Now go down to bot and click `Reset Token` that will be your discord token, put it somewhere safe for later.
 While here be sure to turn on the 3 switches below `Privileged Gateway Intents`
- + + Presence Intent
- + + Server Members Intent
- + + Message Content Intent
+ + Presence Intent
+ + Server Members Intent
+ + Message Content Intent
