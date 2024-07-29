@@ -87,7 +87,7 @@ So head to project settings, it should pop up if you click on the gear near `Pro
 From there navigate to `Service Accounts` and click `Generate a New Private Key`. Put that in a safe place that you can get to easily.
 And thats all for Firebase.
 
-### Gemma API Key
+### Gemini API Key
 One of our Commands makes use of AI, and since we don't want to force the end user to run a complex AI model, we are using the Google Gemma free plan.
 
 [Goto the Google AI Studio](https://aistudio.google.com/app/apikey) and just click `Create API key`.
