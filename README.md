@@ -20,6 +20,10 @@
   + [Gemma API Key](#Gemma-API-Key)
   + [API Ninjas API Key](#API-Ninjas-Key)
   + [Env Settings](#Env-Settings)
+  + [Docker](#Docker)
+
++ [Shout Outs](#Shout-Outs)
+
 # Features
 
 | Command         | Description                                                                |
@@ -108,4 +112,21 @@ GEMINI_API_KEY is your gemma api key.
 NINJA_API_KEY is your API Ninjas api key.
 
 after you set these, be sure rename config.env to just .env so the docker knows what to use.
+
+### Docker
+After you set up your env you can run
+```
+docker build --tag wikiwabbit .
+```
+and then after that finishes with no errors run
+```
+docker run wikiwabbit
+```
+and everything should be up and running, return to discord, and look at you bot - however, you might want to kick and reinvite it to auto sync the command tree.
+
+# Shout Outs
+
+Thank you Python Discord for putting this on, I dont think anyone in our team has ever done something like this. And I will do this continuing forward. Really happy with the result.
+
+Enjoy the bot, a lot of work went into this. It was a passion for all of us apart of this team, we had a great time, we poured our all into our features, thank you to the team, theheretic_, WONG-TONG48, teald, spenpal, lotus.css, Xanthian.
 
