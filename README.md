@@ -17,7 +17,7 @@
 + [Install Guide](#Install-Guide)
   + [Discord Token](#Discord-Token)
   + [Firebase Service Account](#Firebase-Service-Account)
-  + [Gemma API Key](#Gemma-API-Key)
+  + [Gemini API Key](#Gemini-API-Key)
   + [API Ninjas API Key](#API-Ninjas-Key)
   + [Env Settings](#Env-Settings)
   + [Docker](#Docker)
