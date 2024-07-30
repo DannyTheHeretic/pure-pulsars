@@ -133,7 +133,10 @@ We have included a [config.env](config.env) to allow you to easily set up enviro
 + `GEMINI_API_KEY` is your [Google Gemini API key](###gemini-api-key).
 + `NINJA_API_KEY` is your [API Ninjas API key](###api-ninjas-key).
 
-After you set these, be sure rename config.env to just .env so the docker knows what to use.
+
+### Rename `config.env` to `.env`
+
+After you set these, be sure rename `config.env` to just `.env` so the docker knows what to use. _You will get a `KeyError` if you do not do this step!
 
 ### Docker
 After you set up your env you can run
