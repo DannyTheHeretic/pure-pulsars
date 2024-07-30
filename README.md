@@ -53,6 +53,10 @@
 
 # Install Guide
 
+[github_install_link]: https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository
+
+First, [clone this repository locally][github_install_link]. You can use
+
 We require a few resources to get our bot up and running. For starters, we need
 to collect some API tokens used by the bot. You should save these in a safe
 place; once they're all collected, we'll be putting them into our
@@ -71,9 +75,8 @@ The first thing we need is a Discord API token.
 
 After that go and create a discord application by clicking the `New Application` button
 
-Now go down to bot and click `Reset Token` that will be your discord token, put
-it somewhere safe for later.  While here be sure to turn on the 3 switches
-below `Privileged Gateway Intents`:
+Now go down to bot and click `Reset Token` that will be your discord token, put it somewhere safe for later.
+While here be sure to turn on the 3 switches below `Privileged Gateway Intents`
  + Presence Intent
  + Server Members Intent
  + Message Content Intent
