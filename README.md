@@ -66,7 +66,7 @@ The first thing we need is a Discord API token.
 
 ### Discord Token
 <!-- Install guide. -->
-[Goto the Discord Application Page](https://discord.com/developers/applications) you should see this screen.
+Goto the [Discord Application Page](https://discord.com/developers/applications) you should see this screen.
 <figure style="margin: auto; max-height: 200px; padding: 10px 5px 20px 5px;">
    <picture>
       <img src="docs/assets/discord_application_page.png" align="center">
