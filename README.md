@@ -75,7 +75,9 @@ The first thing we need is a Discord API token.
 
 After that go and create a discord application by clicking the `New Application` button
 
-Now go down to bot and click `Reset Token` that will be your discord token, put it somewhere safe for later.
+Now go down to "Bot" on the left menu and click `Reset Token` that will be your
+discord token, put it somewhere safe for later.
+
 While here be sure to turn on the 3 switches below `Privileged Gateway Intents`
  + Presence Intent
  + Server Members Intent
