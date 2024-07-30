@@ -87,7 +87,7 @@ You should also goto `Installation` and goto the Install Link, add your bot to y
 
 ### Firebase Service Account
 
-[Go to the Firebase Console](https://console.firebase.google.com/) and click the get started with a Firebase project
+[Go to the Firebase Console](https://console.firebase.google.com/) and click the get started with a Firebase project.
 Its name can be anything, so don't worry about that.
 After it's made, click on the build tab on the left hand of the screen and scroll down to `Realtime Database`, this will be our database for the bot.
 <figure style="margin: auto; max-height: 200px; padding: 10px 5px 20px 5px;">
@@ -97,9 +97,14 @@ After it's made, click on the build tab on the left hand of the screen and scrol
 </figure>
 
 After this, we still need to tell the bot what firebase account we are using.
-Head to project settings, it should pop up if you click on the gear near `Project Overview`.
-From there navigate to `Service Accounts` and click `Generate a New Private Key`. Put that file in a safe place that you can get to easily.
-And thats all for Firebase.
+Head to project settings, it should pop up if you click on the gear near
+`Project Overview`.  From there navigate to `Service Accounts` and click
+`Generate a New Private Key`. This should download a `json` file that serves as
+your key for Firebase. Put that file in a safe place that you can get to easily
+(e.g., `secrets/firebase_api_key.json`, which is ignored in our `.gitignore`
+file).
+
+And that's all for Firebase.
 
 ### Gemini API Key
 One of our Commands makes use of AI, and since we don't want to force the end user to run a complex AI model, we are using the Google Gemini free plan.
