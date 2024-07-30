@@ -113,6 +113,13 @@ One of our Commands makes use of AI, and since we don't want to force the end us
 Once you have your key, you can store that somewhere safe for later.
 Well that was easy.
 
+#### Warning
+
+The API key may need to be associated with a Google Cloud Project. You can use
+the Firebase project created in the previous step, which should be available
+from the "Search Google Cloud project" search bar with the same name you gave
+it.
+
 ### API Ninjas Key
 [Goto API Ninjas](https://api-ninjas.com/api/animals) and create an account. After you make it, [goto your profile](https://api-ninjas.com/profile).
 From here scroll down a bit and click `Show API Key`, copy it, and write it down somewhere for later.
