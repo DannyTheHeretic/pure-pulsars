@@ -106,10 +106,10 @@ Now that we have all of our keys and service accounts, it's time to configure th
 
 ### Env Settings.
 We have included a [config.env](config.env) to allow you to easily set up environment variables for the bot.
-TOKEN is your Discord API token
-CERT_PATH is your Firebase Service Account file path.
-GEMINI_API_KEY is your gemma API key.
-NINJA_API_KEY is your API injas API key.
++ `TOKEN` is your [Discord API token](###discord-token)
++ `CERT_PATH` is your [Firebase Service Account file path](###firebase-service-account).
++ `GEMINI_API_KEY` is your [Google Gemini API key](###gemini-api-key).
++ `NINJA_API_KEY` is your [API Ninjas API key](###api-ninjas-key).
 
 After you set these, be sure rename config.env to just .env so the docker knows what to use.
 
