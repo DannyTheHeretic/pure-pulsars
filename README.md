@@ -53,8 +53,12 @@
 
 # Install Guide
 
-We require a few resources to get our bot up and running.
-The first thing we need is a discord api token.
+We require a few resources to get our bot up and running. For starters, we need
+to collect some API tokens used by the bot. You should save these in a safe
+place; once they're all collected, we'll be putting them into our
+[`config.env`](config.env) file.
+
+The first thing we need is a Discord API token.
 
 ### Discord Token
 <!-- Install guide. -->
@@ -67,8 +71,9 @@ The first thing we need is a discord api token.
 
 After that go and create a discord application by clicking the `New Application` button
 
-Now go down to bot and click `Reset Token` that will be your discord token, put it somewhere safe for later.
-While here be sure to turn on the 3 switches below `Privileged Gateway Intents`
+Now go down to bot and click `Reset Token` that will be your discord token, put
+it somewhere safe for later.  While here be sure to turn on the 3 switches
+below `Privileged Gateway Intents`:
  + Presence Intent
  + Server Members Intent
  + Message Content Intent
