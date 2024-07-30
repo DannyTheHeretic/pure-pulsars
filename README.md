@@ -121,8 +121,8 @@ from the "Search Google Cloud project" search bar with the same name you gave
 it.
 
 ### API Ninjas Key
-[Goto API Ninjas](https://api-ninjas.com/api/animals) and create an account. After you make it, [goto your profile](https://api-ninjas.com/profile).
-From here scroll down a bit and click `Show API Key`, copy it, and write it down somewhere for later.
+[Goto API Ninjas](https://api-ninjas.com/) and create an account and log in. After you make it, [goto your profile](https://api-ninjas.com/profile).
+From here scroll down a bit and click `Show API Key`, copy it, and save it somewhere safe for later.
 
 Now that we have all of our keys and service accounts, it's time to configure the bot!
 
