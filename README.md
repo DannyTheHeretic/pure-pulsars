@@ -55,7 +55,7 @@
 
 [github_install_link]: https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository
 
-First, [clone this repository locally][github_install_link]. You can use
+First, [clone this repository locally][github_install_link].
 
 We require a few resources to get our bot up and running. For starters, we need
 to collect some API tokens used by the bot. You should save these in a safe
