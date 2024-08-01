@@ -194,6 +194,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + `wikiguesser` Implementation
 + Created `wikiguesser` (`Button`) classes
 + `wikiutils` Implementation (with theheretic_)
++ `wiki-search` Implementation
 
 ## `teald`
 
