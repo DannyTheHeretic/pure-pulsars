@@ -40,9 +40,8 @@
 | `/sync`         | Sync the command tree.                                                     |
 | `/help`         | Display a message with much of the same info as this table has.            |
 
-![](docs/assets/gifs/wiki-guesser.gif)
 
-<img style="height:100px" src="docs/assets/gifs/wiki-guesser.gif">
+<img style="height:200px" src="docs/assets/gifs/wiki-guesser.gif">
 
 
 # Technical Points
