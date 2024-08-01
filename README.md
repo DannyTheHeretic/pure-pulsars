@@ -163,9 +163,13 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 # Breakdown of Team Contributions
 
-## `_theheretic`
+## `theheretic_`
 
-+ [ TODO ]
++ `wikiutils` Implementation
++ Web hosting
++ Docker
++ Initial Idea
++ Team Engagement
 
 ## `WONG_TONG48`
 
@@ -183,7 +187,8 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 ## `spenpal`
 
-+ [ TODO ]
++ `RabbitHole` Implementation
++ Conventional Commits Idea
 
 ## `lotus.css`
 
