@@ -128,10 +128,10 @@ Now that we have all of our keys and service accounts, it's time to configure th
 
 ### Env Settings.
 We have included a [config.env](config.env) to allow you to easily set up environment variables for the bot.
-+ `TOKEN` is your [Discord API token](###discord-token)
-+ `CERT_PATH` is your [Firebase Service Account file path](###firebase-service-account).
-+ `GEMINI_API_KEY` is your [Google Gemini API key](###gemini-api-key).
-+ `NINJA_API_KEY` is your [API Ninjas API key](###api-ninjas-key).
++ `TOKEN` is your [Discord API token](#discord-token)
++ `CERT_PATH` is your [Firebase Service Account file path](#firebase-service-account).
++ `GEMINI_API_KEY` is your [Google Gemini API key](#gemini-api-key).
++ `NINJA_API_KEY` is your [API Ninjas API key](#api-ninjas-key).
 
 
 ### Rename `config.env` to `.env`
