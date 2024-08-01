@@ -171,6 +171,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + Initial Idea
 + Team Engagement
 + `Database` Implementation + refactoring (with lotus.css)
++ Install Guide
 
 ## `WONG_TONG48`
 
