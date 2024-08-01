@@ -23,12 +23,17 @@
   + [Docker](#Docker)
 
 + [Shout Outs](#Shout-Outs)
++ [Team Contributions](#Breakdown-of-Team-Contributions)
++ [Tour de Features](#Tour-de-Features)
+  + [Wiki Guesser](#wiki-guesser)
+  + [Wiki Random](#wiki-random)
+  + [Wiki Animal](#wiki-animal)
 
 # Features
 
 | Command         | Description                                                                |
 |-----------------|----------------------------------------------------------------------------|
-| `/wiki-guesser` | Starts a game of wiki-guesser! Try and find what wikipedia article you're in. |
+| [`/wiki-guesser`](#wiki-guesser) | Starts a game of wiki-guesser! Try and find what wikipedia article you're in. |
 | `/wiki-random`  | Get a random wikipedia article.                                            |
 | `/wiki-animal`  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
 | `/rabbit-hole`  | Dive into wikipedia with AI-guided random exploration!                     |
