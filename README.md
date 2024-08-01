@@ -172,10 +172,14 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + Team Engagement
 + `Database` Implementation + refactoring (with lotus.css)
 + Install Guide
++ General Debugging
 
 ## `WONG_TONG48`
 
-+ [ TODO ]
++ Setup filesystem
++ `wikiguesser` Implementation
++ Created `wikiguesser` classes
++ `wikiutils` Implementation (with theheretic_)
 
 ## `teald`
 
