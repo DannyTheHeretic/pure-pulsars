@@ -40,7 +40,7 @@
 | `/sync`         | Sync the command tree.                                                     |
 | `/help`         | Display a message with much of the same info as this table has.            |
 
-<figure style="margin: auto; max-height: 100px; padding: 10px 5px 20px 5px;">
+<figure style="margin: auto; height: 100px ;padding: 10px 5px 20px 5px;">
    <picture>
       <img src="docs/assets/gifs/wiki-guesser.gif" align="center">
    </picture>
