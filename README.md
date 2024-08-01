@@ -124,10 +124,10 @@ Goto the [Google AI Studio](https://aistudio.google.com/app/apikey) and just cli
 Once you have your key, you can store that somewhere safe for later.
 Well that was easy.
 
-> [!TIP]
-> #### Warning
 
-> The API key may need to be associated with a Google Cloud Project. You can use
+#### Warning
+
+The API key may need to be associated with a Google Cloud Project. You can use
 the Firebase project created in the previous step, which should be available
 from the "Search Google Cloud project" search bar with the same name you gave
 it.
@@ -148,7 +148,6 @@ We have included a [config.env](config.env) to allow you to easily set up enviro
 
 > [!IMPORTANT]
 > ### Rename `config.env` to `.env`
-
 > After you set these, be sure rename `config.env` to just `.env` so the docker knows what to use. _You will get a `KeyError` if you do not do this step_!
 
 ### Docker
@@ -228,10 +227,36 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 # Tour de Features
 
 ### Wiki-Guesser
+The goal of wiki guesser is to encourage user's to guess the topic of the wikipedia article based on excerpts from the article. This can get user's overloaded with information due to the sheer number of possible topics that could appear, and the clues given.
+
+Wiki Guesser was our initial feature and led to the creation of wiki utils and button class to abstract reusable components that would be used in our other features. This includes responding to interactions, sending modals, accepting inputs, interfacing with wikipedia, and our database.
+
+1. Users can play ranked or unranked. If ranked, their score and username will be added to the leaderboard.
+2. Utilizing wiki-random, an article is chosen.
+3. An excerpt of the article's main text is taken, and all direct reference to the article's subject (title) is censored.
+4. A portion of the excerpt is shown to the user.
+5. A user can choose to:
+   - Show More
+      - This will reveal a larger portion of text from the article.
+   - Give Up
+      - Giving up will end the game, but no points will be awarded.
+   - Guess
+      - Accept a guess as to the article's topic from the user.
+6. If the user's guess is not an exact match, we do a wiki-search. If the search leads to the same article, than we can accept the user's input as accurate enough to win!
+
+
 ![](docs/assets/gifs/wiki-guesser.gif)
 
 
 ### Wiki-Random
+This will retrieve a random article for the user.
+
+Wikipedia's articles are vast yet wildly inconsistent in quality. Rather than grab a random article that might be uninteresting, the following steps are taken.
+
+1. Generate a random date within the last 8 years.
+2. Request a list of the top 1000 wikipedia articles for that random day.
+3. Return a single random article from this recent and popular list to the user.
+
 ![](docs/assets/gifs/wiki-random.gif)
 
 
@@ -247,6 +272,12 @@ Wiki animal is built on both the wiki guesser feature and the wikiutils retrieve
 
 
 ### Wiki-Search
+Searches wikipedia for an article based on user's query.
+
+1. Attempt to go directly to a wikipedia article with the same title as the query.
+2. If article does not exist, use pywikibot to search wikipedia, and retrieve a list of articles that match this query.
+3. We check the list to find the single best result and return that article to the user.
+4. If no articles are found, inform the user.
 
 ![](docs/assets/gifs/wiki-search.gif)
 
@@ -256,7 +287,7 @@ Rabbit Hole is an AI bot command designed to turn the vast sea of Wikipedia into
 
 **Core Functionality**
 - Random Exploration
- - Simply type the command, and Rabbit Hole will fetch a random Wikipedia page.
+   - Simply type the command, and Rabbit Hole will fetch a random Wikipedia page.
 - AI Summarization
    - Rabbit Hole utilizes Google Gemini to summarize large contexts of information effectively and efficiently, and presents the summary to the user.
 - Topic Suggestions
@@ -270,7 +301,14 @@ Rabbit Hole directly addresses the theme of "Information Overload" by offering t
 ![](docs/assets/gifs/rabbit-hole.gif)
 
 ### Leaderboard and User Info
+Display user score data for the top players in the current guild.
+
+If option * *globe* * is set to yes, you can view top scores for players around the world.
+
 ![](docs/assets/gifs/leader_board_and_user_info.gif)
 
 ### Help and Sync
+- Display help text from commands available in the bot comamnd tree.
+- Sync the command tree to the guild it is called in.
+
 ![](docs/assets/gifs/help-sync.gif)
