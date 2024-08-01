@@ -87,7 +87,7 @@ You should also goto `Installation` and goto the Install Link, add your bot to y
 
 ### Firebase Service Account
 
-[Go to the Firebase Console](https://console.firebase.google.com/) and click the get started with a Firebase project.
+Go to the [Firebase Console](https://console.firebase.google.com/) and click the get started with a Firebase project.
 Its name can be anything, so don't worry about that.
 After it's made, click on the build tab on the left hand of the screen and scroll down to `Realtime Database`, this will be our database for the bot.
 <figure style="margin: auto; max-height: 200px; padding: 10px 5px 20px 5px;">
@@ -109,7 +109,7 @@ And that's all for Firebase.
 ### Gemini API Key
 One of our Commands makes use of AI, and since we don't want to force the end user to run a complex AI model, we are using the Google Gemini free plan.
 
-[Goto the Google AI Studio](https://aistudio.google.com/app/apikey) and just click `Create API key`.
+Goto the [Google AI Studio](https://aistudio.google.com/app/apikey) and just click `Create API key`.
 Once you have your key, you can store that somewhere safe for later.
 Well that was easy.
 
@@ -121,7 +121,7 @@ from the "Search Google Cloud project" search bar with the same name you gave
 it.
 
 ### API Ninjas Key
-[Goto API Ninjas](https://api-ninjas.com/) and create an account and log in. After you make it, [goto your profile](https://api-ninjas.com/profile).
+Goto [API Ninjas](https://api-ninjas.com/) and create an account and log in. After you make it, [goto your profile](https://api-ninjas.com/profile).
 From here scroll down a bit and click `Show API Key`, copy it, and save it somewhere safe for later.
 
 Now that we have all of our keys and service accounts, it's time to configure the bot!
