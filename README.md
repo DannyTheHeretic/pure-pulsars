@@ -214,6 +214,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ## `Xanthian`
 
 + `wikianimal` Implementation
++ [Website](wikiwabbit.com)
 
 
 # Tour de Features
