@@ -23,6 +23,7 @@
   + [Docker](#Docker)
 
 + [Shout Outs](#Shout-Outs)
++ [Connection to the theme (Information Overload!)](#connection-to-the-theme-information-overload)
 + [Team Contributions](#Breakdown-of-Team-Contributions)
 + [Tour de Features](#Tour-de-Features)
   + [Wiki Guesser](#wiki-guesser)
@@ -123,9 +124,10 @@ Goto the [Google AI Studio](https://aistudio.google.com/app/apikey) and just cli
 Once you have your key, you can store that somewhere safe for later.
 Well that was easy.
 
-#### Warning
+> [!TIP]
+> #### Warning
 
-The API key may need to be associated with a Google Cloud Project. You can use
+> The API key may need to be associated with a Google Cloud Project. You can use
 the Firebase project created in the previous step, which should be available
 from the "Search Google Cloud project" search bar with the same name you gave
 it.
@@ -144,9 +146,10 @@ We have included a [config.env](config.env) to allow you to easily set up enviro
 + `NINJA_API_KEY` is your [API Ninjas API key](#api-ninjas-key).
 
 
-### Rename `config.env` to `.env`
+> [!IMPORTANT]
+> ### Rename `config.env` to `.env`
 
-After you set these, be sure rename `config.env` to just `.env` so the docker knows what to use. _You will get a `KeyError` if you do not do this step_!
+> After you set these, be sure rename `config.env` to just `.env` so the docker knows what to use. _You will get a `KeyError` if you do not do this step_!
 
 ### Docker
 After you set up your env you can run
@@ -208,6 +211,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + `RabbitHole` Implementation
 + Conventional Commits Foundation
 + Added additional "annoying" linting rules
++ Regex assist
 
 ## `lotus.css`
 
@@ -218,7 +222,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ## `Xanthian`
 
 + `wikianimal` Implementation
-+ [Website](wikiwabbit.com)
++ [Website](https://wikiwabbit.com/)
 
 
 # Tour de Features
@@ -232,14 +236,37 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 
 ### Wiki-Animal
+Wiki animal is built on both the wiki guesser feature and the wikiutils retrieve article by category feature.
+1. When a user starts a wiki-animal game the bot searches through a specific category of mammals on Wikipedia, and returns a random mammal's Wikipedia page.
+2. Pywikibot allows us to ask for the most appropriate image for the article, which is used to provide the user a basis for judging the animals mass.
+3. Because most wikipedia articles do not have consistent weight data, a query is sent to ninja's animal API service to retrieve weight details of the random animal.
+4. Even ninjas API has inconsistently formatted weight data, so we use a regex and Pint to process the string into a quantity with magnitude and units.
+5. When a user guesses the animals weight, their input is converted to a quantity as well and compared to the animals retrieved quantity. This allows users to guess more naturally in their preferred imperial / metric units of measurement.
+
 ![](docs/assets/gifs/wiki-animal.gif)
 
 
 ### Wiki-Search
+
 ![](docs/assets/gifs/wiki-search.gif)
 
 
 ### Rabbit Hole
+Rabbit Hole is an AI bot command designed to turn the vast sea of Wikipedia into an interactive, educational journey. Rabbit Hole randomly guides you through the knowledge labyrinth, helping you manage information overload using AI summarization, while making learning fun and engaging.
+
+**Core Functionality**
+- Random Exploration
+ - Simply type the command, and Rabbit Hole will fetch a random Wikipedia page.
+- AI Summarization
+   - Rabbit Hole utilizes Google Gemini to summarize large contexts of information effectively and efficiently, and presents the summary to the user.
+- Topic Suggestions
+   - Along with the summary, Rabbit Hole suggests related topics such as "Greenhouse Gas Emissions," "Global Warming," and "Paris Agreement."
+   - The user can then choose to explore any of these topics, leading to another summary and a fresh set of related topics.
+
+Connection to the Theme: "Information Overload"
+
+Rabbit Hole directly addresses the theme of "Information Overload" by offering tools and features designed to help users navigate and manage vast amounts of information effectively. Instead of bombarding users with endless text, Rabbit Hole curates, summarizes, and organizes content in a way that keeps the experience informative yet manageable. By allowing users to control the depth of information and guiding them through related topics, Rabbit Hole transforms overwhelming data into a structured, enjoyable learning journey.
+
 ![](docs/assets/gifs/rabbit-hole.gif)
 
 ### Leaderboard and User Info
