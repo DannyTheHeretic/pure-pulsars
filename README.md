@@ -159,7 +159,7 @@ Enjoy the bot, a lot of work went into this. It was a passion for all of us apar
 
 Wikipedia and wiki sites are notorious for offering users a simple means of digging more deeply into topics---especially topics relatively removed from their original intent. This can lead to a straightforward search becoming a meandering path through various topics, leading to an _overload_ of _information_. The colloquialism for this is "going down a [wiki rabbit hole](https://en.wikipedia.org/wiki/Wiki_rabbit_hole)".
 
-Wiki-wabbit is a tool for expanding on this experience through Discord. Alongside the eponymous `/rabbit-hole` command, other commands allow for engaging with Wikipedia's wealth of information in other ways, such as playing games and pulling up random articles. 
+Wiki-wabbit is a tool for expanding on this experience through Discord. Alongside the eponymous `/rabbit-hole` command, other commands allow for engaging with Wikipedia's wealth of information in other ways, such as playing games and pulling up random articles.
 
 # Breakdown of Team Contributions
 
