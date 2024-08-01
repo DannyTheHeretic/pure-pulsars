@@ -247,6 +247,8 @@ Wiki Guesser was our initial feature and led to the creation of wiki utils and b
       - Giving up will end the game, but no points will be awarded.
    - Guess
       - Accept a guess as to the article's topic from the user.
+   - Show Links
+      - Show links inside that article to try and gain insight into what it is.
 6. If the user's guess is not an exact match, we do a wiki-search. If the search leads to the same article, than we can accept the user's input as accurate enough to win!
 
 
@@ -314,6 +316,6 @@ If option *globe* is set to yes, you can view top scores for players around the 
 
 ### Help and Sync
 - Display help text from commands available in the bot comamnd tree.
-- Sync the command tree to the guild it is called in.
+- Sync the command tree to the guild it is called in, aka update the commands in the guild.
 
 ![](docs/assets/gifs/help-sync.gif)
