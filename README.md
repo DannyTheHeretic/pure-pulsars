@@ -178,11 +178,14 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ## `theheretic_`
 
 + `wikiutils` Implementation (with WONG_TONG)
++ `Database` Implementation + refactoring (with lotus.css)
++ `Leaderboard` Implementation + refactoring (with lotus.css)
++ `Help` Implementation
++ `User Info` Implementation
 + Web hosting
 + Docker
 + Initial Idea
 + Team Engagement
-+ `Database` Implementation + refactoring (with lotus.css)
 + Install Guide
 + General Debugging
 + Hosting the bot
@@ -216,6 +219,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ## `lotus.css`
 
 + `Database` Implementation (with theheretic_)
++ `Leaderboard` Implementation (with theheretic_)
 + `User` Implementation
 + `Button` Classes Implementaion + Refactoring
 
