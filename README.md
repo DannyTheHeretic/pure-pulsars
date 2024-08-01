@@ -155,3 +155,28 @@ Thank you Python Discord for putting this on, I dont think anyone in our team ha
 
 Enjoy the bot, a lot of work went into this. It was a passion for all of us apart of this team, we had a great time, we poured our all into our features, thank you to the team, theheretic_, WONG-TONG48, teald, spenpal, lotus.css, Xanthian.
 
+# Breakdown of Team Contributions
+
+## `_theheretic`
+
++ [ TODO ]
+
+## `WONG_TONG48`
+
++ [ TODO ]
+
+## `teald`
+
++ [ TODO ]
+
+## `spenpal`
+
++ [ TODO ]
+
+## `lotus.css`
+
++ [ TODO ]
+
+## `Xanthian`
+
++ [ TODO ]
