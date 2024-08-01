@@ -136,7 +136,7 @@ We have included a [config.env](config.env) to allow you to easily set up enviro
 
 ### Rename `config.env` to `.env`
 
-After you set these, be sure rename `config.env` to just `.env` so the docker knows what to use. _You will get a `KeyError` if you do not do this step!
+After you set these, be sure rename `config.env` to just `.env` so the docker knows what to use. _You will get a `KeyError` if you do not do this step_!
 
 ### Docker
 After you set up your env you can run
