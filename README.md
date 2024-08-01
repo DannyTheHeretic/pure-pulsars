@@ -167,7 +167,11 @@ Enjoy the bot, a lot of work went into this. It was a passion for all of us apar
 
 ## `teald`
 
-+ [ TODO ]
++ `ArticleGenerator` Implementation (+ minimal testing)
++ `GiveUpButton` Implementation
++ `wikiutils` refactoring
++ Documentation work (docstrings + some README work)
++ Manual testing for functions/installs and instructions
 
 ## `spenpal`
 
