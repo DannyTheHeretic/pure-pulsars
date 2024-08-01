@@ -207,6 +207,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 + `RabbitHole` Implementation
 + Conventional Commits Foundation
++ Added additional "annoying" linting rules
 
 ## `lotus.css`
 
