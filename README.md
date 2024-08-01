@@ -303,7 +303,7 @@ Rabbit Hole directly addresses the theme of "Information Overload" by offering t
 ### Leaderboard and User Info
 Display user score data for the top players in the current guild.
 
-If option * *globe* * is set to yes, you can view top scores for players around the world.
+If option *globe* is set to yes, you can view top scores for players around the world.
 
 ![](docs/assets/gifs/leader_board_and_user_info.gif)
 
