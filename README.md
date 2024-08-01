@@ -170,6 +170,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + Docker
 + Initial Idea
 + Team Engagement
++ `Database` Implementation + refactoring (with lotus.css)
 
 ## `WONG_TONG48`
 
@@ -192,7 +193,8 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 ## `lotus.css`
 
-+ [ TODO ]
++ `Database` Implementation (with theheretic_)
++ `User` Implementation
 
 ## `Xanthian`
 
