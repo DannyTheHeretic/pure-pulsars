@@ -172,6 +172,7 @@ Enjoy the bot, a lot of work went into this. It was a passion for all of us apar
 + `wikiutils` refactoring
 + Documentation work (docstrings + some README work)
 + Manual testing for functions/installs and instructions
++ Wiki-Wabbit logo, banners, and icons.
 
 ## `spenpal`
 
