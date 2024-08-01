@@ -80,6 +80,8 @@ Goto the [Discord Application Page](https://discord.com/developers/applications)
 
 After that go and create a discord application by clicking the `New Application` button
 
+![](docs/assets/gifs/app-setup.gif)
+
 Now go down to "Bot" on the left menu and click `Reset Token` that will be your
 discord token, put it somewhere safe for later.
 
