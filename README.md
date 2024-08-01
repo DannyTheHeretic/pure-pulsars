@@ -83,7 +83,7 @@ While here be sure to turn on the 3 switches below `Privileged Gateway Intents`
  + Server Members Intent
  + Message Content Intent
 
-You should also goto `Installation` and goto the Install Link, add your bot to your discord server with this.
+You should also goto `Installation` in the sidebar menu and goto the Install Link, add your bot to your discord server with this.
 
 ### Firebase Service Account
 
