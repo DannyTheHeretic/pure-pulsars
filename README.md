@@ -180,12 +180,14 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + `Database` Implementation + refactoring (with lotus.css)
 + Install Guide
 + General Debugging
++ Hosting the bot
++ Optimization
 
 ## `WONG_TONG48`
 
 + Setup filesystem
 + `wikiguesser` Implementation
-+ Created `wikiguesser` classes
++ Created `wikiguesser` (`Button`) classes
 + `wikiutils` Implementation (with theheretic_)
 
 ## `teald`
@@ -201,16 +203,17 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ## `spenpal`
 
 + `RabbitHole` Implementation
-+ Conventional Commits Idea
++ Conventional Commits Foundation
 
 ## `lotus.css`
 
 + `Database` Implementation (with theheretic_)
 + `User` Implementation
++ `Button` Classes Implementaion + Refactoring
 
 ## `Xanthian`
 
-+ [ TODO ]
++ `wikianimal` Implementation
 
 
 # Tour de Features
