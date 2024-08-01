@@ -165,7 +165,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 ## `theheretic_`
 
-+ `wikiutils` Implementation
++ `wikiutils` Implementation (with WONG_TONG)
 + Web hosting
 + Docker
 + Initial Idea
