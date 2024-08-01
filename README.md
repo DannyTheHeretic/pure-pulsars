@@ -38,12 +38,12 @@
 | [`/wiki-animal`](#wiki-animal)  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
 | [`/wiki-search`](#wiki-search)  | Get a Wikipedia article that you searched for.                             |
 | [`/rabbit-hole`](#rabbit-hole)  | Dive into wikipedia with AI-guided random exploration!                     |
-| `/leaderboard`  | Returns your guild's leaderboard.                                          |
-| `/user-info`    | Returns your stats.                                                        |
+| [`/leaderboard`](#Leaderboard-and-User-Info)  | Returns your guild's leaderboard.                                          |
+| [`/user-info`](#Leaderboard-and-User-Info)    | Returns your stats.                                                        |
+| [`/sync`](#Help-and-Sync)       | Sync the command tree.                                                     |
+| [`/help`](#Help-and-Sync)       | Display a message with much of the same info as this table has.            |
 | `/reset-scores` | Reset scores of all users in this guild for this guild.                    |
 | `/never`        | 🥚 Never use this command!                                         |
-| `/sync`         | Sync the command tree.                                                     |
-| `/help`         | Display a message with much of the same info as this table has.            |
 
 
 # Technical Points
@@ -90,7 +90,7 @@ While here be sure to turn on the 3 switches below `Privileged Gateway Intents`
  + Server Members Intent
  + Message Content Intent
 
-You should also goto `Installation` in the sidebar menu and goto the Install Link, add your bot to your discord server with this.
+You should also goto `Installation` in the sidebar menu and goto the Install Link, you can add your bot to your discord server with this, but I would wait till after the bot is running to use it.
 
 ### Firebase Service Account
 
@@ -234,6 +234,8 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ### Rabbit Hole
 ![](docs/assets/gifs/rabbit-hole.gif)
 
+### Leaderboard and User Info
+![](docs/assets/gifs/leader_board_and_user_info.gif)
 
-
-
+### Help and Sync
+![](docs/assets/gifs/help-sync.gif)
