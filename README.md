@@ -40,8 +40,8 @@
 | [`/rabbit-hole`](#rabbit-hole)  | Dive into wikipedia with AI-guided random exploration!                     |
 | [`/leaderboard`](#Leaderboard-and-User-Info)  | Returns your guild's leaderboard.                                          |
 | [`/user-info`](#Leaderboard-and-User-Info)    | Returns your stats.                                                        |
-| [`/sync`](#Help-and-Sync)       | Sync the command tree.                                                     |
 | [`/help`](#Help-and-Sync)       | Display a message with much of the same info as this table has.            |
+| [`/sync`](#Help-and-Sync)       | Sync the command tree.                                                     |
 | `/reset-scores` | Reset scores of all users in this guild for this guild.                    |
 | `/never`        | 🥚 Never use this command!                                         |
 
