@@ -41,9 +41,6 @@
 | `/help`         | Display a message with much of the same info as this table has.            |
 
 
-<img style="height:300px" src="docs/assets/gifs/wiki-guesser.gif">
-
-
 # Technical Points
 
 <!-- Any interesting technical points you'd like to include go below here. -->
@@ -207,3 +204,20 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 ## `Xanthian`
 
 + [ TODO ]
+
+
+# Tour de Features
+
+### Wiki-Guesser
+![](docs/assets/gifs/wiki-guesser.gif)
+
+
+### Wiki-Random
+![](docs/assets/gifs/wiki-random.gif)
+
+
+### Wiki-Animal
+![](docs/assets/gifs/wiki-animal.gif)
+
+
+
