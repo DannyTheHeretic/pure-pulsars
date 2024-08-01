@@ -42,6 +42,13 @@
 
 ![](docs/assets/gifs/wiki-guesser.gif)
 
+<figure style="margin: auto; max-height: 200px; padding: 10px 5px 20px 5px;">
+   <picture>
+      <img style="height:100px" src="docs/assets/gifs/wiki-guesser.gif">
+   </picture>
+</figure>
+
+
 # Technical Points
 
 <!-- Any interesting technical points you'd like to include go below here. -->
