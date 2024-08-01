@@ -155,6 +155,12 @@ Thank you Python Discord for putting this on, I dont think anyone in our team ha
 
 Enjoy the bot, a lot of work went into this. It was a passion for all of us apart of this team, we had a great time, we poured our all into our features, thank you to the team, theheretic_, WONG-TONG48, teald, spenpal, lotus.css, Xanthian.
 
+# Connection to the theme (Information Overload!)
+
+Wikipedia and wiki sites are notorious for offering users a simple means of digging more deeply into topics---especially topics relatively removed from their original intent. This can lead to a straightforward search becoming a meandering path through various topics, leading to an _overload_ of _information_. The colloquialism for this is "going down a [wiki rabbit hole](https://en.wikipedia.org/wiki/Wiki_rabbit_hole)".
+
+Wiki-wabbit is a tool for expanding on this experience through Discord. Alongside the eponymous `/rabbit-hole` command, other commands allow for engaging with Wikipedia's wealth of information in other ways, such as playing games and pulling up random articles. 
+
 # Breakdown of Team Contributions
 
 ## `_theheretic`
@@ -172,7 +178,8 @@ Enjoy the bot, a lot of work went into this. It was a passion for all of us apar
 + `wikiutils` refactoring
 + Documentation work (docstrings + some README work)
 + Manual testing for functions/installs and instructions
-+ Wiki-Wabbit logo, banners, and icons.
++ Wiki-Wabbit logo, banners, and icons
++ Initial [Connection to the Theme](#connection-to-the-theme)
 
 ## `spenpal`
 
