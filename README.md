@@ -41,7 +41,7 @@
 | `/help`         | Display a message with much of the same info as this table has.            |
 
 
-<img style="height:200px" src="docs/assets/gifs/wiki-guesser.gif">
+<img style="height:300px" src="docs/assets/gifs/wiki-guesser.gif">
 
 
 # Technical Points
