@@ -185,7 +185,7 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 + Documentation work (docstrings + some README work)
 + Manual testing for functions/installs and instructions
 + Wiki-Wabbit logo, banners, and icons
-+ Initial [Connection to the Theme](#connection-to-the-theme)
++ Initial [Connection to the Theme](#connection-to-the-theme-information-overload)
 
 ## `spenpal`
 
