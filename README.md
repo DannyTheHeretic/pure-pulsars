@@ -28,6 +28,9 @@
   + [Wiki Guesser](#wiki-guesser)
   + [Wiki Random](#wiki-random)
   + [Wiki Animal](#wiki-animal)
+  + [Rabbit Hole](#rabbit-hole)
+  + [Leaderboard and User Info](#Leaderboard-and-User-Info)
+  + [Help and Sync](#Help-and-Sync)
 
 # Features
 
