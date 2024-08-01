@@ -34,14 +34,14 @@
 | Command         | Description                                                                |
 |-----------------|----------------------------------------------------------------------------|
 | [`/wiki-guesser`](#wiki-guesser) | Starts a game of wiki-guesser! Try and find what wikipedia article you're in. |
-| `/wiki-random`  | Get a random wikipedia article.                                            |
-| `/wiki-animal`  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
-| `/rabbit-hole`  | Dive into wikipedia with AI-guided random exploration!                     |
-| `/wiki-search`  | Get a Wikipedia article that you searched for.                             |
+| [`/wiki-random`](#wiki-random)  | Get a random wikipedia article.                                            |
+| [`/wiki-animal`](#wiki-animal)  | Starts a game of wiki-animal! Try and guess the animal's mass!             |
+| [`/wiki-search`](#wiki-search)  | Get a Wikipedia article that you searched for.                             |
+| [`/rabbit-hole`](#rabbit-hole)  | Dive into wikipedia with AI-guided random exploration!                     |
 | `/leaderboard`  | Returns your guild's leaderboard.                                          |
 | `/user-info`    | Returns your stats.                                                        |
 | `/reset-scores` | Reset scores of all users in this guild for this guild.                    |
-| `/never`        | Never use this command! :surprised:                                        |
+| `/never`        | 🥚 Never use this command!                                         |
 | `/sync`         | Sync the command tree.                                                     |
 | `/help`         | Display a message with much of the same info as this table has.            |
 
@@ -223,6 +223,15 @@ Wiki-wabbit is a tool for expanding on this experience through Discord. Alongsid
 
 ### Wiki-Animal
 ![](docs/assets/gifs/wiki-animal.gif)
+
+
+### Wiki-Search
+![](docs/assets/gifs/wiki-search.gif)
+
+
+### Rabbit Hole
+![](docs/assets/gifs/rabbit-hole.gif)
+
 
 
 
